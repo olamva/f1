@@ -1,0 +1,13 @@
+{
+  "id": "ddca4a0b",
+  "ts": "2026-09-24T15:03:42+00:00",
+  "text": "gh issue view prints nothing and exits 0 inside sandbox; needs sandbox disabled for keychain",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "787b66a7",
+  "where": "gh",
+  "branch": "t3code/82bdb9b5"
+}
