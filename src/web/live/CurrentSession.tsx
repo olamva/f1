@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
+import { hashPart, setHashPart } from "../hash.ts";
 import { Loading } from "../Loading.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
@@ -136,10 +137,15 @@ const Replay = ({ session, onClose }: ReplayProps) => {
 
 export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
-  const [chosen, setChosen] = useState<SessionRef | null>(null);
-  if (!info.data) return <Loading label="Loading…" error={info.error} />;
+  const [path, setPath] = useState(() => hashPart("session"));
+  const choose = (s: SessionRef | null) => {
+    setHashPart("session", s?.path ?? null);
+    setPath(s?.path ?? null);
+  };
+  const chosen = sessions.data?.find((s) => s.path === path);
+  if (!info.data || (path && !sessions.data && !sessions.error)) return <Loading label="Loading…" error={info.error} />;
   if (info.data.live) return <Live positions={info.data.positions} />;
-  if (chosen) return <Replay key={chosen.path} session={chosen} onClose={() => setChosen(null)} />;
+  if (chosen) return <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />;
   const scheduled = current(season?.rounds ?? [], Date.now());
   return (
     <div className="space-y-4">
@@ -149,7 +155,7 @@ export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
           <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
         </div>
       ) : <Countdown rounds={season?.rounds ?? []} />}
-      {sessions.error ? <p className="text-sm text-zinc-400">{sessions.error}</p> : <ReplayPicker sessions={sessions.data ?? []} onStart={setChosen} />}
+      {sessions.error ? <p className="text-sm text-zinc-400">{sessions.error}</p> : <ReplayPicker sessions={sessions.data ?? []} onStart={choose} />}
     </div>
   );
 };
