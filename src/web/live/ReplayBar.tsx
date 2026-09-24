@@ -56,7 +56,17 @@ export const ReplayBar = ({ sessions, path, onPath, feed, playing, speed, onTogg
         step={1000}
         value={value}
         onChange={(e) => setDrag(Number(e.target.value))}
-        onPointerUp={() => {
+        onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
+        onPointerUp={(e) => {
+          onSeek(Number(e.currentTarget.value));
+          setDrag(null);
+        }}
+        onPointerCancel={() => setDrag(null)}
+        onKeyUp={() => {
+          if (drag !== null) onSeek(drag);
+          setDrag(null);
+        }}
+        onBlur={() => {
           if (drag !== null) onSeek(drag);
           setDrag(null);
         }}
