@@ -86,16 +86,18 @@ export const radios = (state: Obj): Radio[] =>
     .reverse();
 
 const TRACK_STATUS: Record<string, { label: string; tone: string }> = {
-  "1": { label: "Green", tone: "bg-emerald-600" },
-  "2": { label: "Yellow", tone: "bg-yellow-400 text-black" },
+  "2": { label: "Yellow Flag", tone: "bg-yellow-400 text-black" },
   "4": { label: "Safety Car", tone: "bg-yellow-400 text-black" },
-  "5": { label: "Red Flag", tone: "bg-red-600" },
+  "5": { label: "Red Flag", tone: "bg-red-600 text-white" },
   "6": { label: "VSC", tone: "bg-yellow-400 text-black" },
   "7": { label: "VSC ending", tone: "bg-yellow-300 text-black" },
 };
 
-export const trackStatus = (state: Obj) =>
-  TRACK_STATUS[state.TrackStatus?.Status ?? ""] ?? { label: state.TrackStatus?.Message ?? "—", tone: "bg-zinc-700" };
+export const trackStatus = (state: Obj): { label: string; tone: string } | null => {
+  const code = state.TrackStatus?.Status;
+  if (!code || code === "1") return null;
+  return TRACK_STATUS[code] ?? { label: state.TrackStatus?.Message ?? code, tone: "bg-zinc-700" };
+};
 
 export function remaining(state: Obj, utcNow: number): string {
   const clock = state.ExtrapolatedClock;
