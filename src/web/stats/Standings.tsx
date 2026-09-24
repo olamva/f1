@@ -30,7 +30,7 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
                 <td className="w-16 py-1 text-right text-zinc-500">
                   {s.countback[0] ? (
                     <span aria-label={`${s.countback[0]} wins`}>
-                      {s.countback[0]}🥇
+                      {s.countback[0]}🏆
                     </span>
                   ) : (
                     ""
