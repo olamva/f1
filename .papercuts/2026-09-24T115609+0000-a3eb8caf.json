@@ -1,0 +1,14 @@
+{
+  "id": "a3eb8caf",
+  "ts": "2026-09-24T11:56:09+00:00",
+  "text": "codex exec defaults to approval_policy=never, so Computer Use cannot get app approval ('not approved to use Arc'); pass --approve-for-me",
+  "tags": [
+    "codex",
+    "skills"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c0ba1600",
+  "where": "/Users/olavassbotn/.claude/skills/add-subdomain/SKILL.md",
+  "branch": "main"
+}
