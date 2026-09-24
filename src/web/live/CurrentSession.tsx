@@ -118,6 +118,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
         session={session}
         onClose={onClose}
         feed={feed}
+        pending={feed?.src === url ? null : play.t}
         playing={play.on}
         speed={play.speed}
         onToggle={() => setPlay((s) => ({ ...s, on: !s.on, t: feed?.t ?? s.t }))}
