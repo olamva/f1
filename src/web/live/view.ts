@@ -16,7 +16,7 @@ export type Row = {
   lastLap: string;
   lastMark: Mark;
   bestLap: string;
-  sectors: { value: string; mark: Mark }[];
+  sectors: { value: string; mark: Mark; segments: Mark[] }[];
   tyre: string;
   tyreAge: number | null;
   pits: number;
@@ -25,6 +25,8 @@ export type Row = {
 
 const mark = (x: Obj | undefined): Mark =>
   !x?.Value ? "none" : x.OverallFastest ? "overall" : x.PersonalFastest ? "personal" : "normal";
+
+const SEGMENT: Record<number, Mark> = { 2048: "normal", 2049: "personal", 2051: "overall" };
 
 const values = (x: unknown): Obj[] =>
   Array.isArray(x) ? x : x && typeof x === "object" ? Object.values(x as Obj) : [];
@@ -50,7 +52,11 @@ function row(number: string, line: Obj, driver: Obj, app: Obj | undefined): Row 
     lastLap: line.LastLapTime?.Value ?? "",
     lastMark: mark(line.LastLapTime),
     bestLap: line.BestLapTime?.Value ?? "",
-    sectors: values(line.Sectors).map((s) => ({ value: s.Value ?? "", mark: mark(s) })),
+    sectors: values(line.Sectors).map((s) => ({
+      value: s.Value ?? "",
+      mark: mark(s),
+      segments: values(s.Segments).map((g) => SEGMENT[g.Status] ?? "none"),
+    })),
     ...tyre(app),
     pits: Number(line.NumberOfPitStops ?? 0),
     status: statusOf(line),
