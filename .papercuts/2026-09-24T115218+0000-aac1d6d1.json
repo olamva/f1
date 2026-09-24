@@ -1,0 +1,14 @@
+{
+  "id": "aac1d6d1",
+  "ts": "2026-09-24T11:52:18+00:00",
+  "text": "azurerm_container_app_custom_domain + managed certificate leave hostname binding Disabled; needs manual 'az containerapp hostname bind'",
+  "tags": [
+    "azure",
+    "terraform"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c0ba1600",
+  "where": "/Users/olavassbotn/Developer/f1",
+  "branch": "main"
+}

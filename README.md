@@ -20,5 +20,6 @@ pnpm test
 2. Run `terraform -chdir=infra init`, then `terraform -chdir=infra apply`.
 3. Set the values of `terraform -chdir=infra output github_variables` as GitHub Actions variables.
 4. Push to `main`. CI builds the image to GHCR and deploys it.
+5. For a custom domain, add the records from `terraform -chdir=infra output custom_domain_dns`, set `custom_domain`, and apply. Terraform creates the certificate but does not bind it. Bind it with `az containerapp hostname bind -g f1 -n f1 --hostname <domain> --environment f1 --certificate <certificate name> --validation-method CNAME`.
 
 Run `pnpm sessions` and apply again when the calendar changes. This updates the session wake windows.
