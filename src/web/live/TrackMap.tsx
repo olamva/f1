@@ -10,6 +10,7 @@ interface TrackMapProps {
   positions: Record<string, [number, number]> | undefined;
   rows: Row[];
   selected: Set<string>;
+  onToggle: (number: string) => void;
   note: string | null;
 }
 
@@ -32,7 +33,7 @@ const projector = (outline: Outline) => {
   };
 };
 
-export const TrackMap = ({ outline, positions, rows, selected, note }: TrackMapProps) => {
+export const TrackMap = ({ outline, positions, rows, selected, onToggle, note }: TrackMapProps) => {
   const project = useMemo(() => (outline ? projector(outline) : null), [outline]);
   const path = useMemo(
     () =>
@@ -62,6 +63,18 @@ export const TrackMap = ({ outline, positions, rows, selected, note }: TrackMapP
             return (
               <g
                 key={r.number}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${r.name}`}
+                aria-pressed={selected.has(r.number)}
+                onClick={() => onToggle(r.number)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onToggle(r.number);
+                  }
+                }}
+                className="cursor-pointer"
                 style={{ transform: `translate(${x}px, ${y}px)`, transition: "transform 1000ms linear" }}
                 opacity={focus ? 1 : 0.35}
               >
