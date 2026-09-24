@@ -1,0 +1,13 @@
+{
+  "id": "db870a3b",
+  "ts": "2026-09-24T15:04:20+00:00",
+  "text": "Worktree has no node_modules; pnpm test/typecheck/build fail until pnpm install",
+  "tags": [
+    "setup"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "a932b44a",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-00673582",
+  "branch": "t3code/fia-beside-lap-times"
+}

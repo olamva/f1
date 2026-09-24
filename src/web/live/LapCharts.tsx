@@ -41,7 +41,7 @@ export const LapCharts = ({ laps, rows, focus, until, race }: LapChartsProps) =>
   const gaps = seriesOf(laps, rows, focus, until, (r) => gapSeconds(r.gap));
   const hint = "Click drivers in the timing tower to compare them.";
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <>
       <Panel title="Lap times (within 108% of the fastest)">
         {Number.isFinite(fastest) ? (
           <LineChart series={times} xLabel="Lap" yFormat={lapTime} yDomain={[fastest * 1.08, fastest]} />
@@ -54,6 +54,6 @@ export const LapCharts = ({ laps, rows, focus, until, race }: LapChartsProps) =>
           <LineChart series={gaps} xLabel="Lap" yFormat={(v) => v.toFixed(0)} invert />
         </Panel>
       )}
-    </div>
+    </>
   );
 };
