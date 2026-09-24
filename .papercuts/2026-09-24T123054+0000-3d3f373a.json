@@ -1,0 +1,14 @@
+{
+  "id": "3d3f373a",
+  "ts": "2026-09-24T12:30:54+00:00",
+  "text": "pnpm install cannot fetch packages in sandbox, and offline store lacks @azure/identity tarball",
+  "tags": [
+    "network",
+    "setup"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-e5f93956",
+  "branch": "t3code/add-red-favicon"
+}

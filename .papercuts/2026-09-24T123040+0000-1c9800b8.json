@@ -1,0 +1,14 @@
+{
+  "id": "1c9800b8",
+  "ts": "2026-09-24T12:30:40+00:00",
+  "text": "Fresh task worktree lacks node_modules, so pnpm checks fail before install",
+  "tags": [
+    "setup",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-e5f93956",
+  "branch": "t3code/add-red-favicon"
+}
