@@ -18,7 +18,9 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
             const w = who.get(s.id);
             return (
               <tr key={s.id} className="border-t border-zinc-800">
-                <td className="w-8 py-1 text-right text-zinc-500">{i + 1}</td>
+                <td className="w-8 py-1 text-right text-zinc-500">
+                  {["🥇", "🥈", "🥉"][i] ?? i + 1}
+                </td>
                 <td className="px-3 py-1">
                   <span className="flex items-center gap-2">
                     <span className="h-4 w-1 rounded-sm" style={{ background: w?.color }} />
