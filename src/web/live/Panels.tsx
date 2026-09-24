@@ -44,7 +44,6 @@ const TONE: Record<Exclude<Tone, "car">, string> = {
   bad: "font-semibold text-red-400",
   warn: "font-semibold text-amber-300",
   good: "font-semibold text-emerald-400",
-  info: "font-semibold text-sky-400",
   time: "tabular font-mono text-zinc-100",
 };
 
