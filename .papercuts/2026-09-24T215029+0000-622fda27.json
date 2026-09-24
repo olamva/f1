@@ -1,0 +1,14 @@
+{
+  "id": "622fda27",
+  "ts": "2026-09-24T21:50:29+00:00",
+  "text": "oxlint scans generated Vite cache and floods output when cacheDir sits under src/web",
+  "tags": [
+    "checks",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1c2b9184",
+  "branch": "t3code/fix-track-map-visibility"
+}
