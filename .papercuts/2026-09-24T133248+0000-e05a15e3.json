@@ -1,0 +1,13 @@
+{
+  "id": "e05a15e3",
+  "ts": "2026-09-24T13:32:48+00:00",
+  "text": "pnpm install fails with fetch failed in the worktree sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-3228de7c",
+  "branch": "t3code/track-map-dot-click"
+}
