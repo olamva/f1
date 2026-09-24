@@ -39,7 +39,7 @@ export const App = () => {
         <Tabs items={TABS} value={tab} onChange={go} labels={info.data?.live ? { Countdown: "Live" } : undefined} />
       </header>
       <main key={visit}>
-        {tab === "Countdown" && <CurrentSession season={season.data} info={info} />}
+        {tab === "Countdown" && <CurrentSession season={season} info={info} />}
         {tab === "Stats" &&
           (season.data ? <Stats season={season.data} /> : <Loading label="Loading the season…" error={season.error} />)}
         {tab === "Settings" && <Settings />}
