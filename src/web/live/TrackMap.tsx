@@ -56,7 +56,7 @@ export const TrackMap = ({ outline, positions, rows, selected, note }: TrackMapP
         {project &&
           [...rows].reverse().map((r) => {
             const p = positions?.[r.number];
-            if (!p || (p[0] === 0 && p[1] === 0)) return null;
+            if (r.status === "PIT" || !p || (p[0] === 0 && p[1] === 0)) return null;
             const [x, y] = project(p[0], p[1]);
             const focus = selected.size === 0 || selected.has(r.number);
             return (
