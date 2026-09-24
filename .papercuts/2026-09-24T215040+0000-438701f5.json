@@ -1,0 +1,14 @@
+{
+  "id": "438701f5",
+  "ts": "2026-09-24T21:50:40+00:00",
+  "text": "git commit in a task worktree cannot write its index lock inside the main checkout under the sandbox",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1c2b9184",
+  "branch": "t3code/fix-track-map-visibility"
+}

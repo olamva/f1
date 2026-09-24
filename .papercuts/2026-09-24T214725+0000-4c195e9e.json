@@ -1,0 +1,14 @@
+{
+  "id": "4c195e9e",
+  "ts": "2026-09-24T21:47:25+00:00",
+  "text": "pnpm install stalls before failing package manager signature verification offline",
+  "tags": [
+    "setup",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1c2b9184",
+  "branch": "t3code/fix-track-map-visibility"
+}
