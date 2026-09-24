@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Championship } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
+import { hashPart, setHashPart } from "../hash.ts";
 import { Tabs } from "../Tabs.tsx";
 import {
   driverTables,
@@ -30,12 +31,18 @@ const VIEWS = [
 ] as const;
 type View = (typeof VIEWS)[number];
 
+const slug = (v: View) => v.toLowerCase().replace(" ", "-");
+
 interface StatsProps {
   season: Season;
 }
 
 export const Stats = ({ season }: StatsProps) => {
-  const [view, setView] = useState<View>("Standings");
+  const [view, setView] = useState<View>(() => VIEWS.find((v) => slug(v) === hashPart("stats")) ?? "Standings");
+  const show = (v: View) => {
+    setHashPart("stats", slug(v));
+    setView(v);
+  };
   const [champ, setChamp] = useState<Championship>("drivers");
   const d = useMemo(() => {
     const dt = driverTables(season);
@@ -53,7 +60,7 @@ export const Stats = ({ season }: StatsProps) => {
   }, [season]);
   return (
     <div className="space-y-4">
-      <Tabs items={VIEWS} value={view} onChange={setView} small />
+      <Tabs items={VIEWS} value={view} onChange={show} small />
       {view === "Standings" && (
         <div className="grid gap-4 xl:grid-cols-2">
           <StandingsTable title="Drivers" table={latest(d.dt)} who={d.who} />
