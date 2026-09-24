@@ -130,7 +130,7 @@ const analysers = new WeakMap<HTMLAudioElement, AnalyserNode>();
 const analyserOf = (el: HTMLAudioElement) => {
   if (!analysers.has(el)) {
     const ctx = new AudioContext();
-    const a = Object.assign(ctx.createAnalyser(), { fftSize: 512, smoothingTimeConstant: 0.6, minDecibels: -75, maxDecibels: -40 });
+    const a = Object.assign(ctx.createAnalyser(), { fftSize: 512, minDecibels: -75, maxDecibels: -40 });
     ctx.createMediaElementSource(el).connect(a).connect(ctx.destination);
     analysers.set(el, a);
   }
