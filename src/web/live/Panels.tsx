@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { useJson } from "../api.ts";
 import { highlight, type Message, type Radio, type Row, type Tone } from "./view.ts";
@@ -124,6 +124,44 @@ const Transcript = ({ url, color }: { url: string; color: string }) => {
   );
 };
 
+const BARS = 24;
+
+const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioElement | null>; playing: boolean; color: string }) => {
+  const bars = useRef<HTMLSpanElement[]>([]);
+  const analyser = useRef<AnalyserNode>(null);
+  useEffect(() => {
+    if (!playing) return;
+    if (!analyser.current) {
+      const ctx = new AudioContext();
+      analyser.current = Object.assign(ctx.createAnalyser(), { fftSize: 64, smoothingTimeConstant: 0.6 });
+      ctx.createMediaElementSource(audio.current!).connect(analyser.current).connect(ctx.destination);
+    }
+    void (analyser.current.context as AudioContext).resume();
+    const data = new Uint8Array(analyser.current.frequencyBinCount);
+    let frame = requestAnimationFrame(function draw() {
+      analyser.current!.getByteFrequencyData(data);
+      bars.current.forEach((b, i) => (b.style.transform = `scaleY(${Math.max(0.08, data[i + 1]! / 255)})`));
+      frame = requestAnimationFrame(draw);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      bars.current.forEach((b) => (b.style.transform = "scaleY(0.08)"));
+    };
+  }, [playing, audio]);
+  return (
+    <span className="hidden h-10 items-center gap-0.5 self-center px-3 sm:flex" aria-hidden="true">
+      {Array.from({ length: BARS }, (_, i) => (
+        <span
+          key={i}
+          ref={(el) => void (el && (bars.current[i] = el))}
+          className="h-full w-1 scale-y-[0.08] rounded-full transition-transform duration-75"
+          style={{ background: color }}
+        />
+      ))}
+    </span>
+  );
+};
+
 export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
   const by = new Map(rows.map((r) => [r.number, r]));
   const audio = useRef<HTMLAudioElement>(null);
@@ -135,10 +173,10 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
   const color = driver?.color ?? "#71717a";
   const toggle = (r: Radio) => {
     const a = audio.current!;
-    if (a.src !== r.url) {
+    if (r.url !== current?.url || !a.src) {
       setUrl(r.url);
       setAt({ t: 0, d: 0 });
-      a.src = r.url;
+      a.src = `/api/radio/audio?url=${encodeURIComponent(r.url)}`;
     }
     if (a.paused) void a.play();
     else a.pause();
@@ -165,6 +203,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
               </p>
               <p className="text-2xl font-black tracking-tight text-white">RADIO</p>
             </div>
+            <Bars audio={audio} playing={playing} color={color} />
             <button
               onClick={() => toggle(current)}
               aria-label={playing ? "Pause radio" : "Play radio"}
@@ -177,7 +216,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
           <div className="h-0.5 bg-zinc-800">
             <div className="h-full" style={{ width: `${at.d ? (at.t / at.d) * 100 : 0}%`, background: color }} />
           </div>
-          <div className="space-y-2 px-3 py-3">
+          <div className="flex min-h-28 flex-col justify-between gap-2 px-3 py-3">
             <Transcript key={current.url} url={current.url} color={color} />
             <p className="tabular font-mono text-xs text-zinc-500">
               {time(current.utc)} · {clip(at.t)} / {at.d ? clip(at.d) : "–:––"}

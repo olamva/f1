@@ -6,6 +6,13 @@ const ENDPOINT = process.env.SPEECH_ENDPOINT;
 const credential = new DefaultAzureCredential({ managedIdentityClientId: process.env.AZURE_CLIENT_ID });
 const cache = new Map<string, Promise<string>>();
 
+const pathOf = (url: string) => (url.startsWith(STATIC) && !url.includes("..") ? url.slice(STATIC.length) : null);
+
+export const audio = (url: string) => {
+  const path = pathOf(url);
+  return path ? fetch(`${F1_ORIGIN}/static/${path}`) : null;
+};
+
 async function transcribe(path: string): Promise<string> {
   const audio = await fetch(`${F1_ORIGIN}/static/${path}`);
   if (!audio.ok) throw new Error(`radio ${audio.status}`);
@@ -23,8 +30,8 @@ async function transcribe(path: string): Promise<string> {
 }
 
 export function transcript(url: string): Promise<string> | null {
-  if (!ENDPOINT || !url.startsWith(STATIC) || url.includes("..")) return null;
-  const path = url.slice(STATIC.length);
+  const path = pathOf(url);
+  if (!ENDPOINT || !path) return null;
   if (!cache.has(path)) cache.set(path, transcribe(path).catch((e) => (cache.delete(path), Promise.reject(e))));
   return cache.get(path)!;
 }
