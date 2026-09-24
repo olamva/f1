@@ -26,6 +26,8 @@ Do not force-push, bypass branch protection, or merge with blocked checks.
 
 Keep deployment on `main` through the existing workflow.
 Delete the merged remote branch. Preserve active T3 worktrees and thread history.
+Run `git fetch --prune origin` after the merge.
+Detach the task worktree with `git switch --detach origin/main`.
+Delete the local task branch with `git branch -d <branch>`.
 Remove a worktree only after its thread ends and its checkout is clean.
-Delete its local branch only after Git confirms the branch is merged.
 Preserve uncommitted files and commits that are absent from `origin/main`.
