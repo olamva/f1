@@ -144,22 +144,22 @@ const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioEleme
       a.getByteFrequencyData(data);
       bars.current.forEach((b, i) => {
         const band = data.subarray(bin(BANDS[i]!), bin(BANDS[i + 1]!));
-        b.style.transform = `scaleY(${Math.max(0.15, Math.min(1, Math.max(...band) / 200) ** 2)})`;
+        b.style.transform = `scaleY(${Math.max(0.1, Math.min(1, Math.max(...band) / 200) ** 2)})`;
       });
       frame = requestAnimationFrame(draw);
     });
     return () => {
       cancelAnimationFrame(frame);
-      bars.current.forEach((b) => (b.style.transform = "scaleY(0.15)"));
+      bars.current.forEach((b) => (b.style.transform = "scaleY(0.1)"));
     };
   }, [playing, audio]);
   return (
-    <span className="flex h-10 items-center gap-1 self-center px-3" aria-hidden="true">
+    <span className="flex h-10 items-end gap-1 self-center px-3" aria-hidden="true">
       {BANDS.slice(1).map((_, i) => (
         <span
           key={i}
           ref={(el) => void (el && (bars.current[i] = el))}
-          className="h-full w-1.5 scale-y-[0.15] rounded-full transition-transform duration-75"
+          className="h-full w-1.5 origin-bottom scale-y-[0.1] rounded-sm transition-transform duration-75"
           style={{ background: color }}
         />
       ))}
