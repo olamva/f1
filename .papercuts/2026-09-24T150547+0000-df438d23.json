@@ -1,0 +1,13 @@
+{
+  "id": "df438d23",
+  "ts": "2026-09-24T15:05:47+00:00",
+  "text": "t3-code preview_snapshot always fails with PreviewAutomationExecutionError; evaluate works",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "98b56100",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "feat/radio-player-redesign"
+}
