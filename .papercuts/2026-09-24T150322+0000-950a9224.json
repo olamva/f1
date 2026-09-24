@@ -1,0 +1,14 @@
+{
+  "id": "950a9224",
+  "ts": "2026-09-24T15:03:22+00:00",
+  "text": "gh issue view prints nothing and exits 0; gh api works",
+  "tags": [
+    "gh",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "df4db278",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-ec9233e3",
+  "branch": "t3code/ec9233e3"
+}
