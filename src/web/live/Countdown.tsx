@@ -61,7 +61,7 @@ export const Countdown = ({ rounds }: CountdownProps) => {
       </h1>
       <span className="tabular font-mono text-6xl font-bold sm:text-8xl">{span(s.at - now)}</span>
       <span className="text-zinc-400">
-        {new Date(s.at).toLocaleString([], { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
+        {new Date(s.at).toLocaleString([], { weekday: "long", day: "numeric", month: "long", hourCycle: "h23", hour: "2-digit", minute: "2-digit" })}
       </span>
     </section>
   );

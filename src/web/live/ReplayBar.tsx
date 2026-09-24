@@ -29,6 +29,14 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
   const value = drag ?? pending ?? feed?.t ?? 0;
   return (
     <div className="flex flex-wrap items-center gap-3 rounded-xl bg-surface p-3 text-sm">
+      <button
+        onClick={onClose}
+        title="Exit replay"
+        className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 font-semibold hover:bg-red-600"
+      >
+        <X aria-hidden="true" className="size-4" />
+        Exit
+      </button>
       <span className="rounded bg-zinc-700 px-2 py-0.5 text-xs font-semibold">REPLAY</span>
       <span className="font-semibold">
         <Flag country={session.country} />
@@ -73,14 +81,6 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
         className="min-w-48 flex-1 accent-red-500"
       />
       <span className="tabular font-mono text-zinc-300">{clock(value - start)}</span>
-      <button
-        onClick={onClose}
-        aria-label="Close replay"
-        title="Close replay"
-        className="grid size-8 cursor-pointer place-items-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
-      >
-        <X aria-hidden="true" className="size-4" />
-      </button>
     </div>
   );
 };
