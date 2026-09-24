@@ -18,7 +18,7 @@ import { messages, radios, remaining, rows as towerRows, trackStatus } from "./v
 export type LiveInfo = { live: boolean; positions: boolean };
 
 interface CurrentSessionProps {
-  season: Season | null;
+  season: Loaded<Season>;
   info: Loaded<LiveInfo>;
 }
 
@@ -145,10 +145,10 @@ export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
-  if (!info.data || !season || (path && !sessions.data && !sessions.error)) return <Loading label="Loading…" error={info.error} />;
+  if (!info.data || !season.data || (path && !sessions.data && !sessions.error)) return <Loading label="Loading…" error={info.error ?? season.error} />;
   if (info.data.live) return <Live positions={info.data.positions} />;
   if (chosen) return <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />;
-  const scheduled = current(season.rounds, Date.now());
+  const scheduled = current(season.data.rounds, Date.now());
   return (
     <div className="space-y-4">
       {scheduled ? (
@@ -156,7 +156,7 @@ export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
           <h1 className="text-lg font-bold"><Flag country={scheduled.round.country} />{scheduled.round.name} · {scheduled.label}</h1>
           <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
         </div>
-      ) : <Countdown rounds={season.rounds} />}
+      ) : <Countdown rounds={season.data.rounds} />}
       {sessions.data ? <ReplayPicker sessions={sessions.data} onStart={choose} /> : <Loading label="Loading past sessions…" error={sessions.error} />}
     </div>
   );
