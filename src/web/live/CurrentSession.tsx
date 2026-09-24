@@ -57,7 +57,6 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
         <h1 className="text-xl font-bold">
           {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
         </h1>
-        <span className={`rounded-md px-2 py-0.5 text-xs font-semibold ${status.tone}`}>{status.label}</span>
         {state.LapCount && (
           <span className="tabular text-zinc-300">
             Lap {state.LapCount.CurrentLap}/{state.LapCount.TotalLaps}
@@ -65,6 +64,11 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
         )}
         <span className="tabular ml-auto font-mono text-lg">{remaining(state, utc)}</span>
       </header>
+      {status && (
+        <div role="alert" className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}`}>
+          {status.label}
+        </div>
+      )}
       <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
