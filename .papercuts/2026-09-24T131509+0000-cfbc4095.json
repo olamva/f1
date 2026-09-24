@@ -1,0 +1,14 @@
+{
+  "id": "cfbc4095",
+  "ts": "2026-09-24T13:15:09+00:00",
+  "text": "Azure Key Vault metadata lookup returns Forbidden for the signed-in account",
+  "tags": [
+    "azure",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-63f2a0aa",
+  "branch": "t3code/fix-mobile-blank-page"
+}
