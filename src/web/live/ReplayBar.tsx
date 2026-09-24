@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pause, Play, X } from "lucide-react";
 import type { SessionRef } from "../../shared/timing.ts";
+import { Flag } from "../Flag.tsx";
 import type { Feed } from "./useFeed.ts";
 
 const SPEEDS = [1, 2, 4, 8, 16, 32];
@@ -30,13 +31,14 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
     <div className="flex flex-wrap items-center gap-3 rounded-xl bg-surface p-3 text-sm">
       <span className="rounded bg-zinc-700 px-2 py-0.5 text-xs font-semibold">REPLAY</span>
       <span className="font-semibold">
+        <Flag country={session.country} />
         {session.meeting} · {session.name}
       </span>
       <button
         onClick={onToggle}
         aria-label={playing ? "Pause replay" : "Play replay"}
         title={playing ? "Pause replay" : "Play replay"}
-        className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-900"
+        className="grid size-8 cursor-pointer place-items-center rounded-md bg-zinc-100 text-zinc-900"
       >
         {playing ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
       </button>
@@ -75,7 +77,7 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
         onClick={onClose}
         aria-label="Close replay"
         title="Close replay"
-        className="grid size-8 place-items-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        className="grid size-8 cursor-pointer place-items-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
       >
         <X aria-hidden="true" className="size-4" />
       </button>

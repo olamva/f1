@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
+import { Flag } from "../Flag.tsx";
 import { hashPart, setHashPart } from "../hash.ts";
 import { Loading } from "../Loading.tsx";
 import { Countdown, current } from "./Countdown.tsx";
@@ -17,7 +18,7 @@ import { messages, radios, remaining, rows as towerRows, trackStatus } from "./v
 export type LiveInfo = { live: boolean; positions: boolean };
 
 interface CurrentSessionProps {
-  season: Season | null;
+  season: Loaded<Season>;
   info: Loaded<LiveInfo>;
 }
 
@@ -58,6 +59,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
     <div className="space-y-4">
       <header className="flex flex-wrap items-center gap-3">
         <h1 className="text-xl font-bold">
+          <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
           {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
         </h1>
         {state.LapCount && (
@@ -80,7 +82,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
-        <RaceControl messages={messages(state)} />
+        <RaceControl messages={messages(state)} rows={rows} />
         <LapCharts laps={laps} rows={rows} focus={focus} until={replay ? feed.t : null} race={race} />
       </div>
       <TeamRadio radios={radios(state)} rows={rows} />
@@ -96,7 +98,7 @@ const Live = ({ positions }: LiveProps) => {
   const feed = useFeed("/api/live/stream");
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
   const outline = useJson<Outline | null>("/api/live/outline", 60_000);
-  if (!feed) return <p className="text-zinc-400">Connecting to live timing…</p>;
+  if (!feed) return <Loading label="Connecting to live timing…" />;
   const note = positions ? null : "Add an F1TV token in Settings to see the cars.";
   return <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} />;
 };
@@ -143,19 +145,19 @@ export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
-  if (!info.data || (path && !sessions.data && !sessions.error)) return <Loading label="Loading…" error={info.error} />;
+  if (!info.data || !season.data || (path && !sessions.data && !sessions.error)) return <Loading label="Loading…" error={info.error ?? season.error} />;
   if (info.data.live) return <Live positions={info.data.positions} />;
   if (chosen) return <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />;
-  const scheduled = current(season?.rounds ?? [], Date.now());
+  const scheduled = current(season.data.rounds, Date.now());
   return (
     <div className="space-y-4">
       {scheduled ? (
         <div className="rounded-xl bg-gradient-to-r from-red-700/40 to-surface p-4">
-          <h1 className="text-lg font-bold">{scheduled.round.name} · {scheduled.label}</h1>
+          <h1 className="text-lg font-bold"><Flag country={scheduled.round.country} />{scheduled.round.name} · {scheduled.label}</h1>
           <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
         </div>
-      ) : <Countdown rounds={season?.rounds ?? []} />}
-      {sessions.error ? <p className="text-sm text-zinc-400">{sessions.error}</p> : <ReplayPicker sessions={sessions.data ?? []} onStart={choose} />}
+      ) : <Countdown rounds={season.data.rounds} />}
+      {sessions.data ? <ReplayPicker sessions={sessions.data} onStart={choose} /> : <Loading label="Loading past sessions…" error={sessions.error} />}
     </div>
   );
 };

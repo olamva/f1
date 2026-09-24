@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Round } from "../../shared/season.ts";
+import { Flag } from "../Flag.tsx";
 
 const LABEL: Record<string, string> = {
   fp1: "Practice 1",
@@ -55,6 +56,7 @@ export const Countdown = ({ rounds }: CountdownProps) => {
     <section className="grid place-items-center gap-3 rounded-xl bg-gradient-to-b from-red-700/40 to-surface px-4 py-16 text-center">
       <span className="text-sm tracking-widest text-zinc-300 uppercase">Next up</span>
       <h1 className="text-2xl font-bold sm:text-3xl">
+        <Flag country={s.round.country} />
         {s.round.name} · {s.label}
       </h1>
       <span className="tabular font-mono text-6xl font-bold sm:text-8xl">{span(s.at - now)}</span>
