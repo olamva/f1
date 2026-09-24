@@ -24,4 +24,6 @@ pnpm test
 
 Run `pnpm sessions` and apply again when the calendar changes. This updates the session wake windows.
 
+The server uses `F1_ORIGIN` as the base URL for F1 archives and live timing. Terraform sets it from `f1_origin`. The default is `https://livetiming.formula1.com`.
+
 If F1 blocks Azure egress, set `f1_origin` in the ignored `infra/terraform.tfvars` to a reachable proxy origin. Serve both `/static/` and `/signalrcore` through that origin. Run `terraform -chdir=infra apply`, then verify an archive and a live session through the deployed app.
