@@ -8,14 +8,17 @@ const time = (utc: string) =>
   });
 
 const FLAG: Record<string, string> = {
-  GREEN: "bg-emerald-500",
-  CLEAR: "bg-emerald-500",
-  YELLOW: "bg-yellow-400",
-  "DOUBLE YELLOW": "bg-yellow-400",
-  RED: "bg-red-600",
-  BLUE: "bg-sky-500",
-  CHEQUERED: "bg-zinc-100",
-  "BLACK AND WHITE": "bg-zinc-400",
+  GREEN: "bg-emerald-600 text-white",
+  CLEAR: "bg-emerald-600 text-white",
+  YELLOW: "bg-yellow-400 text-black",
+  "DOUBLE YELLOW": "bg-yellow-400 text-black",
+  RED: "bg-red-600 text-white",
+  BLUE: "bg-sky-500 text-black",
+  WHITE: "bg-white text-black",
+  BLACK: "bg-black text-white ring-1 ring-zinc-500",
+  "BLACK AND WHITE": "bg-zinc-400 text-black",
+  "BLACK AND ORANGE": "bg-orange-500 text-black",
+  CHEQUERED: "bg-zinc-100 text-black",
 };
 
 interface PanelProps {
@@ -36,12 +39,12 @@ interface RaceControlProps {
 
 export const RaceControl = ({ messages }: RaceControlProps) => (
   <Panel title="Race control">
-    <ul className="max-h-72 space-y-2 overflow-y-auto text-sm">
+    <ul className="max-h-72 space-y-2 overflow-y-auto text-sm" aria-live="polite">
       {messages.length === 0 && <li className="text-zinc-500">No messages yet.</li>}
       {messages.map((m, i) => (
         <li key={i} className="flex gap-2">
           <span className="tabular shrink-0 font-mono text-xs text-zinc-500">{time(m.utc)}</span>
-          {m.flag && <span className={`mt-1 size-2.5 shrink-0 rounded-sm ${FLAG[m.flag] ?? "bg-zinc-500"}`} title={m.flag} />}
+          {m.flag && <span className={`shrink-0 self-start rounded px-1.5 py-0.5 text-xs font-semibold ${FLAG[m.flag.toUpperCase()] ?? "bg-zinc-600 text-white"}`}>{m.flag}</span>}
           <span>{m.text}</span>
         </li>
       ))}
