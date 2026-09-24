@@ -118,3 +118,35 @@ export function remaining(state: Obj, utcNow: number): string {
 
 export const gapSeconds = (gap: string): number | null =>
   /^LAP|^$/.test(gap) ? 0 : /L/.test(gap) ? null : lapSeconds(gap.replace("+", ""));
+
+export type Tone = "car" | "bad" | "warn" | "good" | "info" | "time";
+
+const TONES: [Tone, string][] = [
+  ["car", String.raw`\b\d{1,2} \([A-Z]{3}\)`],
+  ["time", String.raw`\b\d{1,2}:\d{2}\.\d{3}\b`],
+  [
+    "good",
+    "NO FURTHER (?:ACTION|INVESTIGATION)|REINSTATED|CLEAR(?:ED)?|GREEN(?: LIGHT)?|OPEN|ENABLED",
+  ],
+  [
+    "bad",
+    String.raw`(?:\d+ SECOND )?(?:TIME |STOP\/GO |DRIVE THROUGH )?PENALTY|DELETED|DISQUALIFIED|RED FLAG|BLACK FLAG|CLOSED|DISABLED`,
+  ],
+  [
+    "warn",
+    "UNDER INVESTIGATION|WILL BE INVESTIGATED AFTER THE (?:RACE|SESSION)|NOTED|REVIEWED|(?:DOUBLE )?YELLOW|(?:VIRTUAL )?SAFETY CAR|VSC|SLIPPERY",
+  ],
+  ["info", "BLUE FLAG|CHEQUERED FLAG"],
+];
+
+const TOKEN = new RegExp(
+  String.raw`\b(?:${TONES.map(([, p]) => `(${p})`).join("|")})(?![A-Z])`,
+  "g",
+);
+
+export const highlight = (text: string): { text: string; tone?: Tone }[] =>
+  text.split(TOKEN).reduce<{ text: string; tone?: Tone }[]>((out, s, i) => {
+    const k = i % (TONES.length + 1);
+    if (s) out.push(k ? { text: s, tone: TONES[k - 1]![0] } : { text: s });
+    return out;
+  }, []);

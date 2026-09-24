@@ -1,0 +1,13 @@
+{
+  "id": "e1b95853",
+  "ts": "2026-09-24T15:19:15+00:00",
+  "text": "pnpm prettier --write reformats untouched files: repo has no prettier config matching the committed style",
+  "tags": [
+    "tooling"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "1612fb5c",
+  "where": "prettier",
+  "branch": "t3code/c051c528"
+}
