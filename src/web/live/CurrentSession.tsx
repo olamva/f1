@@ -82,7 +82,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
-        <RaceControl messages={messages(state)} />
+        <RaceControl messages={messages(state)} rows={rows} />
         <LapCharts laps={laps} rows={rows} focus={focus} until={replay ? feed.t : null} race={race} />
       </div>
       <TeamRadio radios={radios(state)} rows={rows} />
