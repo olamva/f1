@@ -164,8 +164,8 @@ const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioEleme
         <span
           key={i}
           ref={(el) => void (el && (bars.current[i] = el))}
-          className="h-full w-1.5 origin-bottom scale-y-[0.1] rounded-sm transition-transform duration-75"
-          style={{ background: color }}
+          className="h-full w-1.5 origin-bottom rounded-sm transition-transform duration-75"
+          style={{ background: color, transform: "scaleY(0.1)" }}
         />
       ))}
     </span>
