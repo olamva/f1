@@ -110,6 +110,7 @@ const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
 const Needs = ({ table, events, focus, rival, who }: MatrixProps) => {
   const needs = useMemo(() => constructorNeeds(table, events, focus, rival), [table, events, focus, rival]);
   const [a, b] = [who.get(focus)?.name ?? focus, who.get(rival)?.name ?? rival];
+  if (needs.every((n) => n.need === null)) return <p className="text-sm text-zinc-400">{a} cannot secure the title at {events[0]!.name}.</p>;
   return (
     <div>
       <p className="mb-2 text-sm text-zinc-400">
