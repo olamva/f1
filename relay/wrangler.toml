@@ -1,0 +1,4 @@
+name = "f1-relay"
+main = "worker.ts"
+compatibility_date = "2026-09-01"
+workers_dev = true

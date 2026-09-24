@@ -42,3 +42,9 @@ variable "google_client_secret" {
   sensitive = true
   default   = ""
 }
+
+variable "f1_origin" {
+  type      = string
+  sensitive = true
+  default   = "https://livetiming.formula1.com"
+}

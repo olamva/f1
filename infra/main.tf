@@ -76,6 +76,11 @@ resource "azurerm_container_app" "f1" {
     value = var.google_client_secret == "" ? "unset" : var.google_client_secret
   }
 
+  secret {
+    name  = "f1-origin"
+    value = var.f1_origin
+  }
+
   ingress {
     external_enabled = true
     target_port      = 80
@@ -128,6 +133,10 @@ resource "azurerm_container_app" "f1" {
       env {
         name  = "KEY_VAULT_NAME"
         value = azurerm_key_vault.f1.name
+      }
+      env {
+        name        = "F1_ORIGIN"
+        secret_name = "f1-origin"
       }
       env {
         name  = "ALLOWED_EMAILS"

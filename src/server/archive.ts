@@ -1,8 +1,9 @@
 import { merge } from "../shared/merge.ts";
 import type { Outline, SessionRef } from "../shared/timing.ts";
+import { F1_ORIGIN } from "./origin.ts";
 import { parseStream, Session, TOPICS, type Event, type State } from "./timing.ts";
 
-const BASE = "https://livetiming.formula1.com/static/";
+const BASE = `${F1_ORIGIN}/static/`;
 const CHECKPOINT_MS = 30_000;
 
 const text = async (url: string): Promise<string> => {

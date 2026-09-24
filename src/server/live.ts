@@ -1,10 +1,11 @@
 import * as signalR from "@microsoft/signalr";
 import type { Json } from "../shared/merge.ts";
 import type { Delta } from "../shared/timing.ts";
+import { F1_ORIGIN } from "./origin.ts";
 import { inflate, positionEvents, Session, TOPICS, type Event } from "./timing.ts";
 import * as token from "./token.ts";
 
-const URL = "https://livetiming.formula1.com/signalrcore";
+const URL = `${F1_ORIGIN}/signalrcore`;
 const FLUSH_MS = 250;
 const RETRY_MS = 5_000;
 const EDGE_MS = 30 * 60_000;

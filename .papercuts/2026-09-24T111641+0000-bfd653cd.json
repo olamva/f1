@@ -1,0 +1,14 @@
+{
+  "id": "bfd653cd",
+  "ts": "2026-09-24T11:16:41+00:00",
+  "text": "codex exec: browser plugin has no Chrome extension and Computer Use is denied Arc/Safari/Chrome, so GPT-6 subagents cannot do web tasks",
+  "tags": [
+    "codex",
+    "skills"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c0ba1600",
+  "where": "/Users/olavassbotn/Developer/f1",
+  "branch": "main"
+}

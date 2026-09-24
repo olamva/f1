@@ -1,0 +1,14 @@
+{
+  "id": "d3fc164c",
+  "ts": "2026-09-24T11:16:41+00:00",
+  "text": "livetiming.formula1.com CloudFront 403-blocks Azure Container Apps egress IPs (norwayeast); live timing and archive unreachable from Azure",
+  "tags": [
+    "azure",
+    "f1"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c0ba1600",
+  "where": "/Users/olavassbotn/Developer/f1",
+  "branch": "main"
+}
