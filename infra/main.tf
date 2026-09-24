@@ -124,6 +124,10 @@ resource "azurerm_container_app" "f1" {
         secret_name = "f1-origin"
       }
       env {
+        name  = "SPEECH_ENDPOINT"
+        value = azurerm_cognitive_account.speech.endpoint
+      }
+      env {
         name  = "ALLOWED_EMAILS"
         value = join(",", var.allowed_emails)
       }
@@ -246,4 +250,36 @@ resource "azurerm_role_assignment" "deploy_wake" {
   scope                = azurerm_container_app_job.wake.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.deploy.principal_id
+}
+
+resource "azurerm_cognitive_account" "speech" {
+  name                  = "${var.name}-speech-${local.digest}"
+  resource_group_name   = azurerm_resource_group.f1.name
+  location              = azurerm_resource_group.f1.location
+  kind                  = "OpenAI"
+  sku_name              = "S0"
+  custom_subdomain_name = "${var.name}-speech-${local.digest}"
+  local_auth_enabled    = false
+}
+
+resource "azurerm_cognitive_deployment" "whisper" {
+  name                 = "whisper"
+  cognitive_account_id = azurerm_cognitive_account.speech.id
+
+  model {
+    format  = "OpenAI"
+    name    = "whisper"
+    version = "001"
+  }
+
+  sku {
+    name     = "Standard"
+    capacity = 3
+  }
+}
+
+resource "azurerm_role_assignment" "app_speech" {
+  scope                = azurerm_cognitive_account.speech.id
+  role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
 }
