@@ -11,6 +11,7 @@ interface TrackMapProps {
   positions: Record<string, [number, number]> | undefined;
   rows: Row[];
   selected: Set<string>;
+  onToggle: (number: string) => void;
   note: string | null;
   positionTrail?: PositionTrail;
   speed?: number;
@@ -35,7 +36,7 @@ const projector = (outline: Outline) => {
   };
 };
 
-export const TrackMap = ({ outline, positions, rows, selected, note, positionTrail, speed = 1 }: TrackMapProps) => {
+export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, positionTrail, speed = 1 }: TrackMapProps) => {
   const cars = useRef(new Map<string, SVGGElement>());
   const project = useMemo(() => (outline ? projector(outline) : null), [outline]);
   const path = useMemo(
@@ -84,6 +85,18 @@ export const TrackMap = ({ outline, positions, rows, selected, note, positionTra
                   if (node) cars.current.set(r.number, node);
                   else cars.current.delete(r.number);
                 }}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${r.name}`}
+                aria-pressed={selected.has(r.number)}
+                onClick={() => onToggle(r.number)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onToggle(r.number);
+                  }
+                }}
+                className="cursor-pointer"
                 style={{ transform: `translate(${x}px, ${y}px)`, transition: speed > 1 ? "none" : "transform 1000ms linear" }}
                 opacity={focus ? 1 : 0.35}
               >

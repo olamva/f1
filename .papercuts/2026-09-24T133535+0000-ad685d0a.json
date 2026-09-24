@@ -1,0 +1,14 @@
+{
+  "id": "ad685d0a",
+  "ts": "2026-09-24T13:35:35+00:00",
+  "text": "GitHub CLI active token is invalid, and git ls-remote over SSH hangs without output",
+  "tags": [
+    "github",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-c77edfce",
+  "branch": "t3code/fix-replay-progress-timestamp"
+}

@@ -68,7 +68,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
       <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
-          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} />
+          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} onToggle={toggle} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} />
           <Weather weather={state.WeatherData} />
         </div>
       </div>
