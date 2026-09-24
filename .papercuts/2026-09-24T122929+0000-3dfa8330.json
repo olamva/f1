@@ -1,0 +1,14 @@
+{
+  "id": "3dfa8330",
+  "ts": "2026-09-24T12:29:29+00:00",
+  "text": "gh repo list cannot connect to api.github.com in this worktree",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-e5f93956",
+  "branch": "t3code/add-red-favicon"
+}
