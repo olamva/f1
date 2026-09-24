@@ -1,0 +1,13 @@
+{
+  "id": "ca49a1a4",
+  "ts": "2026-09-24T22:17:07+00:00",
+  "text": "auto mode classifier blocks terraform apply and preview_navigate to localhost",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "259f9d7e",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-3a607d0f",
+  "branch": "t3code/radio-transcripts"
+}

@@ -1,5 +1,6 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
+import { useJson } from "../api.ts";
 import { highlight, type Message, type Radio, type Row, type Tone } from "./view.ts";
 
 const time = (utc: string) =>
@@ -112,17 +113,64 @@ interface TeamRadioProps {
 
 const clip = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
-const Levels = ({ on, color }: { on: boolean; color: string }) => (
-  <span className="flex h-5 items-end gap-0.5" aria-hidden="true">
-    {[0.1, 0.5, 0.3, 0.7, 0.2].map((d) => (
-      <span
-        key={d}
-        className={`h-full w-1 origin-bottom rounded-sm ${on ? "animate-[level_0.8s_ease-in-out_infinite] motion-reduce:animate-none" : "scale-y-25"}`}
-        style={{ background: color, animationDelay: `-${d}s` }}
-      />
-    ))}
-  </span>
-);
+const Transcript = ({ url, color }: { url: string; color: string }) => {
+  const { data, error } = useJson<{ text: string }>(`/api/radio/transcript?url=${encodeURIComponent(url)}`);
+  if (error) return null;
+  if (!data) return <p className="animate-pulse text-sm font-semibold tracking-wide text-zinc-500 uppercase">Transcribing…</p>;
+  return (
+    <blockquote className="text-lg leading-snug font-bold tracking-tight uppercase" style={{ color }}>
+      “{data.text}”
+    </blockquote>
+  );
+};
+
+const BANDS = [150, 400, 1000, 2200, 4500];
+const analysers = new WeakMap<HTMLAudioElement, AnalyserNode>();
+
+const analyserOf = (el: HTMLAudioElement) => {
+  if (!analysers.has(el)) {
+    const ctx = new AudioContext();
+    const a = Object.assign(ctx.createAnalyser(), { fftSize: 512, minDecibels: -75, maxDecibels: -40 });
+    ctx.createMediaElementSource(el).connect(a).connect(ctx.destination);
+    analysers.set(el, a);
+  }
+  return analysers.get(el)!;
+};
+
+const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioElement | null>; playing: boolean; color: string }) => {
+  const bars = useRef<HTMLSpanElement[]>([]);
+  useEffect(() => {
+    if (!playing) return;
+    const a = analyserOf(audio.current!);
+    void (a.context as AudioContext).resume();
+    const data = new Uint8Array(a.frequencyBinCount);
+    const bin = (hz: number) => Math.round((hz / a.context.sampleRate) * a.fftSize);
+    let frame = requestAnimationFrame(function draw() {
+      a.getByteFrequencyData(data);
+      bars.current.forEach((b, i) => {
+        const band = data.subarray(bin(BANDS[i]!), bin(BANDS[i + 1]!));
+        b.style.transform = `scaleY(${Math.max(0.1, Math.max(...band) / 255)})`;
+      });
+      frame = requestAnimationFrame(draw);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      bars.current.forEach((b) => (b.style.transform = "scaleY(0.1)"));
+    };
+  }, [playing, audio]);
+  return (
+    <span className="flex h-10 items-end gap-1 self-center px-3" aria-hidden="true">
+      {BANDS.slice(1).map((_, i) => (
+        <span
+          key={i}
+          ref={(el) => void (el && (bars.current[i] = el))}
+          className="h-full w-1.5 origin-bottom rounded-sm transition-transform duration-75"
+          style={{ background: color, transform: "scaleY(0.1)" }}
+        />
+      ))}
+    </span>
+  );
+};
 
 export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
   const by = new Map(rows.map((r) => [r.number, r]));
@@ -135,10 +183,10 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
   const color = driver?.color ?? "#71717a";
   const toggle = (r: Radio) => {
     const a = audio.current!;
-    if (a.src !== r.url) {
+    if (r.url !== current?.url || !a.src) {
       setUrl(r.url);
       setAt({ t: 0, d: 0 });
-      a.src = r.url;
+      a.src = `/api/radio/audio?url=${encodeURIComponent(r.url)}`;
     }
     if (a.paused) void a.play();
     else a.pause();
@@ -154,60 +202,55 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
       />
       {!current && <p className="text-sm text-zinc-500">No radio yet.</p>}
       {current && (
-        <div className="mb-3 flex items-center gap-3 overflow-hidden rounded-lg border-l-4 bg-zinc-900 p-3" style={{ borderColor: color }}>
-          <button
-            onClick={() => toggle(current)}
-            aria-label={playing ? "Pause radio" : "Play radio"}
-            title={playing ? "Pause radio" : "Play radio"}
-            className="grid size-11 shrink-0 place-items-center rounded-full bg-zinc-100 text-zinc-900"
-          >
-            {playing ? <Pause aria-hidden="true" className="size-5" /> : <Play aria-hidden="true" className="size-5 translate-x-px" />}
-          </button>
-          <div className="min-w-0 flex-1 space-y-1.5">
-            <div className="flex items-center gap-2">
-              <span className="rounded-sm bg-red-600 px-1.5 py-0.5 text-[10px] font-bold tracking-widest text-white">RADIO</span>
-              <span className="text-lg leading-none font-bold">{driver?.tla ?? current.number}</span>
-              <span className="truncate text-xs text-zinc-400">{driver ? `${driver.name} · ${driver.team}` : `#${current.number}`}</span>
-              <span className="ml-auto shrink-0">
-                <Levels on={playing} color={color} />
-              </span>
+        <div className="mb-3 overflow-hidden rounded-md bg-zinc-950">
+          <div className="flex items-stretch">
+            <span className="grid w-16 shrink-0 place-items-center text-3xl font-black text-white italic" style={{ background: color }}>
+              {current.number}
+            </span>
+            <div className="min-w-0 flex-1 px-3 py-2 leading-none">
+              <p className="truncate text-2xl font-black tracking-tight uppercase" style={{ color }}>
+                {driver?.last ?? current.number}
+              </p>
+              <p className="text-2xl font-black tracking-tight text-white">RADIO</p>
             </div>
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min={0}
-                max={at.d}
-                step={0.1}
-                value={at.t}
-                disabled={!at.d}
-                onChange={(e) => (audio.current!.currentTime = Number(e.target.value))}
-                aria-label="Seek radio"
-                className="min-w-0 flex-1"
-                style={{ accentColor: color }}
-              />
-              <span className="tabular shrink-0 font-mono text-xs text-zinc-400">
-                {clip(at.t)} / {at.d ? clip(at.d) : "–:––"}
-              </span>
-            </div>
+            <Bars audio={audio} playing={playing} color={color} />
+            <button
+              onClick={() => toggle(current)}
+              aria-label={playing ? "Pause radio" : "Play radio"}
+              title={playing ? "Pause radio" : "Play radio"}
+              className="grid w-14 shrink-0 place-items-center text-white hover:bg-zinc-800"
+            >
+              {playing ? <Pause aria-hidden="true" className="size-6 fill-current" /> : <Play aria-hidden="true" className="size-6 fill-current" />}
+            </button>
+          </div>
+          <div className="h-0.5 bg-zinc-800">
+            <div className="h-full" style={{ width: `${at.d ? (at.t / at.d) * 100 : 0}%`, background: color }} />
+          </div>
+          <div className="flex min-h-28 flex-col justify-between gap-2 px-3 py-3">
+            <Transcript key={current.url} url={current.url} color={color} />
+            <p className="tabular font-mono text-xs text-zinc-500">
+              {time(current.utc)} · {clip(at.t)} / {at.d ? clip(at.d) : "–:––"}
+            </p>
           </div>
         </div>
       )}
-      <ul className="max-h-60 space-y-1 overflow-y-auto text-sm">
+      <ul className="max-h-60 divide-y divide-zinc-800 overflow-y-auto text-sm">
         {radios.slice(0, 30).map((r) => {
           const active = r.url === current?.url;
+          const d = by.get(r.number);
           return (
             <li key={r.url}>
               <button
                 onClick={() => toggle(r)}
                 aria-current={active}
-                className={`flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left hover:bg-zinc-800 ${active ? "bg-zinc-800" : ""}`}
+                className={`flex w-full items-center gap-3 px-2 py-1.5 text-left hover:bg-zinc-800 ${active ? "bg-zinc-800" : ""}`}
               >
-                <span className="h-4 w-1 shrink-0 rounded-sm" style={{ background: by.get(r.number)?.color }} />
-                <span className="w-10 font-semibold">{by.get(r.number)?.tla ?? r.number}</span>
-                <span className="tabular font-mono text-xs text-zinc-500">{time(r.utc)}</span>
-                <span className="ml-auto text-zinc-400">
-                  {active && playing ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
+                <span className="w-7 text-center font-black italic" style={{ color: d?.color }}>
+                  {r.number}
                 </span>
+                <span className="font-bold tracking-tight uppercase">{d?.last ?? r.number}</span>
+                <span className="tabular ml-auto font-mono text-xs text-zinc-500">{time(r.utc)}</span>
+                {active && playing ? <Pause aria-hidden="true" className="size-4 text-zinc-400" /> : <Play aria-hidden="true" className="size-4 text-zinc-400" />}
               </button>
             </li>
           );

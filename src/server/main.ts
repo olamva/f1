@@ -6,6 +6,7 @@ import type { Delta, Snapshot } from "../shared/timing.ts";
 import { outlineFor, seasonSessions, replay, stateAt, type Replay } from "./archive.ts";
 import { requireGoogle } from "./auth.ts";
 import * as live from "./live.ts";
+import { audio, transcript } from "./radio.ts";
 import { pace, records, season } from "./season.ts";
 import * as token from "./token.ts";
 
@@ -57,6 +58,15 @@ app.get("/api/live/stream", (c) =>
     off();
   }),
 );
+
+app.get("/api/radio/audio", async (c) => {
+  const res = await audio(c.req.query("url") ?? "");
+  return res?.ok ? new Response(res.body, { headers: { "content-type": "audio/mpeg", "cache-control": "public, max-age=86400" } }) : c.notFound();
+});
+app.get("/api/radio/transcript", async (c) => {
+  const text = transcript(c.req.query("url") ?? "");
+  return text ? c.json({ text: await text }) : c.json({ error: "Transcripts are off." }, 404);
+});
 
 app.get("/api/replay/sessions", async (c) => {
   const s = await season();

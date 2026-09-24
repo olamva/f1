@@ -8,6 +8,7 @@ export type Row = {
   number: string;
   tla: string;
   name: string;
+  last: string;
   team: string;
   color: string;
   position: number;
@@ -44,6 +45,7 @@ function row(number: string, line: Obj, driver: Obj, app: Obj | undefined): Row 
     number,
     tla: driver.Tla ?? number,
     name: driver.FullName ?? "",
+    last: driver.LastName ?? driver.Tla ?? number,
     team: driver.TeamName ?? "",
     color: `#${driver.TeamColour ?? "888888"}`,
     position: Number(line.Position ?? driver.Line ?? 99),
