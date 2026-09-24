@@ -17,7 +17,10 @@ export const Tabs = <T extends string>({
 }: TabsProps<T>) => {
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
-  const [highlight, setHighlight] = useState({ left: 0, width: 0 });
+  const [highlight, setHighlight] = useState<{
+    left: number;
+    width: number;
+  } | null>(null);
 
   useLayoutEffect(() => {
     const track = nav.current;
@@ -44,14 +47,16 @@ export const Tabs = <T extends string>({
       ref={nav}
       className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"}`}
     >
-      <span
-        className="glass-highlight"
-        data-visible={value !== null}
-        style={{
-          width: highlight.width,
-          transform: `translateX(${highlight.left}px)`,
-        }}
-      />
+      {highlight && (
+        <span
+          className="glass-highlight"
+          data-visible={value !== null}
+          style={{
+            width: highlight.width,
+            transform: `translateX(${highlight.left}px)`,
+          }}
+        />
+      )}
       {items.map((i, index) => (
         <button
           key={i}
