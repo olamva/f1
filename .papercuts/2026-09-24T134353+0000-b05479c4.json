@@ -1,0 +1,14 @@
+{
+  "id": "b05479c4",
+  "ts": "2026-09-24T13:43:53+00:00",
+  "text": "Required pnpm checks cannot start because worktree dependencies are missing",
+  "tags": [
+    "build",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "node_modules",
+  "branch": "t3code/fix-jolpica-driver-standings-400"
+}
