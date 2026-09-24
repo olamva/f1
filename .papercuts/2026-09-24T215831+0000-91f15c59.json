@@ -1,0 +1,13 @@
+{
+  "id": "91f15c59",
+  "ts": "2026-09-24T21:58:31+00:00",
+  "text": "Git add cannot write the linked worktree index under the sandbox; it needs escalation",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-a7abc351",
+  "branch": "t3code/f1-navbar-glass-tabs"
+}

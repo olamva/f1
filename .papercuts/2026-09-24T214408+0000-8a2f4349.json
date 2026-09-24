@@ -1,0 +1,13 @@
+{
+  "id": "8a2f4349",
+  "ts": "2026-09-24T21:44:08+00:00",
+  "text": "pnpm hangs without output in the sandbox; the same locked install completes outside it",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-a7abc351",
+  "branch": "t3code/f1-navbar-glass-tabs"
+}

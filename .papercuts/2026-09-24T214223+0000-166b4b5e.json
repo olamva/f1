@@ -1,0 +1,13 @@
+{
+  "id": "166b4b5e",
+  "ts": "2026-09-24T21:42:23+00:00",
+  "text": "Sandbox DNS blocked downloading the public F1 SVG from Wikimedia",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-a7abc351",
+  "branch": "t3code/f1-navbar-glass-tabs"
+}
