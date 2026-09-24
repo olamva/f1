@@ -3,7 +3,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono } from "hono";
 import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import type { Delta, Snapshot } from "../shared/timing.ts";
-import { outlineFor, recentSessions, replay, stateAt, type Replay } from "./archive.ts";
+import { outlineFor, seasonSessions, replay, stateAt, type Replay } from "./archive.ts";
 import { requireGoogle } from "./auth.ts";
 import * as live from "./live.ts";
 import { pace, records, season } from "./season.ts";
@@ -60,7 +60,7 @@ app.get("/api/live/stream", (c) =>
 
 app.get("/api/replay/sessions", async (c) => {
   const s = await season();
-  return c.json(await recentSessions(s.year));
+  return c.json(await seasonSessions(s.year));
 });
 
 const withReplay = async (path: string | undefined): Promise<Replay> => replay(path ?? "");
