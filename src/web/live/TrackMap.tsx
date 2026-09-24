@@ -38,7 +38,11 @@ const projector = (outline: Outline) => {
 
 export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, positionTrail, speed = 1 }: TrackMapProps) => {
   const cars = useRef(new Map<string, SVGGElement>());
-  const [hovered, setHovered] = useState<string | null>(null);
+  const svg = useRef<SVGSVGElement>(null);
+  const pointer = useRef("");
+  const [hover, setHover] = useState<{ number: string; x: number; y: number } | null>(null);
+  const hovered = hover?.number ?? null;
+  const card = rows.find((r) => r.number === hovered);
   const project = useMemo(() => (outline ? projector(outline) : null), [outline]);
   const path = useMemo(
     () =>
@@ -63,7 +67,23 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, p
   }, [positionTrail, project, speed]);
   return (
     <div className="relative rounded-xl bg-surface p-2">
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="aspect-square w-full">
+      <svg
+        ref={svg}
+        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        className="aspect-square w-full"
+        onPointerMove={(event) => {
+          const at = `${event.clientX},${event.clientY}`;
+          if (at === pointer.current) return;
+          pointer.current = at;
+          const number = (event.target as Element).closest("[data-number]")?.getAttribute("data-number");
+          const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(svg.current!.getScreenCTM()!.inverse());
+          setHover(number ? { number, x: p.x, y: p.y } : null);
+        }}
+        onPointerLeave={() => {
+          pointer.current = "";
+          setHover(null);
+        }}
+      >
         <polyline points={path} fill="none" stroke="#3f3f46" strokeWidth={18} strokeLinejoin="round" strokeLinecap="round" />
         {outline?.corners.map((c) => {
           const [x, y] = project!(c.x, c.y);
@@ -86,15 +106,14 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, p
                   if (node) cars.current.set(r.number, node);
                   else cars.current.delete(r.number);
                 }}
+                data-number={r.number}
                 role="button"
                 tabIndex={0}
                 aria-label={`Select ${r.name}`}
                 aria-pressed={selected.has(r.number)}
                 aria-describedby={hovered === r.number ? "track-map-card" : undefined}
-                onPointerEnter={() => setHovered(r.number)}
-                onPointerLeave={() => setHovered(null)}
-                onFocus={() => setHovered(r.number)}
-                onBlur={() => setHovered(null)}
+                onFocus={() => setHover((h) => (h?.number === r.number ? h : { number: r.number, x, y }))}
+                onBlur={() => setHover(null)}
                 onClick={() => onToggle(r.number)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
@@ -102,28 +121,31 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, p
                     onToggle(r.number);
                   }
                 }}
-                className="cursor-pointer"
+                className="group cursor-pointer outline-none"
                 style={{ transform: `translate(${x}px, ${y}px)`, transition: speed > 1 ? "none" : "transform 1000ms linear" }}
                 opacity={focus || hovered === r.number ? 1 : 0.35}
               >
-                <circle r={14} fill={r.color} stroke="#18181b" strokeWidth={4} />
+                <circle r={14} fill={r.color} stroke="#18181b" strokeWidth={4} className="group-focus-visible:stroke-zinc-100" />
                 <text y={-22} textAnchor="middle" className="fill-zinc-100 text-[22px] font-semibold">
                   {r.tla}
                 </text>
-                {hovered === r.number && (
-                  <foreignObject x={x > SIZE / 2 ? -340 : 20} y={-60} width={320} height={120} className="overflow-visible">
-                    <div id="track-map-card" className="rounded-lg border-l-8 bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg" style={{ borderColor: r.color }}>
-                      <p className="text-[26px] font-semibold text-zinc-100">{r.name}</p>
-                      <p className="text-[20px] text-zinc-400">{r.team}</p>
-                      <p className="mt-1 text-[18px] text-zinc-500">
-                        {selected.has(r.number) ? "Click or press Enter to remove focus" : "Click or press Enter to focus the map"}
-                      </p>
-                    </div>
-                  </foreignObject>
-                )}
               </g>
             );
           })}
+        {hover && card && (
+          <>
+            <circle data-number={card.number} cx={hover.x} cy={hover.y} r={18} fill="transparent" className="cursor-pointer" onMouseDown={(event) => event.preventDefault()} onClick={() => onToggle(card.number)} />
+            <foreignObject x={hover.x > SIZE / 2 ? hover.x - 340 : hover.x + 20} y={hover.y - 60} width={320} height={120} className="pointer-events-none overflow-visible">
+              <div id="track-map-card" className="rounded-lg border-l-8 bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg" style={{ borderColor: card.color }}>
+                <p className="text-[26px] font-semibold text-zinc-100">{card.name}</p>
+                <p className="text-[20px] text-zinc-400">{card.team}</p>
+                <p className="mt-1 text-[18px] text-zinc-500">
+                  {selected.size === 1 && selected.has(card.number) ? "Click or press Enter to remove focus" : "Click or press Enter to focus the map"}
+                </p>
+              </div>
+            </foreignObject>
+          </>
+        )}
       </svg>
       {(note || !outline) && (
         <p className="absolute inset-x-0 bottom-3 text-center text-sm text-zinc-400">
