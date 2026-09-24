@@ -38,7 +38,7 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
         onClick={onToggle}
         aria-label={playing ? "Pause replay" : "Play replay"}
         title={playing ? "Pause replay" : "Play replay"}
-        className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-900"
+        className="grid size-8 cursor-pointer place-items-center rounded-md bg-zinc-100 text-zinc-900"
       >
         {playing ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
       </button>
@@ -77,7 +77,7 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
         onClick={onClose}
         aria-label="Close replay"
         title="Close replay"
-        className="grid size-8 place-items-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
+        className="grid size-8 cursor-pointer place-items-center rounded-md text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100"
       >
         <X aria-hidden="true" className="size-4" />
       </button>

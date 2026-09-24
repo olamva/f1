@@ -1,6 +1,6 @@
 import { useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
-import type { Message, Radio, Row } from "./view.ts";
+import { highlight, type Message, type Radio, type Row, type Tone } from "./view.ts";
 
 const time = (utc: string) =>
   new Date(utc.endsWith("Z") ? utc : `${utc}Z`).toLocaleTimeString([], {
@@ -37,9 +37,17 @@ export const Panel = ({ title, children }: PanelProps) => (
 
 interface RaceControlProps {
   messages: Message[];
+  rows: Row[];
 }
 
-export const RaceControl = ({ messages }: RaceControlProps) => (
+const TONE: Record<Exclude<Tone, "car">, string> = {
+  bad: "font-semibold text-red-400",
+  warn: "font-semibold text-amber-300",
+  good: "font-semibold text-emerald-400",
+  time: "tabular font-mono text-zinc-100",
+};
+
+export const RaceControl = ({ messages, rows }: RaceControlProps) => (
   <Panel title="Race control">
     <ul className="max-h-72 space-y-2 overflow-y-auto text-sm" aria-live="polite">
       {messages.length === 0 && <li className="text-zinc-500">No messages yet.</li>}
@@ -47,7 +55,19 @@ export const RaceControl = ({ messages }: RaceControlProps) => (
         <li key={i} className="flex gap-2">
           <span className="tabular shrink-0 font-mono text-xs text-zinc-500">{time(m.utc)}</span>
           {m.flag && <span className={`shrink-0 self-start rounded px-1.5 py-0.5 text-xs font-semibold ${FLAG[m.flag.toUpperCase()] ?? "bg-zinc-600 text-white"}`}>{m.flag}</span>}
-          <span>{m.text}</span>
+          <span>
+            {highlight(m.text).map((t, j) =>
+              t.tone === "car" ? (
+                <span key={j} className="font-semibold" style={{ color: rows.find((r) => r.number === t.text.split(" ")[0])?.color }}>
+                  {t.text}
+                </span>
+              ) : (
+                <span key={j} className={t.tone && TONE[t.tone]}>
+                  {t.text}
+                </span>
+              ),
+            )}
+          </span>
         </li>
       ))}
     </ul>
