@@ -4,6 +4,7 @@ import { useJson } from "../api.ts";
 import { BoxPlot } from "../charts/Bars.tsx";
 import { lapTime, summary } from "../charts/summary.ts";
 import { Panel } from "../live/Panels.tsx";
+import { Loading } from "../Loading.tsx";
 import type { Who } from "./derive.ts";
 
 interface RacePaceProps {
@@ -34,7 +35,7 @@ export const RacePace = ({ season, who }: RacePaceProps) => {
       <p className="mb-2 text-xs text-zinc-500">
         Lap 1, in-laps, out-laps and laps slower than 107% of the best median are left out. The box shows the middle half of the laps, and the line is the median.
       </p>
-      {pace.data ? <BoxPlot boxes={boxes} format={lapTime} /> : <p className="text-sm text-zinc-500">{pace.error ?? "Loading lap times…"}</p>}
+      {pace.data ? <BoxPlot boxes={boxes} format={lapTime} /> : <Loading label="Loading lap times…" error={pace.error} />}
     </Panel>
   );
 };

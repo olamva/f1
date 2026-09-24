@@ -1,0 +1,13 @@
+{
+  "id": "9f067713",
+  "ts": "2026-09-24T15:04:22+00:00",
+  "text": "prettier --write reformats the whole web tree; the repo source does not match its prettier config",
+  "tags": [
+    "tooling"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "787b66a7",
+  "where": "prettier",
+  "branch": "t3code/loading-spinner"
+}
