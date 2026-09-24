@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
+import { Loading } from "../Loading.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
@@ -120,7 +121,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
         onSeek={(t) => setPlay((s) => ({ ...s, t, on: true }))}
       />
       {!feed ? (
-        <p className="text-zinc-400">{laps.error ?? "Loading the replay. A race takes a few seconds…"}</p>
+        <Loading label="Loading the replay. A race takes a few seconds…" error={laps.error} />
       ) : (
         <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay positionsNote={null} speed={play.speed} />
       )}
@@ -131,7 +132,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
 export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
   const [chosen, setChosen] = useState<SessionRef | null>(null);
-  if (!info.data) return <p className="text-zinc-400">{info.error ?? "Loading…"}</p>;
+  if (!info.data) return <Loading label="Loading…" error={info.error} />;
   if (info.data.live) return <Live positions={info.data.positions} />;
   if (chosen) return <Replay key={chosen.path} session={chosen} onClose={() => setChosen(null)} />;
   const scheduled = current(season?.rounds ?? [], Date.now());

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { CurrentSession, type LiveInfo } from "./live/CurrentSession.tsx";
+import { Loading } from "./Loading.tsx";
 import { Settings } from "./Settings.tsx";
 import { Stats } from "./stats/Stats.tsx";
 import { Tabs } from "./Tabs.tsx";
@@ -36,7 +37,7 @@ export const App = () => {
       <main>
         {tab === "Countdown" && <CurrentSession season={season.data} info={info} />}
         {tab === "Stats" &&
-          (season.data ? <Stats season={season.data} /> : <p className="text-zinc-400">{season.error ?? "Loading the season…"}</p>)}
+          (season.data ? <Stats season={season.data} /> : <Loading label="Loading the season…" error={season.error} />)}
         {tab === "Settings" && <Settings />}
       </main>
     </div>
