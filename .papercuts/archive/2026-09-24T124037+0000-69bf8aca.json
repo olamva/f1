@@ -1,0 +1,14 @@
+{
+  "id": "69bf8aca",
+  "ts": "2026-09-24T12:40:37+00:00",
+  "text": "Requested checks cannot start because node_modules is absent; pnpm dependencies must be installed first",
+  "tags": [
+    "pnpm",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "node_modules",
+  "branch": "t3code/remove-f1tv-bookmarklet"
+}

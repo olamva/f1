@@ -1,0 +1,14 @@
+{
+  "id": "b640d031",
+  "ts": "2026-09-24T12:58:26+00:00",
+  "text": "Git commit cannot write the task worktree index lock inside sandbox",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-c5b7a323",
+  "branch": "t3code/investigate-live-feed-cloudflare"
+}

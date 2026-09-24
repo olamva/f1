@@ -1,0 +1,14 @@
+{
+  "id": "1e7cf05b",
+  "ts": "2026-09-24T13:42:05+00:00",
+  "text": "API access to api.jolpi.ca fails DNS resolution in this worktree",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "api.jolpi.ca",
+  "branch": "t3code/fix-jolpica-driver-standings-400"
+}

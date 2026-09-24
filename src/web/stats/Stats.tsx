@@ -2,7 +2,17 @@ import { useMemo, useState } from "react";
 import type { Championship } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { Tabs } from "../Tabs.tsx";
-import { driverTables, drivers, duels, gains, latest, remaining, seasonRecords, teamTables, teams } from "./derive.ts";
+import {
+  driverTables,
+  drivers,
+  duels,
+  gains,
+  latest,
+  remaining,
+  seasonRecords,
+  teamTables,
+  teams,
+} from "./derive.ts";
 import { RacePace } from "./RacePace.tsx";
 import { Records } from "./Records.tsx";
 import { SeasonCharts } from "./SeasonCharts.tsx";
@@ -10,7 +20,14 @@ import { StandingsTable } from "./Standings.tsx";
 import { Teammates } from "./Teammates.tsx";
 import { TitleFight } from "./TitleFight.tsx";
 
-const VIEWS = ["Standings", "Title fight", "Teammates", "Season", "Race pace", "Records"] as const;
+const VIEWS = [
+  "Standings",
+  "Title fight",
+  "Teammates",
+  "Season",
+  "Race pace",
+  "Records",
+] as const;
 type View = (typeof VIEWS)[number];
 
 interface StatsProps {
@@ -40,12 +57,21 @@ export const Stats = ({ season }: StatsProps) => {
       {view === "Standings" && (
         <div className="grid gap-4 xl:grid-cols-2">
           <StandingsTable title="Drivers" table={latest(d.dt)} who={d.who} />
-          <StandingsTable title="Constructors" table={latest(d.tt)} who={d.teamWho} />
+          <StandingsTable
+            title="Constructors"
+            table={latest(d.tt)}
+            who={d.teamWho}
+          />
         </div>
       )}
       {view === "Title fight" && (
         <>
-          <Tabs items={["drivers", "constructors"] as const} value={champ} onChange={setChamp} small />
+          <Tabs
+            items={["drivers", "constructors"] as const}
+            value={champ}
+            onChange={setChamp}
+            small
+          />
           <TitleFight
             key={champ}
             champ={champ}
@@ -55,10 +81,24 @@ export const Stats = ({ season }: StatsProps) => {
           />
         </>
       )}
-      {view === "Teammates" && <Teammates duels={d.duels} who={d.who} />}
-      {view === "Season" && <SeasonCharts tables={d.dt} who={d.who} gains={d.gains} />}
+      {view === "Teammates" && (
+        <Teammates
+          duels={d.duels}
+          who={d.who}
+          hasSprints={season.sprints.length > 0}
+        />
+      )}
+      {view === "Season" && (
+        <SeasonCharts tables={d.dt} who={d.who} gains={d.gains} />
+      )}
       {view === "Race pace" && <RacePace season={season} who={d.who} />}
-      {view === "Records" && <Records rows={d.records} who={d.who} />}
+      {view === "Records" && (
+        <Records
+          rows={d.records}
+          who={d.who}
+          hasSprints={season.sprints.length > 0}
+        />
+      )}
     </div>
   );
 };

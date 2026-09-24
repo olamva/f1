@@ -1,0 +1,14 @@
+{
+  "id": "4255120d",
+  "ts": "2026-09-24T13:34:39+00:00",
+  "text": "pnpm install failed with fetch failed in sandbox; offline install lacked a locked tarball",
+  "tags": [
+    "dependencies",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-c77edfce",
+  "branch": "t3code/fix-replay-progress-timestamp"
+}

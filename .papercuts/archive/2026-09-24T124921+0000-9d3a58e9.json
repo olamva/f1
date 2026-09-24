@@ -1,0 +1,15 @@
+{
+  "id": "9d3a58e9",
+  "ts": "2026-09-24T12:49:21+00:00",
+  "text": "gh pr view cannot reach api.github.com under the default restricted network; escalated GitHub CLI access works",
+  "tags": [
+    "github",
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "api.github.com",
+  "branch": "t3code/remove-f1tv-bookmarklet"
+}

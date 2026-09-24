@@ -40,7 +40,11 @@ variable "google_client_id" {
 variable "google_client_secret" {
   type      = string
   sensitive = true
-  default   = ""
+
+  validation {
+    condition     = length(trimspace(var.google_client_secret)) > 0 && var.google_client_secret != "unset"
+    error_message = "Set google_client_secret to the Google OAuth client secret."
+  }
 }
 
 variable "f1_origin" {

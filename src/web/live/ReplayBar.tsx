@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Pause, Play } from "lucide-react";
 import type { SessionRef } from "../../shared/timing.ts";
 import type { Feed } from "./useFeed.ts";
 
@@ -39,8 +40,13 @@ export const ReplayBar = ({ sessions, path, onPath, feed, playing, speed, onTogg
           </option>
         ))}
       </select>
-      <button onClick={onToggle} className="rounded-md bg-zinc-100 px-3 py-1 font-semibold text-zinc-900">
-        {playing ? "Pause" : "Play"}
+      <button
+        onClick={onToggle}
+        aria-label={playing ? "Pause replay" : "Play replay"}
+        title={playing ? "Pause replay" : "Play replay"}
+        className="grid size-8 place-items-center rounded-md bg-zinc-100 text-zinc-900"
+      >
+        {playing ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
       </button>
       <select value={speed} onChange={(e) => onSpeed(Number(e.target.value))} className="rounded-md bg-zinc-800 px-2 py-1">
         {SPEEDS.map((s) => (
@@ -51,12 +57,22 @@ export const ReplayBar = ({ sessions, path, onPath, feed, playing, speed, onTogg
       </select>
       <input
         type="range"
-        min={0}
+        min={start}
         max={feed?.duration ?? 0}
         step={1000}
         value={value}
         onChange={(e) => setDrag(Number(e.target.value))}
-        onPointerUp={() => {
+        onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
+        onPointerUp={(e) => {
+          onSeek(Number(e.currentTarget.value));
+          setDrag(null);
+        }}
+        onPointerCancel={() => setDrag(null)}
+        onKeyUp={() => {
+          if (drag !== null) onSeek(drag);
+          setDrag(null);
+        }}
+        onBlur={() => {
           if (drag !== null) onSeek(drag);
           setDrag(null);
         }}

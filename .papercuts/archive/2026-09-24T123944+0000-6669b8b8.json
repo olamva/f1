@@ -1,0 +1,14 @@
+{
+  "id": "6669b8b8",
+  "ts": "2026-09-24T12:39:44+00:00",
+  "text": "git fetch origin main cannot write FETCH_HEAD because the linked worktree git directory is outside writable roots",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/Developer/f1/.git/worktrees/t3code-0589ca87/FETCH_HEAD",
+  "branch": "t3code/remove-f1tv-bookmarklet"
+}

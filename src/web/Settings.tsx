@@ -1,13 +1,11 @@
 import { useEffect, useState } from "react";
+import { Save } from "lucide-react";
 import type { TokenStatus } from "../shared/token.ts";
 import { getJson } from "./api.ts";
 
 const LOGIN = "https://account.formula1.com/#/en/login";
 
-const bookmarklet = (origin: string) =>
-  `javascript:(()=>{const c=document.cookie.split('; ').find(x=>x.startsWith('login-session='));if(!c){alert('No readable login-session cookie. Log in first, or paste the value by hand.');return}window.open('${origin}/#settings:token='+encodeURIComponent(c.slice(14)))})()`;
-
-const date = (ms: number | null) => (ms ? new Date(ms).toLocaleString() : "—");
+const date = (ms: number | null) => (ms ? new Date(ms).toLocaleString("nb-NO") : "—");
 
 async function post(value: string): Promise<TokenStatus> {
   const res = await fetch("/api/token", {
@@ -35,11 +33,6 @@ export const Settings = () => {
     );
   useEffect(() => {
     getJson<TokenStatus>("/api/token").then(setStatus, () => undefined);
-    const m = /token=(.+)$/.exec(location.hash);
-    if (m) {
-      history.replaceState(null, "", "#settings");
-      save(decodeURIComponent(m[1]!));
-    }
   }, []);
   const soon = status?.sessionExpiresAt && status.sessionExpiresAt - Date.now() < 3 * 24 * 3600_000;
   return (
@@ -69,14 +62,7 @@ export const Settings = () => {
             .
           </li>
           <li>
-            On formula1.com, click the bookmarklet{" "}
-            <a ref={(a) => a?.setAttribute("href", bookmarklet(location.origin))} className="rounded bg-zinc-800 px-2 py-0.5 font-semibold" onClick={(e) => e.preventDefault()}>
-              F1 token → f1.ola-vassbotn.no
-            </a>{" "}
-            (drag it to the bookmarks bar first). If it says that it cannot read the cookie, do step 3.
-          </li>
-          <li>
-            Open DevTools → Application → Cookies → formula1.com. Copy the value of <code>login-session</code> and paste it here.
+            Open DevTools (⌥⌘I) → Application → Cookies → https://www.formula1.com. Copy the value of <code>login-session</code> and paste it in the box.
           </li>
         </ol>
         <textarea
@@ -85,7 +71,8 @@ export const Settings = () => {
           placeholder="login-session cookie value, or the token itself"
           className="h-24 w-full rounded-md bg-zinc-900 p-2 font-mono text-xs"
         />
-        <button onClick={() => save(value)} disabled={!value} className="rounded-md bg-red-600 px-4 py-1.5 font-semibold disabled:opacity-40">
+        <button onClick={() => save(value)} disabled={!value} className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 font-semibold disabled:opacity-40">
+          <Save aria-hidden="true" className="size-4" />
           Save token
         </button>
         {message && <p className="text-zinc-300">{message}</p>}

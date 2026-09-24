@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson } from "../api.ts";
-import { Countdown } from "./Countdown.tsx";
+import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
@@ -23,6 +23,7 @@ interface BoardProps {
   outline: Outline | null;
   replay: boolean;
   positionsNote: string | null;
+  speed?: number;
 }
 
 const useTick = (ms: number) => {
@@ -34,7 +35,7 @@ const useTick = (ms: number) => {
   return now;
 };
 
-const Board = ({ feed, laps, outline, replay, positionsNote }: BoardProps) => {
+const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const now = useTick(1000);
   const state = feed.state as Record<string, any>;
@@ -63,18 +64,16 @@ const Board = ({ feed, laps, outline, replay, positionsNote }: BoardProps) => {
         )}
         <span className="tabular ml-auto font-mono text-lg">{remaining(state, utc)}</span>
       </header>
+      <RaceControl messages={messages(state)} />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
-          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} note={positionsNote} />
+          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} onToggle={toggle} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} />
           <Weather weather={state.WeatherData} />
         </div>
       </div>
       <LapCharts laps={laps} rows={rows} focus={focus} until={replay ? feed.t : null} race={race} />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <RaceControl messages={messages(state)} />
-        <TeamRadio radios={radios(state)} rows={rows} />
-      </div>
+      <TeamRadio radios={radios(state)} rows={rows} />
     </div>
   );
 };
@@ -122,7 +121,7 @@ const Replay = () => {
       {!feed ? (
         <p className="text-zinc-400">{sessions.error ?? "Loading the replay. A race takes a few seconds…"}</p>
       ) : (
-        <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay positionsNote={null} />
+        <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay positionsNote={null} speed={play.speed} />
       )}
     </div>
   );
@@ -132,9 +131,15 @@ export const CurrentSession = ({ season }: CurrentSessionProps) => {
   const info = useJson<LiveInfo>("/api/live", 30_000);
   if (!info.data) return <p className="text-zinc-400">{info.error ?? "Loading…"}</p>;
   if (info.data.live) return <Live positions={info.data.positions} />;
+  const scheduled = current(season?.rounds ?? [], Date.now());
   return (
     <div className="space-y-4">
-      <Countdown rounds={season?.rounds ?? []} />
+      {scheduled ? (
+        <div className="rounded-xl bg-gradient-to-r from-red-700/40 to-surface p-4">
+          <h1 className="text-lg font-bold">{scheduled.round.name} · {scheduled.label}</h1>
+          <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
+        </div>
+      ) : <Countdown rounds={season?.rounds ?? []} />}
       <Replay />
     </div>
   );

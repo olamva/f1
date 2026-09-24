@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { RotateCcw } from "lucide-react";
 import { simulate, type Championship, type Picks, type Standing, type Upcoming } from "../../shared/clinch.ts";
 import type { Who } from "./derive.ts";
 
@@ -55,7 +56,8 @@ export const Simulator = ({ champ, table, events, contenders, who }: SimulatorPr
     <section className="rounded-xl bg-surface p-3">
       <div className="mb-2 flex items-center gap-3">
         <h2 className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">Simulator</h2>
-        <button onClick={() => setPicks([])} className="ml-auto rounded bg-zinc-800 px-2 py-0.5 text-xs">
+        <button onClick={() => setPicks([])} className="ml-auto inline-flex items-center gap-1 rounded bg-zinc-800 px-2 py-0.5 text-xs">
+          <RotateCcw aria-hidden="true" className="size-3" />
           Reset
         </button>
       </div>

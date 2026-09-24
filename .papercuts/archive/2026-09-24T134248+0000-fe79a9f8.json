@@ -1,0 +1,14 @@
+{
+  "id": "fe79a9f8",
+  "ts": "2026-09-24T13:42:48+00:00",
+  "text": "papercuts cannot stage reports because the linked worktree index is outside writable roots",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": ".git",
+  "branch": "t3code/norwegian-settings-dates-win-emojis"
+}

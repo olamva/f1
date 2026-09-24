@@ -1,5 +1,9 @@
 # Parallel work
 
+Treat a task as done only when its changes are in a pull request and merged into `main`.
+When deployment is necessary, verify that the deployment succeeds for the merged commit before reporting completion.
+If a required step is blocked, report the current status and the blocker. Do not report the task as done.
+
 Use one branch and one worktree for each task. Start new branches from the current `origin/main`.
 Keep edits in the task worktree. Do not change another task's branch or worktree.
 Coordinate changes to shared local paths, Azure resources, and GitHub settings with concurrent agents.

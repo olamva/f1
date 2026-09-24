@@ -1,0 +1,14 @@
+{
+  "id": "0295fdf0",
+  "ts": "2026-09-24T12:46:26+00:00",
+  "text": "Arc control lookup fails with cgWindowNotFound while checking for a GitHub session",
+  "tags": [
+    "cua",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "Arc",
+  "branch": "t3code/remove-f1tv-bookmarklet"
+}
