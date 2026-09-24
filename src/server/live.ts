@@ -9,6 +9,7 @@ const URL = `${F1_ORIGIN}/signalrcore`;
 const FLUSH_MS = 250;
 const RETRY_MS = 5_000;
 const EDGE_MS = 30 * 60_000;
+const FRESH_MS = 2 * 60_000;
 
 export let session = new Session();
 let key: unknown = null;
@@ -96,12 +97,13 @@ export function isLive(): boolean {
   const info = session.state.SessionInfo as Record<string, any> | undefined;
   if (!info) return false;
   const status = (session.state.SessionStatus as { Status?: string } | undefined)?.Status;
-  if (status === "Finalised" || status === "Ends") return false;
+  if (status === "Finished" || status === "Finalised" || status === "Ends") return false;
   const now = Date.now();
-  return (
-    now >= at(info.StartDate, info.GmtOffset) - EDGE_MS &&
-    now <= at(info.EndDate, info.GmtOffset) + EDGE_MS
-  );
+  if (now < at(info.StartDate, info.GmtOffset) - EDGE_MS) return false;
+  if (now <= at(info.EndDate, info.GmtOffset) + EDGE_MS) return true;
+  const utc = (session.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
+  const beat = Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`);
+  return now >= beat && now - beat <= FRESH_MS;
 }
 
 export const hasPositions = () => !!token.current();

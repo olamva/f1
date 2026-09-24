@@ -1,0 +1,14 @@
+{
+  "id": "d86b049a",
+  "ts": "2026-09-24T12:23:26+00:00",
+  "text": "Git worktree fetch cannot write FETCH_HEAD in linked main checkout under sandbox",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-5dc4b6a3",
+  "branch": "t3code/require-merged-deployed-work"
+}
