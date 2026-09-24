@@ -63,6 +63,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote }: BoardProps) => {
         )}
         <span className="tabular ml-auto font-mono text-lg">{remaining(state, utc)}</span>
       </header>
+      <RaceControl messages={messages(state)} />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
@@ -71,10 +72,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote }: BoardProps) => {
         </div>
       </div>
       <LapCharts laps={laps} rows={rows} focus={focus} until={replay ? feed.t : null} race={race} />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <RaceControl messages={messages(state)} />
-        <TeamRadio radios={radios(state)} rows={rows} />
-      </div>
+      <TeamRadio radios={radios(state)} rows={rows} />
     </div>
   );
 };
