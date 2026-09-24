@@ -1,0 +1,14 @@
+{
+  "id": "e67bc215",
+  "ts": "2026-09-24T12:12:56+00:00",
+  "text": "git add in a linked worktree failed because the default sandbox blocked the shared Git index lock",
+  "tags": [
+    "sandbox",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-5ebff7ee",
+  "branch": "t3code/parallel-work-skill"
+}

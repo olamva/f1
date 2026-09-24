@@ -1,0 +1,14 @@
+{
+  "id": "245714a9",
+  "ts": "2026-09-24T12:11:37+00:00",
+  "text": "Creating .agents/rules in the task worktree failed with Operation not permitted under the default sandbox",
+  "tags": [
+    "sandbox",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-5ebff7ee",
+  "branch": "t3code/parallel-work-skill"
+}

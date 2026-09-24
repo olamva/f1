@@ -1,0 +1,14 @@
+{
+  "id": "cd5e250c",
+  "ts": "2026-09-24T12:12:10+00:00",
+  "text": "pnpm install failed to fetch packages in the default sandbox despite a valid lockfile",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-5ebff7ee",
+  "branch": "t3code/parallel-work-skill"
+}
