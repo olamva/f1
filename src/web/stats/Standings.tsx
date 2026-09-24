@@ -27,7 +27,15 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
                 </td>
                 <td className="py-1 text-right font-semibold">{s.points}</td>
                 <td className="w-16 py-1 text-right text-zinc-500">{i ? `-${lead - s.points}` : ""}</td>
-                <td className="w-12 py-1 text-right text-zinc-500">{s.countback[0] ? `${s.countback[0]}W` : ""}</td>
+                <td className="w-16 py-1 text-right text-zinc-500">
+                  {s.countback[0] ? (
+                    <span aria-label={`${s.countback[0]} wins`}>
+                      {s.countback[0]}🥇
+                    </span>
+                  ) : (
+                    ""
+                  )}
+                </td>
               </tr>
             );
           })}

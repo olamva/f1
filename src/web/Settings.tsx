@@ -4,7 +4,7 @@ import { getJson } from "./api.ts";
 
 const LOGIN = "https://account.formula1.com/#/en/login";
 
-const date = (ms: number | null) => (ms ? new Date(ms).toLocaleString() : "—");
+const date = (ms: number | null) => (ms ? new Date(ms).toLocaleString("nb-NO") : "—");
 
 async function post(value: string): Promise<TokenStatus> {
   const res = await fetch("/api/token", {
