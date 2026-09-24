@@ -130,6 +130,10 @@ textarea {
   animation: flag-stripes 1s linear infinite;
 }
 
+.flag-banner.paused {
+  animation-play-state: paused;
+}
+
 @keyframes flag-stripes {
   to {
     background-position: 2rem 0;
