@@ -70,7 +70,7 @@ export const Settings = () => {
           </li>
           <li>
             On formula1.com, click the bookmarklet{" "}
-            <a href={bookmarklet(location.origin)} className="rounded bg-zinc-800 px-2 py-0.5 font-semibold" onClick={(e) => e.preventDefault()}>
+            <a ref={(a) => a?.setAttribute("href", bookmarklet(location.origin))} className="rounded bg-zinc-800 px-2 py-0.5 font-semibold" onClick={(e) => e.preventDefault()}>
               F1 token → f1.ola-vassbotn.no
             </a>{" "}
             (drag it to the bookmarks bar first). If it says that it cannot read the cookie, do step 3.
