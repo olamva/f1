@@ -1,0 +1,13 @@
+{
+  "id": "4a014841",
+  "ts": "2026-09-24T10:54:25+00:00",
+  "text": "Vite proxy key '/api' also proxies the module /api.ts (prefix match) -> blank page; use '^/api/'",
+  "tags": [
+    "vite"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c0ba1600",
+  "where": "vite.config.ts",
+  "branch": "main"
+}

@@ -1,0 +1,12 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  --color-surface: #18181b;
+  --color-purple: #a855f7;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
