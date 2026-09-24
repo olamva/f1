@@ -71,7 +71,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused }: Bo
         <span className="tabular ml-auto font-mono text-lg">{remaining(state, utc)}</span>
       </header>
       {status && (
-        <div role="alert" className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone} ${paused ? "[animation-play-state:paused]" : ""}`}>
+        <div role="alert" className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? " paused" : ""}`}>
           {status.label}
         </div>
       )}
