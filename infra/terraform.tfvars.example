@@ -5,4 +5,4 @@ allowed_emails = ["you@example.com"]
 custom_domain = ""
 
 google_client_id     = ""
-google_client_secret = ""
+google_client_secret = "<google-oauth-client-secret>"

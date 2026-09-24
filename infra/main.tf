@@ -73,7 +73,7 @@ resource "azurerm_container_app" "f1" {
 
   secret {
     name  = "google-client-secret"
-    value = var.google_client_secret == "" ? "unset" : var.google_client_secret
+    value = var.google_client_secret
   }
 
   secret {
