@@ -17,6 +17,7 @@ const fromHash = (): Tab =>
 
 export const App = () => {
   const [tab, setTab] = useState<Tab>(fromHash);
+  const [visit, setVisit] = useState(0);
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
   useEffect(() => {
@@ -25,16 +26,19 @@ export const App = () => {
     return () => removeEventListener("hashchange", on);
   }, []);
   const go = (t: Tab) => {
-    location.hash = SLUG[t];
+    history.pushState(null, "", t === "Countdown" ? "/" : `#${SLUG[t]}`);
     setTab(t);
+    setVisit((v) => v + 1);
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
       <header className="flex items-center gap-4">
-        <span className="text-2xl font-black tracking-tight text-red-500 italic">F1</span>
+        <button onClick={() => go("Countdown")} className="text-2xl font-black tracking-tight text-red-500 italic">
+          F1
+        </button>
         <Tabs items={TABS} value={tab} onChange={go} labels={info.data?.live ? { Countdown: "Live" } : undefined} />
       </header>
-      <main>
+      <main key={visit}>
         {tab === "Countdown" && <CurrentSession season={season.data} info={info} />}
         {tab === "Stats" &&
           (season.data ? <Stats season={season.data} /> : <Loading label="Loading the season…" error={season.error} />)}
