@@ -1,23 +1,24 @@
 import { useEffect, useState } from "react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
-import { CurrentSession } from "./live/CurrentSession.tsx";
+import { CurrentSession, type LiveInfo } from "./live/CurrentSession.tsx";
 import { Loading } from "./Loading.tsx";
 import { Settings } from "./Settings.tsx";
 import { Stats } from "./stats/Stats.tsx";
 import { Tabs } from "./Tabs.tsx";
 
-const TABS = ["Current Session", "Stats", "Settings"] as const;
+const TABS = ["Countdown", "Stats", "Settings"] as const;
 type Tab = (typeof TABS)[number];
 
-const SLUG: Record<Tab, string> = { "Current Session": "session", Stats: "stats", Settings: "settings" };
+const SLUG: Record<Tab, string> = { Countdown: "session", Stats: "stats", Settings: "settings" };
 
 const fromHash = (): Tab =>
-  TABS.find((t) => location.hash.slice(1).startsWith(SLUG[t])) ?? "Current Session";
+  TABS.find((t) => location.hash.slice(1).startsWith(SLUG[t])) ?? "Countdown";
 
 export const App = () => {
   const [tab, setTab] = useState<Tab>(fromHash);
   const season = useJson<Season>("/api/season", 10 * 60_000);
+  const info = useJson<LiveInfo>("/api/live", 30_000);
   useEffect(() => {
     const on = () => setTab(fromHash());
     addEventListener("hashchange", on);
@@ -31,10 +32,10 @@ export const App = () => {
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
       <header className="flex items-center gap-4">
         <span className="text-2xl font-black tracking-tight text-red-500 italic">F1</span>
-        <Tabs items={TABS} value={tab} onChange={go} />
+        <Tabs items={TABS} value={tab} onChange={go} labels={info.data?.live ? { Countdown: "Live" } : undefined} />
       </header>
       <main>
-        {tab === "Current Session" && <CurrentSession season={season.data} />}
+        {tab === "Countdown" && <CurrentSession season={season.data} info={info} />}
         {tab === "Stats" &&
           (season.data ? <Stats season={season.data} /> : <Loading label="Loading the season…" error={season.error} />)}
         {tab === "Settings" && <Settings />}
