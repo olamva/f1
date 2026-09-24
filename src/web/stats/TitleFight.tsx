@@ -11,6 +11,7 @@ import {
   type Standing,
   type Upcoming,
 } from "../../shared/clinch.ts";
+import { pointsFor } from "../../shared/points.ts";
 import { Simulator } from "./Simulator.tsx";
 import type { Who } from "./derive.ts";
 
@@ -65,12 +66,13 @@ const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
   const m = useMemo(() => clinchMatrix(table, events, focus, rival), [table, events, focus, rival]);
   const any = m.cells.some((r) => r.some(Boolean));
   const [a, b] = [who.get(focus)?.code ?? focus, who.get(rival)?.code ?? rival];
+  const gap = table.find((s) => s.id === focus)!.points - table.find((s) => s.id === rival)!.points;
+  const margin = (mine: number | null, theirs: number) => gap + pointsFor(events[0]!.kind, mine) - pointsFor(events[0]!.kind, theirs);
   return (
     <div>
       <p className="mb-2 text-sm text-zinc-400">
-        {any
-          ? `Green cells: ${a} is champion after ${events[0]!.name}. Every other driver takes the best free position.`
-          : `${a} cannot be champion at ${events[0]!.name} with any result.`}
+        {`Each cell shows ${a}'s points gap to ${b} after ${events[0]!.name}. Positive numbers mean ${a} leads. `}
+        {any ? `Green means ${a} secures the title. Other drivers take the best free position.` : `${a} cannot secure the title at this event.`}
       </p>
       <div className="overflow-x-auto">
         <table className="tabular text-xs">
@@ -89,9 +91,11 @@ const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
                 {m.cells[i]!.map((c, j) => (
                   <td key={j} className="p-0.5">
                     <div
-                      title={c === null ? "" : `${a} ${pos(mine)}, ${b} ${pos(m.theirs[j]!)}: ${c ? "champion" : "not yet"}`}
-                      className={`size-7 rounded ${c === null ? "bg-transparent" : c ? "bg-emerald-600" : "bg-zinc-800"}`}
-                    />
+                      title={c === null ? "Same finish position" : `${a} ${pos(mine)}, ${b} ${pos(m.theirs[j]!)}: ${margin(mine, m.theirs[j]!)} points${c ? " (title secured)" : ""}`}
+                      className={`flex size-9 items-center justify-center rounded ${c === null ? "" : c ? "bg-emerald-600 text-white" : "bg-zinc-800 text-zinc-200"}`}
+                    >
+                      {c === null ? "" : margin(mine, m.theirs[j]!) > 0 ? `+${margin(mine, m.theirs[j]!)}` : margin(mine, m.theirs[j]!)}
+                    </div>
                   </td>
                 ))}
               </tr>
