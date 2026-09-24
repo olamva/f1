@@ -1,0 +1,15 @@
+{
+  "id": "c058193a",
+  "ts": "2026-09-24T11:11:26+00:00",
+  "text": "GitHub OIDC subject is now 'repo:owner@id/repo@id:ref:...' (immutable IDs), not 'repo:owner/repo:ref:...'; Azure federated credential fails AADSTS700213",
+  "tags": [
+    "azure",
+    "ci",
+    "github"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c0ba1600",
+  "where": "/Users/olavassbotn/Developer/f1",
+  "branch": "main"
+}

@@ -1,0 +1,14 @@
+{
+  "id": "ca2f9ce1",
+  "ts": "2026-09-24T11:09:12+00:00",
+  "text": "node:26-alpine has no corepack; 'corepack enable' exits 127 in Docker build",
+  "tags": [
+    "docker",
+    "node"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c0ba1600",
+  "where": "Dockerfile",
+  "branch": "main"
+}

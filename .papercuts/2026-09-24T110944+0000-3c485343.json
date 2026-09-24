@@ -1,0 +1,14 @@
+{
+  "id": "3c485343",
+  "ts": "2026-09-24T11:09:44+00:00",
+  "text": "Computer Use has no enabled browser; Arc access is not approved and iab is unavailable",
+  "tags": [
+    "browser",
+    "tools"
+  ],
+  "who": "domene_dns",
+  "model": "gpt-6-astra",
+  "session": "c0ba1600",
+  "where": "/Users/olavassbotn/Developer/f1",
+  "branch": "main"
+}

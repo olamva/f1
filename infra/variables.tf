@@ -19,7 +19,7 @@ variable "image" {
 
 variable "github_repository" {
   type    = string
-  default = "olamva/f1"
+  default = "olamva@93545174/f1@1385292032"
 }
 
 variable "allowed_emails" {
