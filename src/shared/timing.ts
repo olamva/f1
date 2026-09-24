@@ -12,6 +12,7 @@ export type Outline = {
 export type SessionRef = {
   path: string;
   meeting: string;
+  country: string;
   name: string;
   start: string;
 };

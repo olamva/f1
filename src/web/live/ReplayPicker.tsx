@@ -1,5 +1,6 @@
 import { ChevronRight, Play } from "lucide-react";
 import type { SessionRef } from "../../shared/timing.ts";
+import { Flag } from "../Flag.tsx";
 
 interface ReplayPickerProps {
   sessions: SessionRef[];
@@ -38,7 +39,7 @@ export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) => {
     <section className="space-y-3 rounded-xl bg-surface p-4 text-sm">
       <h2 className="font-semibold text-zinc-300">Watch a replay</h2>
       <div className="space-y-2">
-        <h3 className="text-zinc-400">{latest[0].meeting}</h3>
+        <h3 className="text-zinc-400"><Flag country={latest[0].country} />{latest[0].meeting}</h3>
         <Weekend sessions={latest} onStart={onStart} />
       </div>
       {earlier.length > 0 && (
@@ -53,6 +54,7 @@ export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) => {
                 <details className="group/weekend">
                   <summary className="flex cursor-pointer list-none items-center gap-1 py-1 hover:text-zinc-100">
                     <ChevronRight aria-hidden="true" className="size-4 group-open/weekend:rotate-90" />
+                    <Flag country={w[0].country} />
                     {w[0].meeting}
                   </summary>
                   <div className="py-2 pl-5">
