@@ -1,0 +1,14 @@
+{
+  "id": "ce3b7b39",
+  "ts": "2026-09-24T13:42:15+00:00",
+  "text": "pnpm exec prettier cannot find the package binary",
+  "tags": [
+    "format",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "package.json",
+  "branch": "t3code/norwegian-settings-dates-win-emojis"
+}

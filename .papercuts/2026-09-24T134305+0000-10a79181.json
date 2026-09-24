@@ -1,0 +1,14 @@
+{
+  "id": "10a79181",
+  "ts": "2026-09-24T13:43:05+00:00",
+  "text": "pnpm offline install cannot proceed because the locked @azure/identity tarball is absent",
+  "tags": [
+    "packages",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "pnpm-lock.yaml",
+  "branch": "t3code/norwegian-settings-dates-win-emojis"
+}
