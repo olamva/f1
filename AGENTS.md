@@ -4,7 +4,9 @@ Treat a task as done only when its changes are in a pull request and merged into
 When deployment is necessary, verify that the deployment succeeds for the merged commit before reporting completion.
 If a required step is blocked, report the current status and the blocker. Do not report the task as done.
 
-Use one branch and one worktree for each task. Start new branches from the current `origin/main`.
+Use one branch and one worktree for each task.
+Use the branch that T3 creates for the worktree. Rename it with `git branch -m` when needed. Do not create a second branch.
+Create a new branch from the current `origin/main` only in a detached checkout.
 Keep edits in the task worktree. Do not change another task's branch or worktree.
 Coordinate changes to shared local paths, Azure resources, and GitHub settings with concurrent agents.
 
@@ -35,8 +37,12 @@ Treat a missing visual approval as a blocker.
 
 Keep deployment on `main` through the existing workflow.
 Delete the merged remote branch. Preserve active T3 worktrees and thread history.
-Run `git fetch --prune origin` after the merge.
-Detach the task worktree with `git switch --detach origin/main`.
-Delete the local task branch with `git branch -d <branch>`.
-Remove a worktree only after its thread ends and its checkout is clean.
-Preserve uncommitted files and commits that are absent from `origin/main`.
+Stop every dev server and preview process that you started before the final response.
+Create each temporary checkout, such as a visual review "before" state, with `git worktree add --detach` under `/tmp`.
+Remove it with `pnpm worktree:cleanup <path> --apply` before the final response.
+After the merge, run `pnpm worktree:cleanup . --branch-only --apply` in the task worktree.
+This prunes remote references, verifies the merge, detaches the checkout, and deletes the local task branch.
+Include the cleanup status in the final response.
+Run `pnpm worktree:cleanup <path>` from another checkout to inspect removal of a finished task's worktree.
+Add `--apply` only after the thread ends and no process uses the worktree.
+Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
