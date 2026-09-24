@@ -23,5 +23,6 @@ output "github_variables" {
     AZURE_SUBSCRIPTION_ID = var.subscription_id
     AZURE_RESOURCE_GROUP  = azurerm_resource_group.f1.name
     AZURE_CONTAINER_APP   = azurerm_container_app.f1.name
+    AZURE_WAKE_JOB        = azurerm_container_app_job.wake.name
   }
 }

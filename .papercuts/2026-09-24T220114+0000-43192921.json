@@ -1,0 +1,13 @@
+{
+  "id": "43192921",
+  "ts": "2026-09-24T22:01:14+00:00",
+  "text": "git merge --continue opened a silent editor despite supplying a merge message",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-a7abc351",
+  "branch": "t3code/f1-navbar-glass-tabs"
+}

@@ -72,7 +72,7 @@ export const App = () => {
       </header>
       <main key={visit}>
         {tab === "Countdown" && (
-          <CurrentSession season={season.data} info={info} />
+          <CurrentSession season={season} info={info} />
         )}
         {tab === "Stats" &&
           (season.data ? (
