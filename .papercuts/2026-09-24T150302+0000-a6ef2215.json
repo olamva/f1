@@ -1,0 +1,13 @@
+{
+  "id": "a6ef2215",
+  "ts": "2026-09-24T15:03:02+00:00",
+  "text": "gh issue view --comments prints nothing and exits 0; --json works",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "98b56100",
+  "where": "gh",
+  "branch": "t3code/2fa3282e"
+}

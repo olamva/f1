@@ -1,0 +1,13 @@
+{
+  "id": "8f666f5a",
+  "ts": "2026-09-24T15:07:46+00:00",
+  "text": "pnpm install --frozen-lockfile rewrites pnpm-lock.yaml adding @pnpm/exe packageManagerDependencies",
+  "tags": [
+    "pnpm"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "98b56100",
+  "where": "pnpm-lock.yaml",
+  "branch": "feat/radio-player-redesign"
+}
