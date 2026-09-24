@@ -52,15 +52,15 @@ export const Countdown = ({ rounds }: CountdownProps) => {
   const s = next(rounds, now);
   if (!s) return null;
   return (
-    <div className="flex flex-wrap items-baseline gap-3 rounded-xl bg-gradient-to-r from-red-700/40 to-surface p-4">
-      <span className="text-sm text-zinc-300">Next up</span>
-      <span className="text-lg font-bold">
+    <section className="grid place-items-center gap-3 rounded-xl bg-gradient-to-b from-red-700/40 to-surface px-4 py-16 text-center">
+      <span className="text-sm tracking-widest text-zinc-300 uppercase">Next up</span>
+      <h1 className="text-2xl font-bold sm:text-3xl">
         {s.round.name} · {s.label}
+      </h1>
+      <span className="tabular font-mono text-6xl font-bold sm:text-8xl">{span(s.at - now)}</span>
+      <span className="text-zinc-400">
+        {new Date(s.at).toLocaleString([], { weekday: "long", day: "numeric", month: "long", hour: "2-digit", minute: "2-digit" })}
       </span>
-      <span className="text-sm text-zinc-400">
-        {new Date(s.at).toLocaleString([], { weekday: "short", day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}
-      </span>
-      <span className="tabular ml-auto font-mono text-2xl">{span(s.at - now)}</span>
-    </div>
+    </section>
   );
 };
