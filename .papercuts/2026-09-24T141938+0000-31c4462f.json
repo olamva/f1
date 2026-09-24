@@ -1,0 +1,13 @@
+{
+  "id": "31c4462f",
+  "ts": "2026-09-24T14:19:38+00:00",
+  "text": "pnpm install fails with fetch failed inside sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-0bf69c85",
+  "branch": "t3code/fix-grand-prix-grid"
+}
