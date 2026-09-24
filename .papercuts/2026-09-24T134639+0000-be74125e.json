@@ -1,0 +1,14 @@
+{
+  "id": "be74125e",
+  "ts": "2026-09-24T13:46:39+00:00",
+  "text": "Git checkout cannot write this worktree index under sandbox permissions",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": ".git/worktrees",
+  "branch": "t3code/fix-jolpica-driver-standings-400"
+}
