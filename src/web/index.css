@@ -58,6 +58,7 @@ textarea {
 .glass-tab {
   border-radius: 9999px;
   color: #a1a1aa;
+  cursor: pointer;
   transition: color 180ms ease;
 }
 

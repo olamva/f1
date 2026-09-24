@@ -5,6 +5,7 @@ import { highlight, type Message, type Radio, type Row, type Tone } from "./view
 
 const time = (utc: string) =>
   new Date(utc.endsWith("Z") ? utc : `${utc}Z`).toLocaleTimeString([], {
+    hourCycle: "h23",
     hour: "2-digit",
     minute: "2-digit",
     second: "2-digit",
