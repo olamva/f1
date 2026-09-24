@@ -94,7 +94,7 @@ resource "azurerm_container_app" "f1" {
   template {
     min_replicas               = 0
     max_replicas               = 1
-    cooldown_period_in_seconds = 300
+    cooldown_period_in_seconds = 3600
 
     http_scale_rule {
       name                = "http"
