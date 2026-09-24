@@ -29,6 +29,7 @@ interface BoardProps {
   replay: boolean;
   positionsNote: string | null;
   speed?: number;
+  paused?: boolean;
 }
 
 const useTick = (ms: number) => {
@@ -40,7 +41,7 @@ const useTick = (ms: number) => {
   return now;
 };
 
-const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps) => {
+const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const now = useTick(1000);
   const state = feed.state as Record<string, any>;
@@ -70,7 +71,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
         <span className="tabular ml-auto font-mono text-lg">{remaining(state, utc)}</span>
       </header>
       {status && (
-        <div role="alert" className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}`}>
+        <div role="alert" className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone} ${paused ? "[animation-play-state:paused]" : ""}`}>
           {status.label}
         </div>
       )}
@@ -131,7 +132,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
       {!feed ? (
         <Loading label="Loading the replay. A race takes a few seconds…" error={laps.error} />
       ) : (
-        <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay positionsNote={null} speed={play.speed} />
+        <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay positionsNote={null} speed={play.speed} paused={!play.on} />
       )}
     </div>
   );
