@@ -7,6 +7,17 @@
   --color-purple: #a855f7;
 }
 
+:root {
+  scrollbar-color: #3f3f46 transparent;
+}
+
+:root,
+.overflow-auto,
+.overflow-y-auto,
+textarea {
+  scrollbar-gutter: stable;
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }
