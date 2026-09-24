@@ -23,7 +23,7 @@ const Weekend = ({ sessions, onStart }: ReplayPickerProps) => (
         key={s.path}
         onClick={() => onStart(s)}
         aria-label={`Start replay: ${s.meeting} · ${s.name}`}
-        className="flex items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 hover:bg-red-600"
+        className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 hover:bg-red-600"
       >
         <Play aria-hidden="true" className="size-3.5" />
         {s.name}
