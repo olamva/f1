@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Save } from "lucide-react";
 import type { TokenStatus } from "../shared/token.ts";
 import { getJson } from "./api.ts";
 
@@ -70,7 +71,8 @@ export const Settings = () => {
           placeholder="login-session cookie value, or the token itself"
           className="h-24 w-full rounded-md bg-zinc-900 p-2 font-mono text-xs"
         />
-        <button onClick={() => save(value)} disabled={!value} className="rounded-md bg-red-600 px-4 py-1.5 font-semibold disabled:opacity-40">
+        <button onClick={() => save(value)} disabled={!value} className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 font-semibold disabled:opacity-40">
+          <Save aria-hidden="true" className="size-4" />
           Save token
         </button>
         {message && <p className="text-zinc-300">{message}</p>}

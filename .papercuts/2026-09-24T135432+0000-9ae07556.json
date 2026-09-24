@@ -1,0 +1,14 @@
+{
+  "id": "9ae07556",
+  "ts": "2026-09-24T13:54:32+00:00",
+  "text": "pnpm add lucide-react failed because registry.npmjs.org could not be reached in the sandbox",
+  "tags": [
+    "packages",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "registry.npmjs.org",
+  "branch": "t3code/use-lucide-icons"
+}
