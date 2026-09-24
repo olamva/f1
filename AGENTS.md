@@ -22,6 +22,15 @@ Verify the PR head and checks immediately before merging.
 Merge your own PR when checks pass and required reviews finish. Use a merge commit.
 Do not force-push, bypass branch protection, or merge with blocked checks.
 
+## Visual review
+
+Apply a required visual review to each PR that changes the visible UI.
+Take screenshots of the changed UI in the running app. Include the before and after states.
+Show the screenshots to the user and ask for a review.
+Do not merge the PR before the user approves the visual change.
+Record the approval in the PR description.
+Treat a missing visual approval as a blocker.
+
 ## Deployment and cleanup
 
 Keep deployment on `main` through the existing workflow.
