@@ -1,0 +1,14 @@
+{
+  "id": "817d9531",
+  "ts": "2026-09-24T15:03:39+00:00",
+  "text": "gh issue view 27 prints nothing with exit 0; gh api repos/olamva/f1/issues/27 works",
+  "tags": [
+    "gh",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "14921cca",
+  "where": "gh issue view",
+  "branch": "t3code/a1551358"
+}
