@@ -7,7 +7,7 @@ export type PositionTrail = {
   samples: Record<string, [number, number]>[];
 };
 
-export type Feed = Snapshot & { start?: number; beat: number; positionTrail?: PositionTrail };
+export type Feed = Snapshot & { start?: number; beat: number; positionTrail?: PositionTrail; src?: string };
 
 export const applyDelta = (f: Feed, batch: Delta[]): Feed => {
   const state = { ...f.state } as Record<string, Json>;
@@ -33,7 +33,7 @@ export function useFeed(url: string | null): Feed | null {
     const source = new EventSource(url);
     source.addEventListener("snapshot", (m) => {
       const snap = JSON.parse(m.data) as Feed;
-      setFeed({ ...snap, beat: snap.t });
+      setFeed({ ...snap, beat: snap.t, src: url });
     });
     source.addEventListener("delta", (m) => {
       const batch = JSON.parse(m.data) as Delta[];

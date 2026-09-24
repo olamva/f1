@@ -3,9 +3,10 @@ interface TabsProps<T extends string> {
   value: T;
   onChange: (v: T) => void;
   small?: boolean;
+  labels?: Partial<Record<T, string>>;
 }
 
-export const Tabs = <T extends string>({ items, value, onChange, small }: TabsProps<T>) => (
+export const Tabs = <T extends string>({ items, value, onChange, small, labels }: TabsProps<T>) => (
   <nav className="flex flex-wrap gap-1">
     {items.map((i) => (
       <button
@@ -15,7 +16,7 @@ export const Tabs = <T extends string>({ items, value, onChange, small }: TabsPr
           value === i ? "bg-red-600 text-white" : "text-zinc-400 hover:bg-zinc-800"
         }`}
       >
-        {i}
+        {labels?.[i] ?? i}
       </button>
     ))}
   </nav>

@@ -11,7 +11,9 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
   const lead = table[0]?.points ?? 0;
   return (
     <section className="rounded-xl bg-surface p-3">
-      <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">{title}</h2>
+      <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        {title}
+      </h2>
       <table className="tabular w-full text-sm">
         <tbody>
           {table.map((s, i) => {
@@ -23,16 +25,21 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
                 </td>
                 <td className="px-3 py-1">
                   <span className="flex items-center gap-2">
-                    <span className="h-4 w-1 rounded-sm" style={{ background: w?.color }} />
+                    <span
+                      className="h-4 w-1 rounded-sm"
+                      style={{ background: w?.color }}
+                    />
                     {w?.name ?? s.id}
                   </span>
                 </td>
                 <td className="py-1 text-right font-semibold">{s.points}</td>
-                <td className="w-16 py-1 text-right text-zinc-500">{i ? `-${lead - s.points}` : ""}</td>
+                <td className="w-16 py-1 text-right text-zinc-500">
+                  {i ? `-${lead - s.points}` : ""}
+                </td>
                 <td className="w-16 py-1 text-right text-zinc-500">
                   {s.countback[0] ? (
                     <span aria-label={`${s.countback[0]} wins`}>
-                      {s.countback[0]}🏆
+                      {s.countback[0]} 🏆
                     </span>
                   ) : (
                     ""

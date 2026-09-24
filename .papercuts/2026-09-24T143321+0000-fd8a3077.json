@@ -1,0 +1,14 @@
+{
+  "id": "fd8a3077",
+  "ts": "2026-09-24T14:33:21+00:00",
+  "text": "pnpm install fails to fetch dependencies in the sandbox",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-0664f528",
+  "branch": "t3code/add-sprint-stats-section"
+}

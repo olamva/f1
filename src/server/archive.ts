@@ -15,9 +15,9 @@ const text = async (url: string): Promise<string> => {
 const json = async (url: string): Promise<any> =>
   JSON.parse((await text(url)).replace(/^﻿/, ""));
 
-export async function recentSessions(year: number): Promise<SessionRef[]> {
+export async function seasonSessions(year: number): Promise<SessionRef[]> {
   const index = await json(`${BASE}${year}/Index.json`);
-  return index.Meetings.slice(-2).flatMap((m: any) =>
+  return index.Meetings.flatMap((m: any) =>
     m.Sessions.filter((s: any) => s.Path).map((s: any) => ({
       path: s.Path,
       meeting: m.Name,

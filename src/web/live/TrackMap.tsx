@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import type { Row } from "./view.ts";
@@ -38,6 +38,7 @@ const projector = (outline: Outline) => {
 
 export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, positionTrail, speed = 1 }: TrackMapProps) => {
   const cars = useRef(new Map<string, SVGGElement>());
+  const [hovered, setHovered] = useState<string | null>(null);
   const project = useMemo(() => (outline ? projector(outline) : null), [outline]);
   const path = useMemo(
     () =>
@@ -89,6 +90,11 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, p
                 tabIndex={0}
                 aria-label={`Select ${r.name}`}
                 aria-pressed={selected.has(r.number)}
+                aria-describedby={hovered === r.number ? "track-map-card" : undefined}
+                onPointerEnter={() => setHovered(r.number)}
+                onPointerLeave={() => setHovered(null)}
+                onFocus={() => setHovered(r.number)}
+                onBlur={() => setHovered(null)}
                 onClick={() => onToggle(r.number)}
                 onKeyDown={(event) => {
                   if (event.key === "Enter" || event.key === " ") {
@@ -98,12 +104,23 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, p
                 }}
                 className="cursor-pointer"
                 style={{ transform: `translate(${x}px, ${y}px)`, transition: speed > 1 ? "none" : "transform 1000ms linear" }}
-                opacity={focus ? 1 : 0.35}
+                opacity={focus || hovered === r.number ? 1 : 0.35}
               >
                 <circle r={14} fill={r.color} stroke="#18181b" strokeWidth={4} />
                 <text y={-22} textAnchor="middle" className="fill-zinc-100 text-[22px] font-semibold">
                   {r.tla}
                 </text>
+                {hovered === r.number && (
+                  <foreignObject x={x > SIZE / 2 ? -340 : 20} y={-60} width={320} height={120} className="overflow-visible">
+                    <div id="track-map-card" className="rounded-lg border-l-8 bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg" style={{ borderColor: r.color }}>
+                      <p className="text-[26px] font-semibold text-zinc-100">{r.name}</p>
+                      <p className="text-[20px] text-zinc-400">{r.team}</p>
+                      <p className="mt-1 text-[18px] text-zinc-500">
+                        {selected.has(r.number) ? "Click or press Enter to remove focus" : "Click or press Enter to focus the map"}
+                      </p>
+                    </div>
+                  </foreignObject>
+                )}
               </g>
             );
           })}

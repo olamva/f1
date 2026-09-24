@@ -2,6 +2,8 @@ import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parseStream, Session } from "../src/server/timing.ts";
+import { merge, type Json } from "../src/shared/merge.ts";
+import { rows } from "../src/web/live/view.ts";
 
 const fixture = (name: string) =>
   readFileSync(new URL(`fixtures/${name}`, import.meta.url), "utf8");
@@ -29,4 +31,18 @@ test("a compressed position frame expands into one sample for each timestamp", (
   assert.ok(events.every((e) => e.topic === "Position"));
   assert.deepEqual((events[0]!.data as Record<string, number[]>)["1"], [6933, -980]);
   assert.ok(events.every((e, i) => i === 0 || e.t >= events[i - 1]!.t));
+});
+
+test("mid-lap mini-sectors show each segment colour and leave unreached segments empty", () => {
+  const events = parseStream(fixture("spain-2026-race-car1.TimingData.jsonStream"), "TimingData");
+  const TimingData = events.slice(0, 151).reduce<Json>((s, e) => merge(s, e.data as Json), {});
+  const [row] = rows({ TimingData, DriverList: { "1": {} } });
+  assert.deepEqual(
+    row!.sectors.map((s) => s.segments),
+    [
+      ["normal", "personal", "personal", "personal", "personal", "personal", "personal", "personal"],
+      ["personal", "personal", "overall", "personal", "personal", "overall", "overall", "overall"],
+      ["overall", ...Array(9).fill("none")],
+    ],
+  );
 });
