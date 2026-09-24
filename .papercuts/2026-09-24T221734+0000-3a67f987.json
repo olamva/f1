@@ -1,0 +1,13 @@
+{
+  "id": "3a67f987",
+  "ts": "2026-09-24T22:17:34+00:00",
+  "text": "preview_click fails on a tab button while the tab row is in a smooth scroll",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "07078cb6",
+  "where": "mcp__t3-code__preview_click",
+  "branch": "t3code/f1-navbar-glass-tabs"
+}

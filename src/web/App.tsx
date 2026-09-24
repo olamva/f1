@@ -56,7 +56,7 @@ export const App = () => {
         />
         <button
           onClick={() => go("Settings")}
-          className="glass-tab ml-auto grid size-10 place-items-center sm:size-11"
+          className="glass-gear ml-auto grid size-10 place-items-center sm:size-11"
           data-active={tab === "Settings"}
           aria-label="Settings"
           aria-pressed={tab === "Settings"}
@@ -71,9 +71,7 @@ export const App = () => {
         </button>
       </header>
       <main key={visit}>
-        {tab === "Countdown" && (
-          <CurrentSession season={season} info={info} />
-        )}
+        {tab === "Countdown" && <CurrentSession season={season} info={info} />}
         {tab === "Stats" &&
           (season.data ? (
             <Stats season={season.data} />
