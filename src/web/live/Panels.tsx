@@ -139,12 +139,15 @@ const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioEleme
     void (analyser.current.context as AudioContext).resume();
     const a = analyser.current;
     const data = new Uint8Array(a.frequencyBinCount);
+    const peaks = [1, 1, 1, 1];
     const bin = (hz: number) => Math.round((hz / a.context.sampleRate) * a.fftSize);
     let frame = requestAnimationFrame(function draw() {
       a.getByteFrequencyData(data);
       bars.current.forEach((b, i) => {
         const band = data.subarray(bin(BANDS[i]!), bin(BANDS[i + 1]!));
-        b.style.transform = `scaleY(${Math.max(0.1, Math.min(1, Math.max(...band) / 200) ** 2)})`;
+        const v = Math.max(...band);
+        peaks[i] = Math.max(peaks[i]! * 0.995, v, 60);
+        b.style.transform = `scaleY(${Math.max(0.1, v / peaks[i]!)})`;
       });
       frame = requestAnimationFrame(draw);
     });
