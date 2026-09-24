@@ -125,19 +125,24 @@ const Transcript = ({ url, color }: { url: string; color: string }) => {
 };
 
 const BANDS = [150, 400, 1000, 2200, 4500];
+const analysers = new WeakMap<HTMLAudioElement, AnalyserNode>();
+
+const analyserOf = (el: HTMLAudioElement) => {
+  if (!analysers.has(el)) {
+    const ctx = new AudioContext();
+    const a = Object.assign(ctx.createAnalyser(), { fftSize: 512, smoothingTimeConstant: 0.6, minDecibels: -75, maxDecibels: -40 });
+    ctx.createMediaElementSource(el).connect(a).connect(ctx.destination);
+    analysers.set(el, a);
+  }
+  return analysers.get(el)!;
+};
 
 const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioElement | null>; playing: boolean; color: string }) => {
   const bars = useRef<HTMLSpanElement[]>([]);
-  const analyser = useRef<AnalyserNode>(null);
   useEffect(() => {
     if (!playing) return;
-    if (!analyser.current) {
-      const ctx = new AudioContext();
-      analyser.current = Object.assign(ctx.createAnalyser(), { fftSize: 512, smoothingTimeConstant: 0.7, minDecibels: -80, maxDecibels: -40 });
-      ctx.createMediaElementSource(audio.current!).connect(analyser.current).connect(ctx.destination);
-    }
-    void (analyser.current.context as AudioContext).resume();
-    const a = analyser.current;
+    const a = analyserOf(audio.current!);
+    void (a.context as AudioContext).resume();
     const data = new Uint8Array(a.frequencyBinCount);
     const bin = (hz: number) => Math.round((hz / a.context.sampleRate) * a.fftSize);
     let frame = requestAnimationFrame(function draw() {
