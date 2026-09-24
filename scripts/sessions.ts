@@ -9,30 +9,92 @@ const MINUTES: Record<string, number> = {
   Qualifying: 60,
   Race: 120,
 };
-const BEFORE = 15;
-const AFTER = 30;
+const BASE = "https://api.jolpi.ca/ergast/f1";
+const MINUTE = 60_000;
+const DAY = 24 * 60 * MINUTE;
 
-const res = await fetch("https://api.jolpi.ca/ergast/f1/current.json?limit=100");
-const races = (await res.json()).MRData.RaceTable.Races;
-const days = new Map<string, { from: number; to: number }>();
-for (const r of races) {
-  for (const [key, minutes] of Object.entries(MINUTES)) {
-    const s = key === "Race" ? r : r[key];
-    if (!s?.date) continue;
-    const start = Date.parse(`${s.date}T${s.time ?? "00:00:00Z"}`);
-    if (start + minutes * 60_000 < Date.now()) continue;
-    const day = s.date as string;
-    const d = days.get(day) ?? { from: Infinity, to: -Infinity };
-    days.set(day, {
-      from: Math.min(d.from, start - BEFORE * 60_000),
-      to: Math.max(d.to, start + (minutes + AFTER) * 60_000),
-    });
-  }
-}
-const cron = (ms: number) => {
-  const d = new Date(ms);
-  return `${d.getUTCMinutes()} ${d.getUTCHours()} ${d.getUTCDate()} ${d.getUTCMonth() + 1} *`;
+export type Race = { date: string; time?: string } & Record<
+  string,
+  { date: string; time?: string } | string | undefined
+>;
+export type Window = {
+  start: number;
+  end: number;
+  dayStart: number;
+  dayEnd: number;
 };
-const windows = [...days].sort().map(([day, w]) => ({ name: `s-${day}`, start: cron(w.from), end: cron(w.to) }));
-writeFileSync(new URL("../infra/sessions.json", import.meta.url), `${JSON.stringify(windows, null, 2)}\n`);
-console.log(`${windows.length} session windows`);
+
+export function windows(races: Race[]): Window[] {
+  return races.flatMap((race) => {
+    const starts = Object.entries(MINUTES).flatMap(([key, duration]) => {
+      const session = key === "Race" ? race : race[key];
+      if (
+        !session ||
+        typeof session === "string" ||
+        !session.date ||
+        !session.time
+      )
+        return [];
+      const start = Date.parse(`${session.date}T${session.time}`);
+      return Number.isFinite(start)
+        ? [{ start, end: start + (duration + 30) * MINUTE }]
+        : [];
+    });
+    if (!starts.length) return [];
+    const firstDay = new Date(Math.min(...starts.map((s) => s.start)))
+      .toISOString()
+      .slice(0, 10);
+    const dayStart = Date.parse(`${firstDay}T00:00:00Z`);
+    const dayEnd = Date.parse(`${race.date}T00:00:00Z`) + 2 * DAY;
+    return starts.map(({ start, end }) => ({
+      start: start - 15 * MINUTE,
+      end,
+      dayStart,
+      dayEnd,
+    }));
+  });
+}
+
+export function shouldWake(schedule: Window[], now: number): boolean {
+  return (
+    schedule.some((w) => now >= w.start && now <= w.end) ||
+    (Math.floor(now / MINUTE) % 3 === 0 &&
+      schedule.some((w) => now >= w.dayStart && now < w.dayEnd))
+  );
+}
+
+export async function calendar(year: number, request = fetch): Promise<Race[]> {
+  const response = await request(`${BASE}/${year}.json?limit=100`, {
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!response.ok) throw new Error(`calendar ${year}: ${response.status}`);
+  const races = (await response.json())?.MRData?.RaceTable?.Races;
+  if (!Array.isArray(races))
+    throw new Error(`calendar ${year}: invalid response`);
+  return races;
+}
+
+export async function schedule(
+  now = Date.now(),
+  request = fetch,
+): Promise<Window[]> {
+  const year = new Date(now).getUTCFullYear();
+  const [current, next] = await Promise.all([
+    calendar(year, request),
+    calendar(year + 1, request).catch(() => []),
+  ]);
+  if (!current.length) throw new Error(`calendar ${year}: empty season`);
+  return windows([...current, ...next]);
+}
+
+if (
+  process.argv[1] &&
+  import.meta.url === new URL(`file://${process.argv[1]}`).href
+) {
+  const result = await schedule();
+  writeFileSync(
+    new URL("../infra/sessions.json", import.meta.url),
+    `${JSON.stringify(result, null, 2)}\n`,
+  );
+  console.log(`${result.length} session windows`);
+}
