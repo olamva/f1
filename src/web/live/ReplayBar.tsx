@@ -51,7 +51,7 @@ export const ReplayBar = ({ sessions, path, onPath, feed, playing, speed, onTogg
       </select>
       <input
         type="range"
-        min={0}
+        min={start}
         max={feed?.duration ?? 0}
         step={1000}
         value={value}
