@@ -1,0 +1,14 @@
+{
+  "id": "9dd661b3",
+  "ts": "2026-09-24T12:53:37+00:00",
+  "text": "Terraform plan JSON cannot load provider schemas inside sandbox after successful escalated plan",
+  "tags": [
+    "terraform",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-c5b7a323",
+  "branch": "t3code/investigate-live-feed-cloudflare"
+}
