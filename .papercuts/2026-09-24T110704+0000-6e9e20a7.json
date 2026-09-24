@@ -1,0 +1,14 @@
+{
+  "id": "6e9e20a7",
+  "ts": "2026-09-24T11:07:04+00:00",
+  "text": "add-subdomain skill delegates to 'codex exec -m gpt-6', but Codex rejects gpt-6 on a ChatGPT account (400); skill cannot run",
+  "tags": [
+    "codex",
+    "skills"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c0ba1600",
+  "where": "/Users/olavassbotn/.claude/skills/add-subdomain/SKILL.md",
+  "branch": "main"
+}
