@@ -1,0 +1,14 @@
+{
+  "id": "45aeacd5",
+  "ts": "2026-09-24T14:37:08+00:00",
+  "text": "Terraform providers fail schema handshake inside sandbox after successful init",
+  "tags": [
+    "terraform",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-fd5b620a",
+  "branch": "t3code/automatic-f1-wake-schedule"
+}

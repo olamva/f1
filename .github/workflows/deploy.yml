@@ -29,6 +29,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 26
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm sessions
       - uses: docker/login-action@v3
         with:
           registry: ghcr.io
@@ -48,5 +55,11 @@ jobs:
           az containerapp update
           --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
           --name ${{ vars.AZURE_CONTAINER_APP }}
+          --image ghcr.io/${{ github.repository }}:${{ github.sha }}
+          --only-show-errors
+      - run: >
+          az containerapp job update
+          --resource-group ${{ vars.AZURE_RESOURCE_GROUP }}
+          --name ${{ vars.AZURE_WAKE_JOB }}
           --image ghcr.io/${{ github.repository }}:${{ github.sha }}
           --only-show-errors

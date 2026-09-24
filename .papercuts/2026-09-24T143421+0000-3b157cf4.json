@@ -1,0 +1,14 @@
+{
+  "id": "3b157cf4",
+  "ts": "2026-09-24T14:34:21+00:00",
+  "text": "Sandbox DNS blocks api.jolpi.ca during schedule generation",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-fd5b620a",
+  "branch": "t3code/automatic-f1-wake-schedule"
+}
