@@ -1,5 +1,6 @@
-import { useMemo } from "react";
+import { useLayoutEffect, useMemo, useRef } from "react";
 import type { Outline } from "../../shared/timing.ts";
+import type { PositionTrail } from "./useFeed.ts";
 import type { Row } from "./view.ts";
 
 const SIZE = 1000;
@@ -12,6 +13,8 @@ interface TrackMapProps {
   selected: Set<string>;
   onToggle: (number: string) => void;
   note: string | null;
+  positionTrail?: PositionTrail;
+  speed?: number;
 }
 
 const projector = (outline: Outline) => {
@@ -33,7 +36,8 @@ const projector = (outline: Outline) => {
   };
 };
 
-export const TrackMap = ({ outline, positions, rows, selected, onToggle, note }: TrackMapProps) => {
+export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, positionTrail, speed = 1 }: TrackMapProps) => {
+  const cars = useRef(new Map<string, SVGGElement>());
   const project = useMemo(() => (outline ? projector(outline) : null), [outline]);
   const path = useMemo(
     () =>
@@ -42,6 +46,20 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note }:
         : "",
     [outline, project],
   );
+  useLayoutEffect(() => {
+    if (!project || !positionTrail || speed <= 1) return;
+    for (const [number, car] of cars.current) {
+      const points = [positionTrail.from[number], ...positionTrail.samples.map((sample) => sample[number])]
+        .filter((p): p is [number, number] => !!p && (p[0] !== 0 || p[1] !== 0))
+        .map(([x, y]) => project(x, y));
+      if (points.length < 2) continue;
+      car.getAnimations().forEach((animation) => animation.cancel());
+      car.animate(points.map(([x, y]) => ({ transform: `translate(${x}px, ${y}px)` })), {
+        duration: 250,
+        easing: "linear",
+      });
+    }
+  }, [positionTrail, project, speed]);
   return (
     <div className="relative rounded-xl bg-surface p-2">
       <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="aspect-square w-full">
@@ -63,6 +81,10 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note }:
             return (
               <g
                 key={r.number}
+                ref={(node) => {
+                  if (node) cars.current.set(r.number, node);
+                  else cars.current.delete(r.number);
+                }}
                 role="button"
                 tabIndex={0}
                 aria-label={`Select ${r.name}`}
@@ -75,7 +97,7 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note }:
                   }
                 }}
                 className="cursor-pointer"
-                style={{ transform: `translate(${x}px, ${y}px)`, transition: "transform 1000ms linear" }}
+                style={{ transform: `translate(${x}px, ${y}px)`, transition: speed > 1 ? "none" : "transform 1000ms linear" }}
                 opacity={focus ? 1 : 0.35}
               >
                 <circle r={14} fill={r.color} stroke="#18181b" strokeWidth={4} />

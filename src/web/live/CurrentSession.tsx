@@ -23,6 +23,7 @@ interface BoardProps {
   outline: Outline | null;
   replay: boolean;
   positionsNote: string | null;
+  speed?: number;
 }
 
 const useTick = (ms: number) => {
@@ -34,7 +35,7 @@ const useTick = (ms: number) => {
   return now;
 };
 
-const Board = ({ feed, laps, outline, replay, positionsNote }: BoardProps) => {
+const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const now = useTick(1000);
   const state = feed.state as Record<string, any>;
@@ -67,7 +68,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote }: BoardProps) => {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
-          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} onToggle={toggle} note={positionsNote} />
+          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} onToggle={toggle} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} />
           <Weather weather={state.WeatherData} />
         </div>
       </div>
@@ -120,7 +121,7 @@ const Replay = () => {
       {!feed ? (
         <p className="text-zinc-400">{sessions.error ?? "Loading the replay. A race takes a few seconds…"}</p>
       ) : (
-        <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay positionsNote={null} />
+        <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay positionsNote={null} speed={play.speed} />
       )}
     </div>
   );
