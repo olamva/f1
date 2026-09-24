@@ -1,0 +1,13 @@
+{
+  "id": "3905c067",
+  "ts": "2026-09-24T23:07:54+00:00",
+  "text": "pnpm 12 rejects 'pnpm -s <script>' shorthand; needs 'pnpm run -s'",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "58d1facc",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-c9a96fc7",
+  "branch": "t3code/worktree-cleanup"
+}

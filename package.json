@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "format": "prettier --write .",
-    "sessions": "node scripts/sessions.ts"
+    "sessions": "node scripts/sessions.ts",
+    "worktree:cleanup": "node scripts/worktree-cleanup.ts"
   },
   "dependencies": {
     "@azure/identity": "^4.13.3",
