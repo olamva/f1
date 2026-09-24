@@ -68,7 +68,6 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
           {status.label}
         </div>
       )}
-      <RaceControl messages={messages(state)} />
       <div className="grid gap-4 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
@@ -76,7 +75,10 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
           <Weather weather={state.WeatherData} />
         </div>
       </div>
-      <LapCharts laps={laps} rows={rows} focus={focus} until={replay ? feed.t : null} race={race} />
+      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
+        <RaceControl messages={messages(state)} />
+        <LapCharts laps={laps} rows={rows} focus={focus} until={replay ? feed.t : null} race={race} />
+      </div>
       <TeamRadio radios={radios(state)} rows={rows} />
     </div>
   );

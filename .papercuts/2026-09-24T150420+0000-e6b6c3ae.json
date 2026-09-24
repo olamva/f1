@@ -1,0 +1,13 @@
+{
+  "id": "e6b6c3ae",
+  "ts": "2026-09-24T15:04:20+00:00",
+  "text": "Every pnpm command adds @pnpm/exe to pnpm-lock.yaml packageManagerDependencies",
+  "tags": [
+    "pnpm"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "a932b44a",
+  "where": "pnpm-lock.yaml",
+  "branch": "t3code/fia-beside-lap-times"
+}
