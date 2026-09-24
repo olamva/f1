@@ -1,0 +1,14 @@
+{
+  "id": "d1c5d243",
+  "ts": "2026-09-24T12:23:46+00:00",
+  "text": "Local worktree lacks node_modules, so pnpm test cannot find oxlint",
+  "tags": [
+    "setup",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-5dc4b6a3",
+  "branch": "t3code/require-merged-deployed-work"
+}
