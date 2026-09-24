@@ -21,6 +21,7 @@ export async function seasonSessions(year: number): Promise<SessionRef[]> {
     m.Sessions.filter((s: any) => s.Path).map((s: any) => ({
       path: s.Path,
       meeting: m.Name,
+      country: m.Country?.Name ?? "",
       name: s.Name,
       start: `${s.StartDate}${s.GmtOffset.startsWith("-") ? "" : "+"}${s.GmtOffset.slice(0, 5)}`,
     })),

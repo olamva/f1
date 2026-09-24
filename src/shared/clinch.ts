@@ -2,7 +2,7 @@ import { pointsFor, type EventKind } from "./points.ts";
 
 export type Championship = "drivers" | "constructors";
 export type Standing = { id: string; points: number; countback: number[] };
-export type Upcoming = { round: number; name: string; kind: EventKind };
+export type Upcoming = { round: number; name: string; kind: EventKind; country?: string };
 export type Picks = Record<string, number[]>[];
 
 const CARS: Record<Championship, number> = { drivers: 1, constructors: 2 };

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
 import { simulate, type Championship, type Picks, type Standing, type Upcoming } from "../../shared/clinch.ts";
+import { Flag } from "../Flag.tsx";
 import type { Who } from "./derive.ts";
 
 interface SimulatorProps {
@@ -84,7 +85,7 @@ export const Simulator = ({ champ, table, events, contenders, who }: SimulatorPr
               const taken = new Set(Object.values(clean[i] ?? {}).flat());
               return (
                 <tr key={`${e.round}-${e.kind}`} className={`border-t border-zinc-800 ${decided && i > decided.index ? "opacity-40" : ""}`}>
-                  <td className="p-1 pr-3 text-xs whitespace-nowrap text-zinc-400">{e.name}</td>
+                  <td className="p-1 pr-3 text-xs whitespace-nowrap text-zinc-400"><Flag country={e.country} />{e.name}</td>
                   {contenders.map((id) => (
                     <td key={id} className="p-1">
                       <span className="flex gap-1">
