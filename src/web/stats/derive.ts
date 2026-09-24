@@ -109,10 +109,11 @@ export function remaining(s: Season): Upcoming[] {
               round: r.round,
               name: `${r.name} Sprint`,
               kind: "sprint" as const,
+              country: r.country,
             },
           ]
         : []),
-      { round: r.round, name: r.name, kind: "race" as const },
+      { round: r.round, name: r.name, kind: "race" as const, country: r.country },
     ]);
 }
 

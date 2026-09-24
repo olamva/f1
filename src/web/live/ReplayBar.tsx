@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Pause, Play, X } from "lucide-react";
 import type { SessionRef } from "../../shared/timing.ts";
+import { Flag } from "../Flag.tsx";
 import type { Feed } from "./useFeed.ts";
 
 const SPEEDS = [1, 2, 4, 8, 16, 32];
@@ -30,6 +31,7 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
     <div className="flex flex-wrap items-center gap-3 rounded-xl bg-surface p-3 text-sm">
       <span className="rounded bg-zinc-700 px-2 py-0.5 text-xs font-semibold">REPLAY</span>
       <span className="font-semibold">
+        <Flag country={session.country} />
         {session.meeting} · {session.name}
       </span>
       <button

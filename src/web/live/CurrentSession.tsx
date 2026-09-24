@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
+import { Flag } from "../Flag.tsx";
 import { hashPart, setHashPart } from "../hash.ts";
 import { Loading } from "../Loading.tsx";
 import { Countdown, current } from "./Countdown.tsx";
@@ -58,6 +59,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed }: BoardProps
     <div className="space-y-4">
       <header className="flex flex-wrap items-center gap-3">
         <h1 className="text-xl font-bold">
+          <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
           {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
         </h1>
         {state.LapCount && (
@@ -151,7 +153,7 @@ export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
     <div className="space-y-4">
       {scheduled ? (
         <div className="rounded-xl bg-gradient-to-r from-red-700/40 to-surface p-4">
-          <h1 className="text-lg font-bold">{scheduled.round.name} · {scheduled.label}</h1>
+          <h1 className="text-lg font-bold"><Flag country={scheduled.round.country} />{scheduled.round.name} · {scheduled.label}</h1>
           <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
         </div>
       ) : <Countdown rounds={season?.rounds ?? []} />}
