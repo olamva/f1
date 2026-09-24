@@ -1,0 +1,14 @@
+{
+  "id": "ee7e3365",
+  "ts": "2026-09-24T13:55:20+00:00",
+  "text": "pnpm install fails to fetch dependencies in task worktree",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-13db9bf8",
+  "branch": "t3code/fix-fp2-progress-seek"
+}
