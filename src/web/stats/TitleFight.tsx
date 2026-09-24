@@ -156,8 +156,8 @@ export const TitleFight = ({ champ, table, events, who }: TitleFightProps) => {
           <thead className="text-left text-xs text-zinc-500">
             <tr>
               <th className="py-1" />
-              <th className="py-1 text-right">Points</th>
-              <th className="py-1 text-right">Max</th>
+              <th className="py-1 pl-3 text-right">Points</th>
+              <th className="py-1 pl-3 text-right">Max</th>
               <th className="py-1 pl-4">Earliest title</th>
             </tr>
           </thead>
@@ -170,8 +170,8 @@ export const TitleFight = ({ champ, table, events, who }: TitleFightProps) => {
                     {who.get(s.id)?.name ?? s.id}
                   </span>
                 </td>
-                <td className="py-1 text-right">{s.points}</td>
-                <td className="py-1 text-right">{s.points + gain}</td>
+                <td className="py-1 pl-3 text-right">{s.points}</td>
+                <td className="py-1 pl-3 text-right">{s.points + gain}</td>
                 <td className="py-1 pl-4">{earliestText(earliestClinch(table, events, s.id, champ), events)}</td>
               </tr>
             ))}

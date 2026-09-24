@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Settings as SettingsIcon } from "lucide-react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { CurrentSession, type LiveInfo } from "./live/CurrentSession.tsx";
@@ -6,11 +7,17 @@ import { Loading } from "./Loading.tsx";
 import { Settings } from "./Settings.tsx";
 import { Stats } from "./stats/Stats.tsx";
 import { Tabs } from "./Tabs.tsx";
+import f1Logo from "./f1-logo.svg";
 
 const TABS = ["Countdown", "Stats", "Settings"] as const;
+const NAV_TABS = ["Countdown", "Stats"] as const;
 type Tab = (typeof TABS)[number];
 
-const SLUG: Record<Tab, string> = { Countdown: "session", Stats: "stats", Settings: "settings" };
+const SLUG: Record<Tab, string> = {
+  Countdown: "session",
+  Stats: "stats",
+  Settings: "settings",
+};
 
 const fromHash = (): Tab =>
   TABS.find((t) => location.hash.slice(1).startsWith(SLUG[t])) ?? "Countdown";
@@ -32,16 +39,45 @@ export const App = () => {
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
-      <header className="flex items-center gap-4">
-        <button onClick={() => go("Countdown")} className="text-2xl font-black tracking-tight text-red-500 italic">
-          F1
+      <header className="app-nav grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-6">
+        <button
+          onClick={() => go("Countdown")}
+          className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
+          aria-label="Go to Countdown"
+          type="button"
+        >
+          <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />
         </button>
-        <Tabs items={TABS} value={tab} onChange={go} labels={info.data?.live ? { Countdown: "Live" } : undefined} />
+        <Tabs
+          items={NAV_TABS}
+          value={tab === "Settings" ? null : tab}
+          onChange={go}
+          labels={info.data?.live ? { Countdown: "Live" } : undefined}
+        />
+        <button
+          onClick={() => go("Settings")}
+          className="glass-gear ml-auto grid size-10 place-items-center sm:size-11"
+          data-active={tab === "Settings"}
+          aria-label="Settings"
+          aria-pressed={tab === "Settings"}
+          title="Settings"
+          type="button"
+        >
+          <SettingsIcon
+            aria-hidden="true"
+            className="size-5"
+            strokeWidth={1.8}
+          />
+        </button>
       </header>
       <main key={visit}>
         {tab === "Countdown" && <CurrentSession season={season} info={info} />}
         {tab === "Stats" &&
-          (season.data ? <Stats season={season.data} /> : <Loading label="Loading the season…" error={season.error} />)}
+          (season.data ? (
+            <Stats season={season.data} />
+          ) : (
+            <Loading label="Loading the season…" error={season.error} />
+          ))}
         {tab === "Settings" && <Settings />}
       </main>
     </div>
