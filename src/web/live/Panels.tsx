@@ -124,7 +124,7 @@ const Transcript = ({ url, color }: { url: string; color: string }) => {
   );
 };
 
-const BARS = 24;
+const BANDS = [150, 400, 1000, 2200, 4500];
 
 const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioElement | null>; playing: boolean; color: string }) => {
   const bars = useRef<HTMLSpanElement[]>([]);
@@ -133,28 +133,33 @@ const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioEleme
     if (!playing) return;
     if (!analyser.current) {
       const ctx = new AudioContext();
-      analyser.current = Object.assign(ctx.createAnalyser(), { fftSize: 64, smoothingTimeConstant: 0.6 });
+      analyser.current = Object.assign(ctx.createAnalyser(), { fftSize: 512, smoothingTimeConstant: 0.7 });
       ctx.createMediaElementSource(audio.current!).connect(analyser.current).connect(ctx.destination);
     }
     void (analyser.current.context as AudioContext).resume();
-    const data = new Uint8Array(analyser.current.frequencyBinCount);
+    const a = analyser.current;
+    const data = new Uint8Array(a.frequencyBinCount);
+    const bin = (hz: number) => Math.round((hz / a.context.sampleRate) * a.fftSize);
     let frame = requestAnimationFrame(function draw() {
-      analyser.current!.getByteFrequencyData(data);
-      bars.current.forEach((b, i) => (b.style.transform = `scaleY(${Math.max(0.08, data[i + 1]! / 255)})`));
+      a.getByteFrequencyData(data);
+      bars.current.forEach((b, i) => {
+        const band = data.subarray(bin(BANDS[i]!), bin(BANDS[i + 1]!));
+        b.style.transform = `scaleY(${Math.max(0.15, Math.min(1, Math.max(...band) / 200) ** 2)})`;
+      });
       frame = requestAnimationFrame(draw);
     });
     return () => {
       cancelAnimationFrame(frame);
-      bars.current.forEach((b) => (b.style.transform = "scaleY(0.08)"));
+      bars.current.forEach((b) => (b.style.transform = "scaleY(0.15)"));
     };
   }, [playing, audio]);
   return (
-    <span className="hidden h-10 items-center gap-0.5 self-center px-3 sm:flex" aria-hidden="true">
-      {Array.from({ length: BARS }, (_, i) => (
+    <span className="flex h-10 items-center gap-1 self-center px-3" aria-hidden="true">
+      {BANDS.slice(1).map((_, i) => (
         <span
           key={i}
           ref={(el) => void (el && (bars.current[i] = el))}
-          className="h-full w-1 scale-y-[0.08] rounded-full transition-transform duration-75"
+          className="h-full w-1.5 scale-y-[0.15] rounded-full transition-transform duration-75"
           style={{ background: color }}
         />
       ))}
