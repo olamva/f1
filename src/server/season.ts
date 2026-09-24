@@ -134,7 +134,7 @@ async function career(id: string, titles: string[]): Promise<Records[string]> {
 }
 
 export async function records(ids: string[]): Promise<Records> {
-  const champions = await all(
+  const champions = await all<string>(
     "driverstandings/1.json",
     (d) => d.StandingsTable.StandingsLists.map((l: any) => l.DriverStandings[0].Driver.driverId),
     DAY,
