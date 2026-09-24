@@ -22,8 +22,7 @@ provider "azapi" {}
 data "azurerm_client_config" "current" {}
 
 locals {
-  digest   = substr(sha1(var.subscription_id), 0, 6)
-  sessions = jsondecode(file("${path.module}/sessions.json"))
+  digest = substr(sha1(var.subscription_id), 0, 6)
 }
 
 resource "azurerm_resource_group" "f1" {
@@ -95,25 +94,11 @@ resource "azurerm_container_app" "f1" {
   template {
     min_replicas               = 0
     max_replicas               = 1
-    cooldown_period_in_seconds = 3600
+    cooldown_period_in_seconds = 300
 
     http_scale_rule {
       name                = "http"
       concurrent_requests = "50"
-    }
-
-    dynamic "custom_scale_rule" {
-      for_each = local.sessions
-      content {
-        name             = custom_scale_rule.value.name
-        custom_rule_type = "cron"
-        metadata = {
-          timezone        = "Etc/UTC"
-          start           = custom_scale_rule.value.start
-          end             = custom_scale_rule.value.end
-          desiredReplicas = "1"
-        }
-      }
     }
 
     container {
@@ -146,6 +131,38 @@ resource "azurerm_container_app" "f1" {
   }
 
   depends_on = [azurerm_role_assignment.app_secrets]
+
+  lifecycle {
+    ignore_changes = [template[0].container[0].image]
+  }
+}
+
+resource "azurerm_container_app_job" "wake" {
+  name                         = "${var.name}-wake"
+  location                     = azurerm_resource_group.f1.location
+  resource_group_name          = azurerm_resource_group.f1.name
+  container_app_environment_id = azurerm_container_app_environment.f1.id
+  replica_timeout_in_seconds   = 60
+  replica_retry_limit          = 1
+
+  schedule_trigger_config {
+    cron_expression = "*/5 * * * *"
+  }
+
+  template {
+    container {
+      name    = "wake"
+      image   = var.image
+      cpu     = 0.25
+      memory  = "0.5Gi"
+      command = ["node", "scripts/wake.ts"]
+
+      env {
+        name  = "WAKE_URL"
+        value = "https://${azurerm_container_app.f1.ingress[0].fqdn}/"
+      }
+    }
+  }
 
   lifecycle {
     ignore_changes = [template[0].container[0].image]
@@ -222,6 +239,12 @@ resource "azurerm_federated_identity_credential" "github" {
 
 resource "azurerm_role_assignment" "deploy" {
   scope                = azurerm_container_app.f1.id
+  role_definition_name = "Contributor"
+  principal_id         = azurerm_user_assigned_identity.deploy.principal_id
+}
+
+resource "azurerm_role_assignment" "deploy_wake" {
+  scope                = azurerm_container_app_job.wake.id
   role_definition_name = "Contributor"
   principal_id         = azurerm_user_assigned_identity.deploy.principal_id
 }
