@@ -1,0 +1,15 @@
+{
+  "id": "12bf240e",
+  "ts": "2026-09-24T12:47:38+00:00",
+  "text": "In-app browser is unavailable, so the pushed task branch cannot use a browser session to create its PR",
+  "tags": [
+    "cua",
+    "github",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "iab",
+  "branch": "t3code/remove-f1tv-bookmarklet"
+}
