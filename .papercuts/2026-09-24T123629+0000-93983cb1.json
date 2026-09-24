@@ -1,0 +1,14 @@
+{
+  "id": "93983cb1",
+  "ts": "2026-09-24T12:36:29+00:00",
+  "text": "gh pr view 6 failed to connect to api.github.com during FP2 incident",
+  "tags": [
+    "github",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1b4efcfd",
+  "branch": "t3code/fix-fp2-session-display"
+}

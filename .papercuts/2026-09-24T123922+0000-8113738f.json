@@ -1,0 +1,14 @@
+{
+  "id": "8113738f",
+  "ts": "2026-09-24T12:39:22+00:00",
+  "text": "Fresh task worktree lacks node_modules, so pnpm checks fail until install",
+  "tags": [
+    "setup",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1b4efcfd",
+  "branch": "t3code/fix-fp2-session-display"
+}
