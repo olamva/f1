@@ -70,9 +70,16 @@ const TowerRow = ({ row, race, selected, onToggle }: TowerRowProps) => (
     <td className={`px-2 py-1 text-right ${MARK[row.lastMark]}`}>{row.lastLap}</td>
     <td className="px-2 py-1 text-right text-zinc-300">{row.bestLap}</td>
     <td className="px-2 py-1">
-      <span className="flex gap-0.5">
+      <span className="flex gap-1.5">
         {row.sectors.map((s, i) => (
-          <span key={i} title={s.value} className={`h-2 w-5 rounded-sm ${BAR[s.mark]}`} />
+          <span key={i} title={s.value} className="flex min-w-5 flex-col gap-0.5">
+            <span className={`h-2 rounded-sm ${BAR[s.mark]}`} />
+            <span className="flex gap-px">
+              {s.segments.map((m, j) => (
+                <span key={j} className={`h-1 w-1.5 rounded-[1px] ${BAR[m]}`} />
+              ))}
+            </span>
+          </span>
         ))}
       </span>
     </td>
