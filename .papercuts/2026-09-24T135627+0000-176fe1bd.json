@@ -1,0 +1,14 @@
+{
+  "id": "176fe1bd",
+  "ts": "2026-09-24T13:56:27+00:00",
+  "text": "git restore cannot obtain index lock because linked worktree git metadata is outside writable roots",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/Developer/f1/.git/worktrees/t3code-d4f74658/index.lock",
+  "branch": "t3code/use-lucide-icons"
+}
