@@ -129,7 +129,7 @@ const TONES: [Tone, string][] = [
   ["warn", "UNDER INVESTIGATION|WILL BE INVESTIGATED AFTER THE (?:RACE|SESSION)|NOTED|REVIEWED|(?:VIRTUAL )?SAFETY CAR|VSC|SLIPPERY"],
 ];
 
-const TOKEN = new RegExp(String.raw`\b(?:${TONES.map(([, p]) => `(${p})`).join("|")})(?![A-Z])`, "g");
+const TOKEN = new RegExp(String.raw`(?<![:.])\b(?:${TONES.map(([, p]) => `(${p})`).join("|")})(?![A-Z])`, "g");
 
 export const highlight = (text: string): { text: string; tone?: Tone }[] =>
   text.split(TOKEN).reduce<{ text: string; tone?: Tone }[]>((out, s, i) => {
