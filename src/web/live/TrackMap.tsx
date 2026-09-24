@@ -62,7 +62,7 @@ export const TrackMap = ({ outline, positions, rows, selected, note }: TrackMapP
             return (
               <g
                 key={r.number}
-                style={{ transform: `translate(${x}px, ${y}px)`, transition: "transform 500ms linear" }}
+                style={{ transform: `translate(${x}px, ${y}px)`, transition: "transform 1000ms linear" }}
                 opacity={focus ? 1 : 0.35}
               >
                 <circle r={14} fill={r.color} stroke="#18181b" strokeWidth={4} />
