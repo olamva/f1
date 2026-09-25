@@ -1,0 +1,14 @@
+{
+  "id": "8bd56a1a",
+  "ts": "2026-09-25T10:12:14+00:00",
+  "text": "ps cannot inspect worktree processes in the Codex sandbox: operation not permitted",
+  "tags": [
+    "sandbox",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1cf181a2",
+  "branch": "t3code/investigate-untracked-worktrees"
+}
