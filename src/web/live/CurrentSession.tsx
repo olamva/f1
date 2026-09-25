@@ -13,7 +13,7 @@ import { ReplayPicker } from "./ReplayPicker.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
-import { messages, radios, remaining, rows as towerRows, trackStatus } from "./view.ts";
+import { messages, radios, remaining, rows as towerRows, sessionStart, trackStatus } from "./view.ts";
 
 export type LiveInfo = { live: boolean; positions: boolean };
 
@@ -100,7 +100,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
-        <RaceControl messages={messages(state)} rows={rows} />
+        <RaceControl messages={messages(state)} rows={rows} start={sessionStart(state)} />
         <LapCharts laps={laps} rows={rows} focus={focus} until={replay ? feed.t : null} race={race} />
       </div>
       <TeamRadio radios={radios(state)} rows={rows} />
