@@ -64,45 +64,33 @@ function alphaGet(path: string): Promise<any> {
   return request;
 }
 
-const rows = (data: any): any[] =>
-  Array.isArray(data)
-    ? data
-    : ([data?.results, data?.schedules, data?.data].find(Array.isArray) ?? []);
+const alphaDriverName = (r: any): string =>
+  `${r.driver.given_name} ${r.driver.family_name}`.toLocaleLowerCase();
 
-const alphaDriverName = (r: any): string => {
-  const d = r.driver ?? r.Driver ?? r;
-  return `${d.given_name ?? d.givenName ?? ""} ${d.family_name ?? d.familyName ?? ""}`
-    .trim()
-    .toLocaleLowerCase();
-};
-
-async function sprintQualifying(
+export async function sprintQualifying(
   year: number,
   rounds: Round[],
   drivers: DriverInfo[],
 ) {
-  const schedules = rows(await alphaGet(`schedules/${year}/`));
+  const events: any[] = (await alphaGet(`schedules/${year}/`)).data.events;
   const byName = new Map(
     drivers.map((d) => [d.name.toLocaleLowerCase(), d.id]),
   );
   const sprints = rounds
     .filter((r) => r.sessions.sprintQualifying)
     .map((round) => {
-      const schedule = schedules.find(
-        (r) => Number(r.round_number ?? r.round) === round.round,
-      );
-      return { round, id: schedule?.round_id ?? schedule?.id };
+      const event = events.find((e) => e.round.number === round.round);
+      return { round, id: event?.round.id };
     })
     .filter((x) => x.id);
   const results = await Promise.all(
     sprints.map(async ({ round, id }) => {
-      const response = await alphaGet(`results/${id}/SQ/`);
-      const entries = rows(response);
+      const entries: any[] = (await alphaGet(`results/${id}/SQ/`)).data.results;
       return {
         round: round.round,
         results: entries.flatMap((r) => {
           const driver = byName.get(alphaDriverName(r));
-          const position = Number(r.position ?? r.position_number);
+          const position = Number(r.position);
           return driver && Number.isFinite(position)
             ? [
                 {
