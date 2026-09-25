@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Crown, Maximize, Minimize } from "lucide-react";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
-import type { Row } from "./view.ts";
+import { sectorSplits, type Row } from "./view.ts";
 
 const SIZE = 1000;
 const PAD = 60;
@@ -41,6 +41,41 @@ const projector = (outline: Outline) => {
   return { project, box };
 };
 
+const indexAt = (time: number[], fraction: number) =>
+  Math.max(0, time.findIndex((t) => t >= time[0]! + fraction * (time.at(-1)! - time[0]!)));
+
+const markers = (outline: Outline, project: (x: number, y: number) => [number, number], fractions: number[]) => {
+  const n = outline.x.length;
+  const at = (i: number) => project(outline.x[(i + n) % n]!, outline.y[(i + n) % n]!);
+  const across = (i: number, offset: number): [number, number, number, number] => {
+    const [x, y] = at(i);
+    const [ax, ay] = at(i - 3);
+    const [bx, by] = at(i + 3);
+    const length = Math.hypot(bx - ax, by - ay) || 1;
+    return [x, y, ((ay - by) / length) * offset, ((bx - ax) / length) * offset];
+  };
+  const bounds = outline.time.length ? [0, ...fractions, 1] : [0, 1];
+  return {
+    finish: across(0, 20),
+    splits: bounds.slice(1, -1).map((f) => across(indexAt(outline.time, f), 16)),
+    labels: bounds.length > 2 ? bounds.slice(1).map((f, i) => across(indexAt(outline.time, (bounds[i]! + f) / 2), 44)) : [],
+  };
+};
+
+const Markers = ({ finish, splits, labels }: ReturnType<typeof markers>) => (
+  <>
+    {splits.map(([x, y, dx, dy], i) => (
+      <line key={i} x1={x - dx} y1={y - dy} x2={x + dx} y2={y + dy} stroke="#a1a1aa" strokeWidth={4} />
+    ))}
+    {labels.map(([x, y, dx, dy], i) => (
+      <text key={i} x={x + dx} y={y + dy} dominantBaseline="middle" textAnchor="middle" className="fill-zinc-400 text-[20px] font-semibold">
+        S{i + 1}
+      </text>
+    ))}
+    <line x1={finish[0] - finish[2]} y1={finish[1] - finish[3]} x2={finish[0] + finish[2]} y2={finish[1] + finish[3]} stroke="#f4f4f5" strokeWidth={6} />
+  </>
+);
+
 export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, note, positionTrail, speed = 1, banner }: TrackMapProps) => {
   const frame = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
@@ -58,6 +93,8 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
         : "",
     [outline, project],
   );
+  const splits = sectorSplits(rows).join();
+  const marks = useMemo(() => project && markers(outline!, project, splits.split(",").filter(Boolean).map(Number)), [outline, project, splits]);
   useLayoutEffect(() => {
     if (!project || !positionTrail || speed <= 1) return;
     for (const [number, car] of cars.current) {
@@ -106,6 +143,7 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
         }}
       >
         <polyline points={path} fill="none" stroke="#3f3f46" strokeWidth={18} strokeLinejoin="round" strokeLinecap="round" />
+        {marks && <Markers {...marks} />}
         {outline?.corners.map((c) => {
           const [x, y] = project!(c.x, c.y);
           return (
@@ -117,7 +155,7 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
         {project &&
           [...rows].reverse().map((r) => {
             const p = positions?.[r.number];
-            if (r.status === "PIT" || !p || (p[0] === 0 && p[1] === 0)) return null;
+            if (["PIT", "KO"].includes(r.status) || !p || (p[0] === 0 && p[1] === 0)) return null;
             const [x, y] = project(p[0], p[1]);
             const focus = selected.size === 0 || selected.has(r.number);
             return (

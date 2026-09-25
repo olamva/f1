@@ -92,7 +92,7 @@ export class Session {
     const to = rows[mid]!.t;
     const points = this.track[n]!.filter(([t]) => t >= from && t <= to);
     if (points.length < 20) return null;
-    return { x: points.map((p) => p[1]), y: points.map((p) => p[2]), rotation: 0, corners: [] };
+    return { x: points.map((p) => p[1]), y: points.map((p) => p[2]), time: points.map((p) => p[0]), rotation: 0, corners: [] };
   }
 }
 
