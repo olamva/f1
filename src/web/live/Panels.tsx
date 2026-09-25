@@ -123,7 +123,7 @@ const Transcript = ({ url, color }: { url: string; color: string }) => {
   return (
     <blockquote className="space-y-1 text-lg leading-snug font-bold tracking-tight uppercase">
       {data.turns.map((t, i) => (
-        <p key={i} style={{ color: t.speaker === "driver" ? color : "white" }}>
+        <p key={i} className={t.speaker === "driver" ? "text-right" : ""} style={{ color: t.speaker === "driver" ? color : "white" }}>
           {t.text}
         </p>
       ))}
