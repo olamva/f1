@@ -278,6 +278,22 @@ resource "azurerm_cognitive_deployment" "whisper" {
   }
 }
 
+resource "azurerm_cognitive_deployment" "turns" {
+  name                 = "turns"
+  cognitive_account_id = azurerm_cognitive_account.speech.id
+
+  model {
+    format  = "OpenAI"
+    name    = "gpt-4.1-mini"
+    version = "2025-04-14"
+  }
+
+  sku {
+    name     = "GlobalStandard"
+    capacity = 10
+  }
+}
+
 resource "azurerm_role_assignment" "app_speech" {
   scope                = azurerm_cognitive_account.speech.id
   role_definition_name = "Cognitive Services OpenAI User"

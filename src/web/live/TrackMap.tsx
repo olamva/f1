@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Maximize, Minimize } from "lucide-react";
+import { Crown, Maximize, Minimize } from "lucide-react";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import type { Row } from "./view.ts";
@@ -11,6 +11,7 @@ interface TrackMapProps {
   outline: Outline | null;
   positions: Record<string, [number, number]> | undefined;
   rows: Row[];
+  race: boolean;
   selected: Set<string>;
   onToggle: (number: string) => void;
   note: string | null;
@@ -38,7 +39,7 @@ const projector = (outline: Outline) => {
   };
 };
 
-export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, positionTrail, speed = 1, banner }: TrackMapProps) => {
+export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, note, positionTrail, speed = 1, banner }: TrackMapProps) => {
   const frame = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
   const cars = useRef(new Map<string, SVGGElement>());
@@ -147,6 +148,13 @@ export const TrackMap = ({ outline, positions, rows, selected, onToggle, note, p
                 <text y={-22} textAnchor="middle" className="fill-zinc-100 text-[22px] font-semibold">
                   {r.tla}
                 </text>
+                {r.position === 1 && (race || r.bestLap) ? (
+                  <Crown x={-13} y={-62} width={26} height={26} className="stroke-yellow-300" strokeWidth={2.5} />
+                ) : race && r.lapsBehind ? (
+                  <text y={-43} textAnchor="middle" className="fill-zinc-300 text-[21px] font-bold">
+                    +{r.lapsBehind}
+                  </text>
+                ) : null}
               </g>
             );
           })}

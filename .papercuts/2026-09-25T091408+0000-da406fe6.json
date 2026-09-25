@@ -1,0 +1,14 @@
+{
+  "id": "da406fe6",
+  "ts": "2026-09-25T09:14:08+00:00",
+  "text": "Git commit in T3 worktree fails because the git index lives outside writable roots",
+  "tags": [
+    "sandbox",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-e177c46e",
+  "branch": "t3code/investigate-preview-tool-use"
+}
