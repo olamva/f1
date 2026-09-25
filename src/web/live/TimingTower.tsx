@@ -55,14 +55,22 @@ interface Swap {
   id: number;
 }
 
-const LIFT = { zIndex: 2, backgroundColor: "#27272a", boxShadow: "0 4px 12px rgb(0 0 0 / 0.5)" };
+const LIFT = {
+  zIndex: 2,
+  backgroundColor: "#27272a",
+  boxShadow: "0 4px 12px rgb(0 0 0 / 0.5)",
+};
 
 const swapFrames = (dy: number, up: boolean): Keyframe[] => {
   const scale = up ? 1.04 : 1;
   const layer = up ? LIFT : { zIndex: 1 };
   return [
     { ...layer, transform: `translateY(${dy}px) scale(1)` },
-    { ...layer, transform: `translateY(${dy}px) scaleY(${scale})`, offset: 0.25 },
+    {
+      ...layer,
+      transform: `translateY(${dy}px) scaleY(${scale})`,
+      offset: 0.25,
+    },
     { ...layer, transform: `translateY(0) scaleY(${scale})`, offset: 0.75 },
     { ...layer, transform: "translateY(0) scale(1)" },
   ];
@@ -81,11 +89,18 @@ const useSwaps = (rows: Row[]) => {
       const node = nodes.current.get(row.number);
       const before = last.current.get(row.number);
       if (!node) continue;
-      last.current.set(row.number, { position: row.position, top: node.offsetTop });
+      last.current.set(row.number, {
+        position: row.position,
+        top: node.offsetTop,
+      });
       if (!before || before.position === row.position) continue;
       const up = row.position < before.position;
       moved[row.number] = { up, id: ++count.current };
-      if (!still) node.animate(swapFrames(before.top - node.offsetTop, up), { duration: 650, easing: "ease-in-out" });
+      if (!still)
+        node.animate(swapFrames(before.top - node.offsetTop, up), {
+          duration: 650,
+          easing: "ease-in-out",
+        });
     }
     if (Object.keys(moved).length) setSwaps((s) => ({ ...s, ...moved }));
   }, [rows]);
@@ -101,8 +116,15 @@ const useSwaps = (rows: Row[]) => {
 const SwapArrow = ({ swap }: { swap?: Swap }) => (
   <span className="inline-block w-3">
     {swap && (
-      <span key={swap.id} className={`swap-arrow ${swap.up ? "text-emerald-400" : "text-red-500"}`}>
-        {swap.up ? <ArrowUp size={12} strokeWidth={3} /> : <ArrowDown size={12} strokeWidth={3} />}
+      <span
+        key={swap.id}
+        className={`swap-arrow ${swap.up ? "text-emerald-400" : "text-red-500"}`}
+      >
+        {swap.up ? (
+          <ArrowUp size={12} strokeWidth={3} />
+        ) : (
+          <ArrowDown size={12} strokeWidth={3} />
+        )}
       </span>
     )}
   </span>
@@ -120,7 +142,17 @@ interface TowerRowProps {
   onToggle: () => void;
 }
 
-const TowerRow = ({ row, race, qualifying, lapOwner, fastestLap, selected, swap, bind, onToggle }: TowerRowProps) => (
+const TowerRow = ({
+  row,
+  race,
+  qualifying,
+  lapOwner,
+  fastestLap,
+  selected,
+  swap,
+  bind,
+  onToggle,
+}: TowerRowProps) => (
   <tr
     ref={bind}
     onClick={onToggle}
@@ -134,20 +166,49 @@ const TowerRow = ({ row, race, qualifying, lapOwner, fastestLap, selected, swap,
     </td>
     <td className="px-2 py-1">
       <span className="flex items-center gap-2">
-        <span className="h-4 w-1 rounded-sm" style={{ background: row.color }} />
-        <span className="font-semibold" title={row.name}>{row.tla}</span>
-        {lapOwner && <span className="text-[10px] text-purple" title="Fastest lap owner" aria-label="Fastest lap owner">◆</span>}
+        <span
+          className="h-4 w-1 rounded-sm"
+          style={{ background: row.color }}
+        />
+        <span className="font-semibold" title={row.name}>
+          {row.tla}
+        </span>
+        {lapOwner && (
+          <span
+            className="text-purple text-[10px]"
+            title="Fastest lap owner"
+            aria-label="Fastest lap owner"
+          >
+            ◆
+          </span>
+        )}
       </span>
     </td>
-    <td className="px-2 py-1 text-right">{row.position === 1 && race ? "Leader" : row.gap}</td>
-    {race && <td className="px-2 py-1 text-right text-zinc-400">{row.interval}</td>}
-    <td className={`px-2 py-1 text-right ${MARK[row.lastMark]}`}>{row.lastLap}</td>
-    <td className={`px-2 py-1 text-right ${fastestLap ? "text-purple" : "text-zinc-300"}`}>{row.bestLap}</td>
+    <td className="px-2 py-1 text-right">
+      {row.position === 1 && race ? "Leader" : row.gap}
+    </td>
+    {race && (
+      <td className="px-2 py-1 text-right text-zinc-400">{row.interval}</td>
+    )}
+    <td className={`px-2 py-1 text-right ${MARK[row.lastMark]}`}>
+      {row.lastLap}
+    </td>
+    <td
+      className={`px-2 py-1 text-right ${fastestLap ? "text-purple" : "text-zinc-300"}`}
+    >
+      {row.bestLap}
+    </td>
     <td className="px-2 py-1">
       <span className="flex gap-1.5">
         {row.sectors.map((s, i) => (
-          <span key={i} title={s.value} className={`flex flex-col gap-0.5 ${qualifying ? "min-w-17" : "min-w-5"}`}>
-            <span className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}>
+          <span
+            key={i}
+            title={s.value}
+            className={`flex flex-col gap-0.5 ${qualifying ? "min-w-17" : "min-w-5"}`}
+          >
+            <span
+              className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}
+            >
               {qualifying && s.value}
             </span>
             <span className="flex gap-px">
@@ -159,24 +220,38 @@ const TowerRow = ({ row, race, qualifying, lapOwner, fastestLap, selected, swap,
         ))}
       </span>
     </td>
-    <td className="px-2 py-1"><Tyre compound={row.tyre} age={row.tyreAge} /></td>
+    <td className="px-2 py-1">
+      <Tyre compound={row.tyre} age={row.tyreAge} />
+    </td>
     <td className="px-2 py-1 text-right text-zinc-400">{row.pits || ""}</td>
     <td className="px-2 py-1 text-xs text-zinc-400">{row.status}</td>
   </tr>
 );
 
-export const TimingTower = ({ rows, race, qualifying, bests, selected, onToggle }: TimingTowerProps) => {
+export const TimingTower = ({
+  rows,
+  race,
+  qualifying,
+  bests,
+  selected,
+  onToggle,
+}: TimingTowerProps) => {
   const { swaps, bind } = useSwaps(rows);
   return (
-    <div className="overflow-x-auto rounded-xl bg-surface">
+    <div className="bg-surface overflow-x-auto rounded-xl">
       <div className="flex min-w-max items-center gap-4 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
-        <span className="font-sans font-semibold tracking-wide text-zinc-500 uppercase">Session best</span>
+        <span className="font-sans font-semibold tracking-wide text-zinc-500 uppercase">
+          Session best
+        </span>
         {[...bests.sectors, bests.lap].map((best, i) => (
           <span key={i} className="flex items-center gap-1.5">
-            <span className="text-zinc-500">{i === 3 ? "Lap" : `S${i + 1}`}</span>
+            <span className="text-zinc-500">
+              {i === 3 ? "Lap" : `S${i + 1}`}
+            </span>
             {best ? (
               <span className="font-semibold">
-                <span style={{ color: best.color }}>{best.tla}</span> <span className="text-purple">{best.value}</span>
+                <span style={{ color: best.color }}>{best.tla}</span>{" "}
+                <span className="text-purple">{best.value}</span>
               </span>
             ) : (
               <span className="text-zinc-600">—</span>
@@ -207,7 +282,9 @@ export const TimingTower = ({ rows, race, qualifying, bests, selected, onToggle 
               race={race}
               qualifying={qualifying}
               lapOwner={bests.lap?.number === r.number}
-              fastestLap={bests.lap?.number === r.number && r.bestLap === bests.lap?.value}
+              fastestLap={
+                bests.lap?.number === r.number && r.bestLap === bests.lap?.value
+              }
               selected={selected.has(r.number)}
               swap={swaps[r.number]}
               bind={bind(r.number)}

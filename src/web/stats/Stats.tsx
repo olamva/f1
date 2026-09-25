@@ -38,7 +38,9 @@ interface StatsProps {
 }
 
 export const Stats = ({ season }: StatsProps) => {
-  const [view, setView] = useState<View>(() => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Standings");
+  const [view, setView] = useState<View>(
+    () => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Standings",
+  );
   const show = (v: View) => {
     setPathPart("stats", slug(v));
     setView(v);

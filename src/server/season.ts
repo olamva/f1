@@ -42,7 +42,8 @@ const quali = (r: any): QualiResult => ({
   q3: r.Q3 ?? null,
 });
 
-const when = (s: any): string | null => (s ? `${s.date}T${s.time ?? "00:00:00Z"}` : null);
+const when = (s: any): string | null =>
+  s ? `${s.date}T${s.time ?? "00:00:00Z"}` : null;
 
 const alpha = "https://api.jolpi.ca/f1/alpha";
 const alphaCache = new Map<string, { at: number; body: Promise<any> }>();
@@ -136,7 +137,8 @@ export async function season(): Promise<Season> {
     get("current/constructorstandings.json"),
   ]);
   const driverRows = ds.StandingsTable.StandingsLists[0]?.DriverStandings ?? [];
-  const teamRows = cs.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
+  const teamRows =
+    cs.StandingsTable.StandingsLists[0]?.ConstructorStandings ?? [];
   const drivers: DriverInfo[] = driverRows.map((d: any) => ({
     id: d.Driver.driverId,
     code: d.Driver.code,
@@ -154,13 +156,30 @@ export async function season(): Promise<Season> {
     year: Number(calendar.RaceTable.season),
     rounds,
     drivers,
-    teams: teamRows.map((t: any) => ({ id: t.Constructor.constructorId, name: t.Constructor.name })),
-    races: [...byRound(results, "Results")].map(([round, rows]) => ({ round, results: rows.map(classified) })),
-    sprints: [...byRound(sprints, "SprintResults")].map(([round, rows]) => ({ round, results: rows.map(classified) })),
-    qualifying: [...byRound(qualifying, "QualifyingResults")].map(([round, rows]) => ({ round, results: rows.map(quali) })),
+    teams: teamRows.map((t: any) => ({
+      id: t.Constructor.constructorId,
+      name: t.Constructor.name,
+    })),
+    races: [...byRound(results, "Results")].map(([round, rows]) => ({
+      round,
+      results: rows.map(classified),
+    })),
+    sprints: [...byRound(sprints, "SprintResults")].map(([round, rows]) => ({
+      round,
+      results: rows.map(classified),
+    })),
+    qualifying: [...byRound(qualifying, "QualifyingResults")].map(
+      ([round, rows]) => ({ round, results: rows.map(quali) }),
+    ),
     sprintQualifying: sprintQualifyingResults,
-    driverStandings: driverRows.map((d: any) => ({ id: d.Driver.driverId, points: Number(d.points) })),
-    constructorStandings: teamRows.map((t: any) => ({ id: t.Constructor.constructorId, points: Number(t.points) })),
+    driverStandings: driverRows.map((d: any) => ({
+      id: d.Driver.driverId,
+      points: Number(d.points),
+    })),
+    constructorStandings: teamRows.map((t: any) => ({
+      id: t.Constructor.constructorId,
+      points: Number(t.points),
+    })),
   };
 }
 
@@ -172,11 +191,22 @@ const seconds = (t: string): number => {
 export async function pace(round: number): Promise<Pace> {
   const day = 24 * 60 * 60_000;
   const [laps, stops] = await Promise.all([
-    all(`current/${round}/laps.json`, (d) => races(d).flatMap((r) => r.Laps), day),
-    all(`current/${round}/pitstops.json`, (d) => races(d).flatMap((r) => r.PitStops), day),
+    all(
+      `current/${round}/laps.json`,
+      (d) => races(d).flatMap((r) => r.Laps),
+      day,
+    ),
+    all(
+      `current/${round}/pitstops.json`,
+      (d) => races(d).flatMap((r) => r.PitStops),
+      day,
+    ),
   ]);
   const pit = new Set(
-    stops.flatMap((p: any) => [`${p.driverId}:${p.lap}`, `${p.driverId}:${Number(p.lap) + 1}`]),
+    stops.flatMap((p: any) => [
+      `${p.driverId}:${p.lap}`,
+      `${p.driverId}:${Number(p.lap) + 1}`,
+    ]),
   );
   const out: Pace = {};
   for (const lap of laps) {
@@ -193,7 +223,11 @@ const DAY = 24 * 60 * 60_000;
 
 async function career(id: string, titles: string[]): Promise<Records[string]> {
   const [results, poles] = await Promise.all([
-    all(`drivers/${id}/results.json`, (d) => races(d).flatMap((r) => r.Results), DAY),
+    all(
+      `drivers/${id}/results.json`,
+      (d) => races(d).flatMap((r) => r.Results),
+      DAY,
+    ),
     total(`drivers/${id}/qualifying/1.json`, DAY),
   ]);
   const place = results.map((r: any) => Number(r.positionText) || 0);

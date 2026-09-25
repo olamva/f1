@@ -10,7 +10,9 @@ const pause = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 function throttled(url: string): Promise<any> {
   const run = queue.then(async () => {
-    const res = await fetch(url, { headers: { "User-Agent": "f1.ola-vassbotn.no" } });
+    const res = await fetch(url, {
+      headers: { "User-Agent": "f1.ola-vassbotn.no" },
+    });
     await pause(SPACING_MS);
     if (!res.ok) throw new Error(`jolpica ${res.status} ${url}`);
     return (await res.json()).MRData;

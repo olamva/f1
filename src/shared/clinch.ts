@@ -2,7 +2,12 @@ import { pointsFor, type EventKind } from "./points.ts";
 
 export type Championship = "drivers" | "constructors";
 export type Standing = { id: string; points: number; countback: number[] };
-export type Upcoming = { round: number; name: string; kind: EventKind; country?: string };
+export type Upcoming = {
+  round: number;
+  name: string;
+  kind: EventKind;
+  country?: string;
+};
 export type Picks = Record<string, number[]>[];
 
 const CARS: Record<Championship, number> = { drivers: 1, constructors: 2 };
@@ -57,7 +62,9 @@ const beatsAll = (
   remaining: Upcoming[],
   champ: Championship,
 ) =>
-  rivals.every((r) => r.id === me.id || ahead(me, ceiling(r, remaining, champ)));
+  rivals.every(
+    (r) => r.id === me.id || ahead(me, ceiling(r, remaining, champ)),
+  );
 
 export const hasClinched = (
   table: Standing[],
@@ -203,7 +210,9 @@ export function simulate(
     if (!decided && winner) decided = { index: i, id: winner.id };
   });
   return {
-    final: [...current].sort((a, b) => (ahead(a, b) ? -1 : ahead(b, a) ? 1 : 0)),
+    final: [...current].sort((a, b) =>
+      ahead(a, b) ? -1 : ahead(b, a) ? 1 : 0,
+    ),
     decided,
   };
 }

@@ -19,11 +19,16 @@ test("race control messages split into toned tokens", () => {
     { text: "PIT EXIT REOPENED AFTER " },
     { text: "NO FURTHER ACTION", tone: "good" },
   ]);
-  assert.deepEqual(highlight("CAR 23 (ALB) LAP DELETED - DOUBLE YELLOW AT TURN 14 LAP 9 16:16:55 (PIT)"), [
-    { text: "CAR " },
-    { text: "23 (ALB)", tone: "car" },
-    { text: " LAP " },
-    { text: "DELETED", tone: "bad" },
-    { text: " - DOUBLE YELLOW AT TURN 14 LAP 9 16:16:55 (PIT)" },
-  ]);
+  assert.deepEqual(
+    highlight(
+      "CAR 23 (ALB) LAP DELETED - DOUBLE YELLOW AT TURN 14 LAP 9 16:16:55 (PIT)",
+    ),
+    [
+      { text: "CAR " },
+      { text: "23 (ALB)", tone: "car" },
+      { text: " LAP " },
+      { text: "DELETED", tone: "bad" },
+      { text: " - DOUBLE YELLOW AT TURN 14 LAP 9 16:16:55 (PIT)" },
+    ],
+  );
 });

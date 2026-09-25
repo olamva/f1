@@ -7,7 +7,12 @@ export type PositionTrail = {
   samples: Record<string, [number, number]>[];
 };
 
-export type Feed = Snapshot & { start?: number; beat: number; positionTrail?: PositionTrail; src?: string };
+export type Feed = Snapshot & {
+  start?: number;
+  beat: number;
+  positionTrail?: PositionTrail;
+  src?: string;
+};
 
 export const applyDelta = (f: Feed, batch: Delta[]): Feed => {
   const state = { ...f.state } as Record<string, Json>;
@@ -17,7 +22,8 @@ export const applyDelta = (f: Feed, batch: Delta[]): Feed => {
     t = at;
     if (topic === "Clock") continue;
     if (topic === "Heartbeat") beat = at;
-    if (topic === "Position") samples.push(data as Record<string, [number, number]>);
+    if (topic === "Position")
+      samples.push(data as Record<string, [number, number]>);
     state[topic] = merge(state[topic], data as Json);
   }
   const positionTrail = samples.length
@@ -63,6 +69,8 @@ export function useFeed(url: string | null, delay = 0): Feed | null {
 }
 
 export const feedUtc = (f: Feed): number => {
-  const utc = Date.parse((f.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "");
+  const utc = Date.parse(
+    (f.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "",
+  );
   return Number.isNaN(utc) ? f.t : utc + (f.t - f.beat);
 };

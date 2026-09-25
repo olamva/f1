@@ -27,10 +27,13 @@ const POSITION_SPACING_MS = 500;
 export const inflate = (b64: string): Json =>
   JSON.parse(inflateRawSync(Buffer.from(b64, "base64")).toString("utf8"));
 
-type Sample = { Timestamp: string; Entries: Record<string, { X: number; Y: number }> };
+type Sample = {
+  Timestamp: string;
+  Entries: Record<string, { X: number; Y: number }>;
+};
 
 export function positionEvents(t: number, raw: Json): Event[] {
-  const samples = ((raw as { Position?: Sample[] }).Position ?? []);
+  const samples = (raw as { Position?: Sample[] }).Position ?? [];
   const first = Date.parse(samples[0]?.Timestamp ?? "");
   return samples.map((s) => ({
     t: t + (Date.parse(s.Timestamp) - first || 0),
@@ -51,7 +54,9 @@ export class Session {
     if (e.topic === "Position") {
       if (e.t - this.lastPosition < POSITION_SPACING_MS) return null;
       this.lastPosition = e.t;
-      for (const [n, p] of Object.entries(e.data as Record<string, [number, number]>))
+      for (const [n, p] of Object.entries(
+        e.data as Record<string, [number, number]>,
+      ))
         (this.track[n] ??= []).push([e.t, p[0], p[1]]);
     }
     this.state[e.topic] = merge(this.state[e.topic], e.data);
@@ -61,7 +66,10 @@ export class Session {
 
   private trackLaps(e: Event) {
     const lines = (e.data as { Lines?: Record<string, any> }).Lines ?? {};
-    const all = ((this.state.TimingData as any)?.Lines ?? {}) as Record<string, any>;
+    const all = ((this.state.TimingData as any)?.Lines ?? {}) as Record<
+      string,
+      any
+    >;
     for (const [n, delta] of Object.entries(lines)) {
       const line = all[n];
       const lap = Number(line?.NumberOfLaps);
@@ -92,7 +100,13 @@ export class Session {
     const to = rows[mid]!.t;
     const points = this.track[n]!.filter(([t]) => t >= from && t <= to);
     if (points.length < 20) return null;
-    return { x: points.map((p) => p[1]), y: points.map((p) => p[2]), time: points.map((p) => p[0]), rotation: 0, corners: [] };
+    return {
+      x: points.map((p) => p[1]),
+      y: points.map((p) => p[2]),
+      time: points.map((p) => p[0]),
+      rotation: 0,
+      corners: [],
+    };
   }
 }
 
@@ -103,7 +117,8 @@ export function parseStream(text: string, topic: string): Event[] {
     if (!m) continue;
     const t = (Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])) * 1000;
     const raw = JSON.parse(m[4]!) as Json;
-    if (topic.endsWith(".z")) out.push(...positionEvents(t, inflate(raw as string)));
+    if (topic.endsWith(".z"))
+      out.push(...positionEvents(t, inflate(raw as string)));
     else out.push({ t, topic, data: raw });
   }
   return out;

@@ -113,7 +113,12 @@ export function remaining(s: Season): Upcoming[] {
             },
           ]
         : []),
-      { round: r.round, name: r.name, kind: "race" as const, country: r.country },
+      {
+        round: r.round,
+        name: r.name,
+        kind: "race" as const,
+        country: r.country,
+      },
     ]);
 }
 

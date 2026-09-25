@@ -3,15 +3,22 @@ import type { MiddlewareHandler } from "hono";
 type Claim = { typ?: string; val?: string };
 type Principal = { auth_typ?: string; claims?: Claim[] };
 
-const EMAIL_CLAIM = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
+const EMAIL_CLAIM =
+  "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress";
 
 function email(header: string | undefined): string | null {
   if (!header) return null;
   try {
-    const p = JSON.parse(Buffer.from(header, "base64").toString("utf8")) as Principal;
+    const p = JSON.parse(
+      Buffer.from(header, "base64").toString("utf8"),
+    ) as Principal;
     if (p.auth_typ !== "google" || !Array.isArray(p.claims)) return null;
-    const values = p.claims.filter((c) => c.typ === EMAIL_CLAIM).map((c) => c.val);
-    return values.length === 1 && typeof values[0] === "string" ? values[0] : null;
+    const values = p.claims
+      .filter((c) => c.typ === EMAIL_CLAIM)
+      .map((c) => c.val);
+    return values.length === 1 && typeof values[0] === "string"
+      ? values[0]
+      : null;
   } catch {
     return null;
   }

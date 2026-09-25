@@ -23,12 +23,22 @@ const clock = (ms: number) => {
   return `${Math.floor(s / 3600)}:${String(Math.floor(s / 60) % 60).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 };
 
-export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onToggle, onSpeed, onSeek }: ReplayBarProps) => {
+export const ReplayBar = ({
+  session,
+  onClose,
+  feed,
+  pending,
+  playing,
+  speed,
+  onToggle,
+  onSpeed,
+  onSeek,
+}: ReplayBarProps) => {
   const [drag, setDrag] = useState<number | null>(null);
   const start = feed?.start ?? 0;
   const value = drag ?? pending ?? feed?.t ?? 0;
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl bg-surface p-3 text-sm">
+    <div className="bg-surface flex flex-wrap items-center gap-3 rounded-xl p-3 text-sm">
       <button
         onClick={onClose}
         title="Exit replay"
@@ -37,7 +47,9 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
         <X aria-hidden="true" className="size-4" />
         Exit
       </button>
-      <span className="rounded bg-zinc-700 px-2 py-0.5 text-xs font-semibold">REPLAY</span>
+      <span className="rounded bg-zinc-700 px-2 py-0.5 text-xs font-semibold">
+        REPLAY
+      </span>
       <span className="font-semibold">
         <Flag country={session.country} />
         {session.meeting} · {session.name}
@@ -48,9 +60,17 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
         title={playing ? "Pause replay" : "Play replay"}
         className="grid size-8 cursor-pointer place-items-center rounded-md bg-zinc-100 text-zinc-900"
       >
-        {playing ? <Pause aria-hidden="true" className="size-4" /> : <Play aria-hidden="true" className="size-4" />}
+        {playing ? (
+          <Pause aria-hidden="true" className="size-4" />
+        ) : (
+          <Play aria-hidden="true" className="size-4" />
+        )}
       </button>
-      <select value={speed} onChange={(e) => onSpeed(Number(e.target.value))} className="rounded-md bg-zinc-800 px-2 py-1">
+      <select
+        value={speed}
+        onChange={(e) => onSpeed(Number(e.target.value))}
+        className="rounded-md bg-zinc-800 px-2 py-1"
+      >
         {SPEEDS.map((s) => (
           <option key={s} value={s}>
             {s}×
@@ -80,7 +100,9 @@ export const ReplayBar = ({ session, onClose, feed, pending, playing, speed, onT
         }}
         className="min-w-48 flex-1 accent-red-500"
       />
-      <span className="tabular font-mono text-zinc-300">{clock(value - start)}</span>
+      <span className="tabular font-mono text-zinc-300">
+        {clock(value - start)}
+      </span>
     </div>
   );
 };

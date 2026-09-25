@@ -1,4 +1,5 @@
-export type Json = null | boolean | number | string | Json[] | { [k: string]: Json };
+export type Json =
+  null | boolean | number | string | Json[] | { [k: string]: Json };
 
 const isObject = (v: unknown): v is Record<string, Json> =>
   typeof v === "object" && v !== null && !Array.isArray(v);

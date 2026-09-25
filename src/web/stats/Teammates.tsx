@@ -55,7 +55,7 @@ export const Teammates = ({
       const color = a?.color ?? "#888";
       const faster = d.gap === null ? null : d.gap < 0 ? a : b;
       return (
-        <section key={d.team} className="space-y-2 rounded-xl bg-surface p-3">
+        <section key={d.team} className="bg-surface space-y-2 rounded-xl p-3">
           <header className="flex items-center justify-between text-sm font-semibold">
             <span>{a?.name ?? d.a}</span>
             <span className="text-zinc-500">vs</span>

@@ -10,7 +10,7 @@ interface StandingsTableProps {
 export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
   const lead = table[0]?.points ?? 0;
   return (
-    <section className="rounded-xl bg-surface p-3">
+    <section className="bg-surface rounded-xl p-3">
       <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
         {title}
       </h2>

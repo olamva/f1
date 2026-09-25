@@ -15,8 +15,14 @@ const responses: Record<string, unknown> = {
   "https://api.jolpi.ca/f1/alpha/results/round_b/SQ/": {
     data: {
       results: [
-        { driver: { given_name: "George", family_name: "Russell" }, position: 1 },
-        { driver: { given_name: "Kimi", family_name: "Antonelli" }, position: 2 },
+        {
+          driver: { given_name: "George", family_name: "Russell" },
+          position: 1,
+        },
+        {
+          driver: { given_name: "Kimi", family_name: "Antonelli" },
+          position: 2,
+        },
       ],
     },
   },
@@ -32,12 +38,32 @@ test("sprintQualifying reads jolpica alpha schedules and results", async (t) => 
     2026,
     [round(1, null), round(2, "2026-03-13T07:30:00Z")],
     [
-      { id: "russell", code: "RUS", name: "George Russell", number: "63", team: "mercedes" },
-      { id: "antonelli", code: "ANT", name: "Kimi Antonelli", number: "12", team: "mercedes" },
+      {
+        id: "russell",
+        code: "RUS",
+        name: "George Russell",
+        number: "63",
+        team: "mercedes",
+      },
+      {
+        id: "antonelli",
+        code: "ANT",
+        name: "Kimi Antonelli",
+        number: "12",
+        team: "mercedes",
+      },
     ],
   );
   assert.deepEqual(
     result.map((r) => [r.round, r.results.map((x) => [x.driver, x.position])]),
-    [[2, [["russell", 1], ["antonelli", 2]]]],
+    [
+      [
+        2,
+        [
+          ["russell", 1],
+          ["antonelli", 2],
+        ],
+      ],
+    ],
   );
 });
