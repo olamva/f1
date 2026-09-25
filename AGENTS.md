@@ -27,6 +27,9 @@ Do not force-push, bypass branch protection, or merge with blocked checks.
 ## Visual review
 
 Apply a required visual review to each PR that changes the visible UI.
+Use T3 preview tools first for web UI review and screenshots when they are available.
+Call `mcp__t3_code__preview_snapshot` with `save: true`.
+Embed each returned `screenshotPath` in the review message.
 Take screenshots of the changed UI in the running app. Include the before and after states.
 Show the screenshots to the user and ask for a review.
 Do not merge the PR before the user approves the visual change.
