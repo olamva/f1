@@ -1,0 +1,13 @@
+{
+  "id": "c3802fa8",
+  "ts": "2026-09-25T13:49:34+00:00",
+  "text": "ps cannot inspect stalled pnpm processes in the Codex sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-8464042e",
+  "branch": "t3code/persist-live-timing-state"
+}

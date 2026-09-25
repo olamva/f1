@@ -2,25 +2,29 @@ import { useEffect, useState } from "react";
 import { Settings as SettingsIcon } from "lucide-react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
-import { CurrentSession, type LiveInfo } from "./live/CurrentSession.tsx";
+import { LiveSession, Replays, type LiveInfo } from "./live/CurrentSession.tsx";
 import { Loading } from "./Loading.tsx";
 import { Settings } from "./Settings.tsx";
 import { Stats } from "./stats/Stats.tsx";
 import { Tabs } from "./Tabs.tsx";
 import f1Logo from "./f1-logo.svg";
 
-const TABS = ["Countdown", "Stats", "Settings"] as const;
-const NAV_TABS = ["Countdown", "Stats"] as const;
+const TABS = ["Countdown", "Replays", "Stats", "Settings"] as const;
+const CONTENT_TABS = ["Replays", "Stats"] as const;
 type Tab = (typeof TABS)[number];
 
 const SLUG: Record<Tab, string> = {
   Countdown: "session",
+  Replays: "replay",
   Stats: "stats",
   Settings: "settings",
 };
 
 const fromHash = (): Tab =>
-  TABS.find((t) => location.hash.slice(1).startsWith(SLUG[t])) ?? "Countdown";
+  location.hash.startsWith("#session/")
+    ? "Replays"
+    : (TABS.find((t) => location.hash.slice(1).startsWith(SLUG[t])) ??
+      "Countdown");
 
 export const App = () => {
   const [tab, setTab] = useState<Tab>(fromHash);
@@ -41,24 +45,32 @@ export const App = () => {
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
-      <header className="app-nav grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-6">
+      <header className="app-nav grid grid-cols-[1fr_auto] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-6">
         <button
           onClick={() => go("Countdown")}
           className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
-          aria-label="Go to Countdown"
+          aria-label="Go to live session"
           type="button"
         >
           <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />
         </button>
-        <Tabs
-          items={NAV_TABS}
-          value={tab === "Settings" ? null : tab}
-          onChange={go}
-          labels={info.data?.live ? { Countdown: "Live" } : undefined}
-        />
+        <div className="order-3 col-span-2 flex items-center justify-center gap-2 sm:order-none sm:col-span-1 sm:gap-3">
+          <Tabs
+            items={["Countdown"] as const}
+            value={tab === "Countdown" ? tab : null}
+            onChange={go}
+            labels={info.data?.live ? { Countdown: "Live" } : undefined}
+            live={info.data?.live ? "Countdown" : undefined}
+          />
+          <Tabs
+            items={CONTENT_TABS}
+            value={tab === "Replays" || tab === "Stats" ? tab : null}
+            onChange={go}
+          />
+        </div>
         <button
           onClick={() => go("Settings")}
-          className="glass-gear ml-auto grid size-10 place-items-center sm:size-11"
+          className="glass-gear order-2 ml-auto grid size-10 place-items-center sm:order-none sm:size-11"
           data-active={tab === "Settings"}
           aria-label="Settings"
           aria-pressed={tab === "Settings"}
@@ -73,9 +85,10 @@ export const App = () => {
         </button>
       </header>
       <main key={`session-${session}`} hidden={tab !== "Countdown"}>
-        <CurrentSession season={season} info={info} />
+        {tab === "Countdown" && <LiveSession season={season} info={info} />}
       </main>
       <main key={visit} hidden={tab === "Countdown"}>
+        {tab === "Replays" && <Replays />}
         {tab === "Stats" &&
           (season.data ? (
             <Stats season={season.data} />
