@@ -57,6 +57,11 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
     });
   const focus = selected.size ? [...selected] : rows.slice(0, 5).map((r) => r.number);
   const utc = replay ? feedUtc(feed) : now - delay;
+  const banner = status && (
+    <div role="alert" className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? " paused" : ""}`}>
+      {status.label}
+    </div>
+  );
   return (
     <div className="space-y-4">
       <header className="flex flex-wrap items-center gap-3">
@@ -71,15 +76,11 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
         )}
         <span className="tabular ml-auto font-mono text-lg">{remaining(state, utc)}</span>
       </header>
-      {status && (
-        <div role="alert" className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? " paused" : ""}`}>
-          {status.label}
-        </div>
-      )}
+      {banner}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
-          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} onToggle={(n) => setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} />
+          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} onToggle={(n) => setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} banner={banner} />
           <Weather weather={state.WeatherData} />
         </div>
       </div>
