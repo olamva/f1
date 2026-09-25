@@ -21,6 +21,7 @@ async function post(value: string): Promise<TokenStatus> {
 export const Settings = () => {
   const [status, setStatus] = useState<TokenStatus | null>(null);
   const [value, setValue] = useState("");
+  const [autoplay, setAutoplay] = useState(() => localStorage.getItem("autoplay") === "1");
   const [message, setMessage] = useState<string | null>(null);
   const save = (v: string) =>
     post(v).then(
@@ -37,6 +38,20 @@ export const Settings = () => {
   const soon = status?.sessionExpiresAt && status.sessionExpiresAt - Date.now() < 3 * 24 * 3600_000;
   return (
     <div className="max-w-2xl space-y-4">
+      <section className="space-y-2 rounded-xl bg-surface p-4">
+        <h2 className="text-lg font-semibold">Team radio</h2>
+        <label className="flex items-center gap-2 text-sm">
+          <input
+            type="checkbox"
+            checked={autoplay}
+            onChange={(e) => {
+              setAutoplay(e.target.checked);
+              localStorage.setItem("autoplay", e.target.checked ? "1" : "0");
+            }}
+          />
+          Play new radio messages automatically
+        </label>
+      </section>
       <section className="space-y-2 rounded-xl bg-surface p-4">
         <h2 className="text-lg font-semibold">F1TV token</h2>
         <p className="text-sm text-zinc-400">
