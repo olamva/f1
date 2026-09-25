@@ -1,0 +1,13 @@
+{
+  "id": "f6752911",
+  "ts": "2026-09-25T13:49:17+00:00",
+  "text": "Sandbox blocks the Vite localhost listener and Node watch exceeds file limits",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-d515a0f1",
+  "branch": "t3code/qualifying-sector-times"
+}

@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parseStream, Session } from "../src/server/timing.ts";
 import { merge, type Json } from "../src/shared/merge.ts";
-import { rows } from "../src/web/live/view.ts";
+import { rows, sessionBests } from "../src/web/live/view.ts";
 
 const fixture = (name: string) =>
   readFileSync(new URL(`fixtures/${name}`, import.meta.url), "utf8");
@@ -57,4 +57,28 @@ test("timing rows count lapped cars without reading the leader lap counter as a 
     } },
   });
   assert.deepEqual(result.map(({ lapsBehind }) => lapsBehind), [null, 1, 2]);
+});
+
+test("session best owners use personal records instead of the latest sectors", () => {
+  const state = {
+    DriverList: { "1": { Tla: "VER" }, "2": { Tla: "RUS" }, "3": { Tla: "HAM" } },
+    TimingData: { Lines: {
+      "1": { Position: "1", BestLapTime: { Value: "1:44.500" }, Sectors: [{ Value: "40.000" }] },
+      "2": { Position: "2", BestLapTime: { Value: "1:44.000" }, Sectors: [{ Value: "34.000" }] },
+      "3": { Position: "3", BestLapTime: { Value: "1:45.000" }, Sectors: [{ Value: "36.000" }] },
+    } },
+    TimingStats: { Lines: {
+      "1": { BestSectors: [{ Value: "35.000" }, { Value: "42.000" }, { Value: "25.000" }], PersonalBestLapTime: { Value: "1:44.500" } },
+      "2": { BestSectors: [{ Value: "36.000" }, { Value: "41.000" }, { Value: "26.000" }], PersonalBestLapTime: { Value: "1:44.000" } },
+      "3": { BestSectors: [{ Value: "37.000" }, { Value: "43.000" }, { Value: "24.000" }], PersonalBestLapTime: { Value: "1:45.000" } },
+    } },
+  };
+  assert.deepEqual(sessionBests(state, rows(state)), {
+    sectors: [
+      { number: "1", tla: "VER", value: "35.000" },
+      { number: "2", tla: "RUS", value: "41.000" },
+      { number: "3", tla: "HAM", value: "24.000" },
+    ],
+    lap: { number: "2", tla: "RUS", value: "1:44.000" },
+  });
 });

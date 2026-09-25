@@ -13,7 +13,7 @@ import { ReplayPicker } from "./ReplayPicker.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
-import { messages, radios, remaining, rows as towerRows, sessionStart, trackStatus } from "./view.ts";
+import { isQualifying, messages, radios, remaining, rows as towerRows, sessionBests, sessionStart, trackStatus } from "./view.ts";
 
 export type LiveInfo = { live: boolean; positions: boolean };
 
@@ -59,7 +59,9 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
   const now = useTick(1000);
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => towerRows(state), [state]);
+  const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
   const race = /Race|Sprint$/.test(state.SessionInfo?.Type ?? "") || state.SessionInfo?.Name === "Sprint";
+  const qualifying = isQualifying(state.SessionInfo);
   const status = trackStatus(state);
   const toggle = (n: string) =>
     setSelected((s) => {
@@ -93,7 +95,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
       </header>
       {banner}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
+        <TimingTower rows={rows} race={race} qualifying={qualifying} bests={bests} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
           <TrackMap outline={outline} positions={state.Position} rows={rows} race={race} selected={selected} onToggle={(n) => setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} banner={banner} />
           <Weather weather={state.WeatherData} />
