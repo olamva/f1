@@ -48,6 +48,7 @@ export async function outlineFor(info: any, fallback: () => Outline | null): Pro
       return {
         x: c.x,
         y: c.y,
+        time: c.trackPositionTime ?? [],
         rotation: c.rotation ?? 0,
         corners: (c.corners ?? []).map((k: any) => ({ number: k.number, ...k.trackPosition })),
       };

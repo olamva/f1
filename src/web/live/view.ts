@@ -159,3 +159,9 @@ export const highlight = (text: string): { text: string; tone?: Tone }[] =>
     if (s) out.push(k ? { text: s, tone: TONES[k - 1]![0] } : { text: s });
     return out;
   }, []);
+
+export const sectorSplits = (rows: Row[]): number[] => {
+  const laps = rows.map((r) => r.sectors.map((s) => lapSeconds(s.value) ?? 0)).filter((s) => s.length === 3 && s.every(Boolean));
+  const [a, b, c] = [0, 1, 2].map((i) => laps.reduce((sum, s) => sum + s[i]!, 0));
+  return laps.length ? [a! / (a! + b! + c!), (a! + b!) / (a! + b! + c!)] : [];
+};
