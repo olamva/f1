@@ -73,6 +73,23 @@ textarea {
   outline-offset: 3px;
 }
 
+.live-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  margin-right: 0.5rem;
+  border-radius: 50%;
+  background: #fca5a5;
+  box-shadow: 0 0 0 0 rgb(248 113 113 / 0.7);
+  animation: live-pulse 2s ease-out infinite;
+}
+
+@keyframes live-pulse {
+  50% {
+    box-shadow: 0 0 0 0.4rem rgb(248 113 113 / 0);
+  }
+}
+
 .glass-gear {
   border: 1px solid rgb(255 255 255 / 0.14);
   border-radius: 9999px;
@@ -168,5 +185,8 @@ textarea {
   .flag-banner {
     animation: none;
   }
-}
 
+  .live-dot {
+    animation: none;
+  }
+}
