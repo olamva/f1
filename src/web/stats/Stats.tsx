@@ -93,6 +93,7 @@ export const Stats = ({ season }: StatsProps) => {
           duels={d.duels}
           who={d.who}
           hasSprints={season.sprints.length > 0}
+          hasSprintQualifying={season.sprintQualifying.length > 0}
         />
       )}
       {view === "Season" && (

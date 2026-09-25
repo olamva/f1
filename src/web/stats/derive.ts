@@ -149,6 +149,7 @@ export type Duel = {
   a: string;
   b: string;
   quali: [number, number];
+  sprintQuali: [number, number];
   race: [number, number];
   sprint: [number, number];
   racePoints: [number, number];
@@ -180,6 +181,7 @@ function duel(s: Season, team: string, a: string, b: string): Duel {
     a,
     b,
     quali: [0, 0],
+    sprintQuali: [0, 0],
     race: [0, 0],
     sprint: [0, 0],
     racePoints: [0, 0],
@@ -196,6 +198,13 @@ function duel(s: Season, team: string, a: string, b: string): Duel {
     d.quali[x.position < y.position ? 0 : 1]++;
     const g = qualiGap(x, y);
     if (g !== null && Math.abs(g) < 3) gaps.push(g);
+  }
+  for (const q of s.sprintQualifying) {
+    const [x, y] = [
+      q.results.find((r) => r.driver === a),
+      q.results.find((r) => r.driver === b),
+    ];
+    if (x && y) d.sprintQuali[x.position < y.position ? 0 : 1]++;
   }
   for (const [events, results, points] of [
     [s.races, d.race, d.racePoints],

@@ -4,6 +4,7 @@ interface TeammatesProps {
   duels: Duel[];
   who: Map<string, Who>;
   hasSprints: boolean;
+  hasSprintQualifying: boolean;
 }
 
 interface SplitProps {
@@ -32,7 +33,12 @@ const Split = ({ label, pair, color }: SplitProps) => {
   );
 };
 
-export const Teammates = ({ duels, who, hasSprints }: TeammatesProps) => (
+export const Teammates = ({
+  duels,
+  who,
+  hasSprints,
+  hasSprintQualifying,
+}: TeammatesProps) => (
   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
     {duels.map((d) => {
       const [a, b] = [who.get(d.a), who.get(d.b)];
@@ -47,6 +53,16 @@ export const Teammates = ({ duels, who, hasSprints }: TeammatesProps) => (
           </header>
           <div className="text-xs text-zinc-500">Qualifying</div>
           <Split label="Qualifying" pair={d.quali} color={color} />
+          {hasSprintQualifying && (
+            <>
+              <div className="text-xs text-zinc-500">Sprint qualifying</div>
+              <Split
+                label="Sprint qualifying"
+                pair={d.sprintQuali}
+                color={color}
+              />
+            </>
+          )}
           <div className="text-xs text-zinc-500">Race (both classified)</div>
           <Split label="Race" pair={d.race} color={color} />
           <div className="text-xs text-zinc-500">Race points</div>

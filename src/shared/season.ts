@@ -38,6 +38,7 @@ export type Season = {
   races: { round: number; results: Classified[] }[];
   sprints: { round: number; results: Classified[] }[];
   qualifying: { round: number; results: QualiResult[] }[];
+  sprintQualifying: { round: number; results: QualiResult[] }[];
   driverStandings: { id: string; points: number }[];
   constructorStandings: { id: string; points: number }[];
 };
