@@ -14,7 +14,17 @@ interface SplitProps {
 }
 
 const Split = ({ label, pair, color }: SplitProps) => {
-  const total = pair[0] + pair[1] || 1;
+  const total = pair[0] + pair[1];
+  if (total === 0)
+    return (
+      <div className="grid grid-cols-[2rem_1fr_2rem] items-center gap-2 text-sm">
+        <span />
+        <div className="text-center text-xs text-zinc-500" title={label}>
+          N/A
+        </div>
+        <span />
+      </div>
+    );
   return (
     <div className="grid grid-cols-[2rem_1fr_2rem] items-center gap-2 text-sm">
       <span className="tabular text-right font-semibold">{pair[0]}</span>
