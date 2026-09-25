@@ -1,0 +1,14 @@
+{
+  "id": "f1c9dd0d",
+  "ts": "2026-09-25T20:18:51+00:00",
+  "text": "Git add cannot create this worktree index.lock inside sandbox",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/Developer/f1/.git/worktrees/t3code-a8a0d9cc/index.lock",
+  "branch": "t3code/cache-race-pace"
+}

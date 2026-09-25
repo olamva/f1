@@ -1,0 +1,14 @@
+{
+  "id": "31bc2624",
+  "ts": "2026-09-25T20:15:09+00:00",
+  "text": "Offline pnpm install misses @azure/core-auth despite matching lockfile; reused existing local node_modules",
+  "tags": [
+    "dependencies",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "pnpm-lock.yaml",
+  "branch": "t3code/cache-race-pace"
+}
