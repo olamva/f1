@@ -92,7 +92,10 @@ export const Stats = ({ season }: StatsProps) => {
         <Teammates
           duels={d.duels}
           who={d.who}
-          hasSprints={season.sprints.length > 0}
+          hasSprints={
+            season.sprints.length > 0 || season.sprintQualifying.length > 0
+          }
+          hasSprintQualifying={season.sprintQualifying.length > 0}
         />
       )}
       {view === "Season" && (

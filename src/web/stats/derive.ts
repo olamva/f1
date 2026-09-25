@@ -149,6 +149,7 @@ export type Duel = {
   a: string;
   b: string;
   quali: [number, number];
+  sprintQuali: [number, number];
   race: [number, number];
   sprint: [number, number];
   racePoints: [number, number];
@@ -163,6 +164,22 @@ const median = (v: number[]) => {
         2
     : null;
 };
+
+function qualifyingHeadToHead(
+  events: { results: QualiResult[] }[],
+  a: string,
+  b: string,
+): [number, number] {
+  const wins: [number, number] = [0, 0];
+  for (const q of events) {
+    const [x, y] = [
+      q.results.find((r) => r.driver === a),
+      q.results.find((r) => r.driver === b),
+    ];
+    if (x && y) wins[x.position < y.position ? 0 : 1]++;
+  }
+  return wins;
+}
 
 const pairOf = (s: Season, team: string): [string, string] | null => {
   const count = new Map<string, number>();
@@ -180,6 +197,7 @@ function duel(s: Season, team: string, a: string, b: string): Duel {
     a,
     b,
     quali: [0, 0],
+    sprintQuali: [0, 0],
     race: [0, 0],
     sprint: [0, 0],
     racePoints: [0, 0],
@@ -197,6 +215,7 @@ function duel(s: Season, team: string, a: string, b: string): Duel {
     const g = qualiGap(x, y);
     if (g !== null && Math.abs(g) < 3) gaps.push(g);
   }
+  d.sprintQuali = qualifyingHeadToHead(s.sprintQualifying, a, b);
   for (const [events, results, points] of [
     [s.races, d.race, d.racePoints],
     [s.sprints, d.sprint, d.sprintPoints],

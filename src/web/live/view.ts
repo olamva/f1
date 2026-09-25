@@ -90,6 +90,18 @@ export const messages = (state: Obj): Message[] =>
     .map((m) => ({ utc: m.Utc, category: m.Category, flag: m.Flag ?? "", text: m.Message }))
     .reverse();
 
+export const sessionStart = (state: Obj): number | null => {
+  const info = state.SessionInfo;
+  const offset = String(info?.GmtOffset ?? "00:00");
+  return info?.StartDate ? Date.parse(`${info.StartDate}${offset.startsWith("-") ? "" : "+"}${offset.slice(0, 5)}`) : null;
+};
+
+export const elapsed = (utc: string, start: number): string => {
+  const total = Math.max(0, Math.round((Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`) - start) / 1000));
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${pad(Math.floor(total / 3600))}:${pad(Math.floor(total / 60) % 60)}:${pad(total % 60)}`;
+};
+
 export type Radio = { utc: string; number: string; url: string };
 
 export const radios = (state: Obj): Radio[] =>

@@ -28,6 +28,7 @@ const season: Season = {
   races: [{ round: 1, results: [result("a", 1, 25), result("b", 2, 18)] }],
   sprints: [{ round: 1, results: [result("b", 1, 8), result("a", 2, 7)] }],
   qualifying: [],
+  sprintQualifying: [],
   driverStandings: [],
   constructorStandings: [],
 };
