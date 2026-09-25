@@ -40,15 +40,17 @@ export const Settings = () => {
     <div className="max-w-2xl space-y-4">
       <section className="space-y-2 rounded-xl bg-surface p-4">
         <h2 className="text-lg font-semibold">Team radio</h2>
-        <label className="flex items-center gap-2 text-sm">
+        <label className="flex cursor-pointer items-center gap-3 text-sm">
           <input
             type="checkbox"
+            className="peer sr-only"
             checked={autoplay}
             onChange={(e) => {
               setAutoplay(e.target.checked);
               localStorage.setItem("autoplay", e.target.checked ? "1" : "0");
             }}
           />
+          <span className="relative h-5 w-9 shrink-0 rounded-full bg-zinc-700 transition-colors peer-checked:bg-red-600 peer-focus-visible:ring-2 peer-focus-visible:ring-red-400 after:absolute after:top-0.5 after:left-0.5 after:size-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
           Play new radio messages automatically
         </label>
       </section>
