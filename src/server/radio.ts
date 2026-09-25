@@ -145,6 +145,6 @@ async function transcribe(path: string): Promise<Turn[]> {
 export function transcript(url: string): Promise<Turn[]> | null {
   const path = pathOf(url);
   if (!ENDPOINT || !VOICE || !path) return null;
-  if (!cache.has(path)) cache.set(path, stored(path).catch((e) => (cache.delete(path), Promise.reject(e))));
+  if (!cache.has(path)) cache.set(path, stored(path).then((t) => (t.length ? t : [{ speaker: "driver" as const, text: "****" }])).catch((e) => (cache.delete(path), Promise.reject(e))));
   return cache.get(path)!;
 }

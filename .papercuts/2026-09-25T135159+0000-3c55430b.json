@@ -1,0 +1,13 @@
+{
+  "id": "3c55430b",
+  "ts": "2026-09-25T13:51:59+00:00",
+  "text": "T3 preview_snapshot fails for every tab, including after navigation and resize",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1f870325",
+  "branch": "t3code/fix-overtake-card-scrollbar"
+}
