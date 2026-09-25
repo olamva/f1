@@ -3,6 +3,7 @@ import { F1_ORIGIN } from "./origin.ts";
 
 const STATIC = "https://livetiming.formula1.com/static/";
 const ENDPOINT = process.env.SPEECH_ENDPOINT;
+const STORE = process.env.TRANSCRIPT_STORE;
 const credential = new DefaultAzureCredential({ managedIdentityClientId: process.env.AZURE_CLIENT_ID });
 const cache = new Map<string, Promise<Turn[]>>();
 
@@ -50,6 +51,29 @@ const openai = async (path: string, body: FormData | string): Promise<any> => {
   return res.json();
 };
 
+const blob = async (path: string, init: RequestInit = {}) => {
+  const { token } = await credential.getToken("https://storage.azure.com/.default");
+  return fetch(`${STORE}/${encodeURI(path)}.json`, {
+    ...init,
+    headers: { authorization: `Bearer ${token}`, "x-ms-version": "2023-11-03", ...init.headers },
+  });
+};
+
+async function stored(path: string): Promise<Turn[]> {
+  const hit = STORE ? await blob(path) : null;
+  if (hit?.ok) return hit.json();
+  const turns = await transcribe(path);
+  if (STORE) {
+    const res = await blob(path, {
+      method: "PUT",
+      headers: { "x-ms-blob-type": "BlockBlob", "content-type": "application/json" },
+      body: JSON.stringify(turns),
+    });
+    if (!res.ok) console.error("transcript store:", res.status);
+  }
+  return turns;
+}
+
 async function transcribe(path: string): Promise<Turn[]> {
   const audio = await fetch(`${F1_ORIGIN}/static/${path}`);
   if (!audio.ok) throw new Error(`radio ${audio.status}`);
@@ -78,6 +102,6 @@ async function transcribe(path: string): Promise<Turn[]> {
 export function transcript(url: string): Promise<Turn[]> | null {
   const path = pathOf(url);
   if (!ENDPOINT || !path) return null;
-  if (!cache.has(path)) cache.set(path, transcribe(path).catch((e) => (cache.delete(path), Promise.reject(e))));
+  if (!cache.has(path)) cache.set(path, stored(path).catch((e) => (cache.delete(path), Promise.reject(e))));
   return cache.get(path)!;
 }

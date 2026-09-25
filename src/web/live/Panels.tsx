@@ -56,7 +56,10 @@ export const RaceControl = ({ messages, rows, start }: RaceControlProps) => (
       {messages.length === 0 && <li className="text-zinc-500">No messages yet.</li>}
       {messages.map((m, i) => (
         <li key={i} className="flex gap-2">
-          <span title={start === null ? undefined : elapsed(m.utc, start)} className="tabular shrink-0 font-mono text-xs text-zinc-500">{time(m.utc)}</span>
+          <span className="group tabular grid shrink-0 font-mono text-xs text-zinc-500 *:col-start-1 *:row-start-1 *:transition-[opacity,filter] *:duration-200">
+            <span className={start === null ? undefined : "group-hover:opacity-0 group-hover:blur-sm"}>{time(m.utc)}</span>
+            {start !== null && <span className="text-right text-sky-400 opacity-0 blur-sm group-hover:opacity-100 group-hover:blur-none">{elapsed(m.utc, start)}</span>}
+          </span>
           {m.flag && <span className={`shrink-0 self-start rounded px-1.5 py-0.5 text-xs font-semibold ${FLAG[m.flag.toUpperCase()] ?? "bg-zinc-600 text-white"}`}>{m.flag}</span>}
           <span>
             {highlight(m.text).map((t, j) =>
@@ -199,6 +202,13 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
     if (a.paused) void a.play();
     else a.pause();
   };
+  const newest = useRef(radios[0]?.url);
+  useEffect(() => {
+    const r = radios[0];
+    if (!r || r.url === newest.current) return;
+    newest.current = r.url;
+    if (localStorage.getItem("autoplay") === "1" && audio.current!.paused) toggle(r);
+  });
   return (
     <Panel title="Team radio">
       <audio
