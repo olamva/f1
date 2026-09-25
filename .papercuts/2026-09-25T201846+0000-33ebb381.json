@@ -1,0 +1,13 @@
+{
+  "id": "33ebb381",
+  "ts": "2026-09-25T20:18:46+00:00",
+  "text": "git add cannot create the worktree index lock inside the sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-8d0702d7",
+  "branch": "t3code/add-pwa-support"
+}
