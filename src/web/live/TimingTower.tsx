@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import type { Mark, Row } from "./view.ts";
+import type { Mark, Row, SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
   overall: "text-purple",
@@ -27,6 +27,8 @@ const TYRE: Record<string, string> = {
 interface TimingTowerProps {
   rows: Row[];
   race: boolean;
+  qualifying: boolean;
+  bests: SessionBests;
   selected: Set<string>;
   onToggle: (number: string) => void;
 }
@@ -60,8 +62,8 @@ const swapFrames = (dy: number, up: boolean): Keyframe[] => {
   const layer = up ? LIFT : { zIndex: 1 };
   return [
     { ...layer, transform: `translateY(${dy}px) scale(1)` },
-    { ...layer, transform: `translateY(${dy}px) scale(${scale})`, offset: 0.25 },
-    { ...layer, transform: `translateY(0) scale(${scale})`, offset: 0.75 },
+    { ...layer, transform: `translateY(${dy}px) scaleY(${scale})`, offset: 0.25 },
+    { ...layer, transform: `translateY(0) scaleY(${scale})`, offset: 0.75 },
     { ...layer, transform: "translateY(0) scale(1)" },
   ];
 };
@@ -109,13 +111,16 @@ const SwapArrow = ({ swap }: { swap?: Swap }) => (
 interface TowerRowProps {
   row: Row;
   race: boolean;
+  qualifying: boolean;
+  lapOwner: boolean;
+  fastestLap: boolean;
   selected: boolean;
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
   onToggle: () => void;
 }
 
-const TowerRow = ({ row, race, selected, swap, bind, onToggle }: TowerRowProps) => (
+const TowerRow = ({ row, race, qualifying, lapOwner, fastestLap, selected, swap, bind, onToggle }: TowerRowProps) => (
   <tr
     ref={bind}
     onClick={onToggle}
@@ -131,20 +136,23 @@ const TowerRow = ({ row, race, selected, swap, bind, onToggle }: TowerRowProps) 
       <span className="flex items-center gap-2">
         <span className="h-4 w-1 rounded-sm" style={{ background: row.color }} />
         <span className="font-semibold" title={row.name}>{row.tla}</span>
+        {lapOwner && <span className="text-[10px] text-purple" title="Fastest lap owner" aria-label="Fastest lap owner">◆</span>}
       </span>
     </td>
     <td className="px-2 py-1 text-right">{row.position === 1 && race ? "Leader" : row.gap}</td>
     {race && <td className="px-2 py-1 text-right text-zinc-400">{row.interval}</td>}
     <td className={`px-2 py-1 text-right ${MARK[row.lastMark]}`}>{row.lastLap}</td>
-    <td className="px-2 py-1 text-right text-zinc-300">{row.bestLap}</td>
+    <td className={`px-2 py-1 text-right ${fastestLap ? "text-purple" : "text-zinc-300"}`}>{row.bestLap}</td>
     <td className="px-2 py-1">
       <span className="flex gap-1.5">
         {row.sectors.map((s, i) => (
-          <span key={i} title={s.value} className="flex min-w-5 flex-col gap-0.5">
-            <span className={`h-2 rounded-sm ${BAR[s.mark]}`} />
+          <span key={i} title={s.value} className={`flex flex-col gap-0.5 ${qualifying ? "min-w-17" : "min-w-5"}`}>
+            <span className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}>
+              {qualifying && s.value}
+            </span>
             <span className="flex gap-px">
               {s.segments.map((m, j) => (
-                <span key={j} className={`h-1 w-1.5 rounded-[1px] ${BAR[m]}`} />
+                <span key={j} className={`h-1 w-1.5 ${BAR[m]}`} />
               ))}
             </span>
           </span>
@@ -157,10 +165,25 @@ const TowerRow = ({ row, race, selected, swap, bind, onToggle }: TowerRowProps) 
   </tr>
 );
 
-export const TimingTower = ({ rows, race, selected, onToggle }: TimingTowerProps) => {
+export const TimingTower = ({ rows, race, qualifying, bests, selected, onToggle }: TimingTowerProps) => {
   const { swaps, bind } = useSwaps(rows);
   return (
     <div className="overflow-x-auto rounded-xl bg-surface">
+      <div className="flex min-w-max items-center gap-4 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
+        <span className="font-sans font-semibold tracking-wide text-zinc-500 uppercase">Session best</span>
+        {[...bests.sectors, bests.lap].map((best, i) => (
+          <span key={i} className="flex items-center gap-1.5">
+            <span className="text-zinc-500">{i === 3 ? "Lap" : `S${i + 1}`}</span>
+            {best ? (
+              <span className="font-semibold">
+                <span style={{ color: best.color }}>{best.tla}</span> <span className="text-purple">{best.value}</span>
+              </span>
+            ) : (
+              <span className="text-zinc-600">—</span>
+            )}
+          </span>
+        ))}
+      </div>
       <table className="tabular w-full font-mono text-sm">
         <thead className="text-left text-xs text-zinc-500">
           <tr>
@@ -182,6 +205,9 @@ export const TimingTower = ({ rows, race, selected, onToggle }: TimingTowerProps
               key={r.number}
               row={r}
               race={race}
+              qualifying={qualifying}
+              lapOwner={bests.lap?.number === r.number}
+              fastestLap={bests.lap?.number === r.number && r.bestLap === bests.lap?.value}
               selected={selected.has(r.number)}
               swap={swaps[r.number]}
               bind={bind(r.number)}

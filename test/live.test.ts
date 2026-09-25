@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { isLive, session } from "../src/server/live.ts";
+import { hasRecentTiming, isLive, session } from "../src/server/live.ts";
 
 test("a red-flagged session stays live past its scheduled end while the feed is fresh", (t) => {
   const now = Date.parse("2026-09-24T15:00:00Z");
@@ -21,5 +21,8 @@ test("a red-flagged session stays live past its scheduled end while the feed is 
   session.state.SessionStatus = { Status: "Finalised" };
   session.state.Heartbeat = { Utc: "2026-09-24T14:59:30Z" };
   assert.equal(isLive(), false);
+  assert.equal(hasRecentTiming(), true);
+  session.state.Heartbeat = { Utc: "2026-09-24T14:25:00Z" };
+  assert.equal(hasRecentTiming(), false);
   session.state = {};
 });

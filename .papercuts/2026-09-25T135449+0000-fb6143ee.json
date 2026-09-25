@@ -1,0 +1,13 @@
+{
+  "id": "fb6143ee",
+  "ts": "2026-09-25T13:54:49+00:00",
+  "text": "T3 preview_snapshot fails on two loaded tabs while preview_evaluate succeeds",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-249eeec0",
+  "branch": "t3code/live-replay-tab"
+}

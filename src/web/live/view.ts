@@ -25,6 +25,10 @@ export type Row = {
   status: string;
 };
 
+export type SessionBest = { number: string; tla: string; color: string; value: string };
+
+export type SessionBests = { sectors: (SessionBest | null)[]; lap: SessionBest | null };
+
 const mark = (x: Obj | undefined): Mark =>
   !x?.Value ? "none" : x.OverallFastest ? "overall" : x.PersonalFastest ? "personal" : "normal";
 
@@ -82,6 +86,26 @@ export function rows(state: Obj): Row[] {
     .map(([n, line]) => row(n, line, drivers[n], apps[n]))
     .sort((a, b) => a.position - b.position);
 }
+
+export const sessionBests = (state: Obj, drivers: Row[]): SessionBests => {
+  const stats: Obj = state.TimingStats?.Lines ?? {};
+  const timing: Obj = state.TimingData?.Lines ?? {};
+  const fastest = (value: (number: string) => string | undefined): SessionBest | null =>
+    drivers.reduce<SessionBest | null>((best, driver) => {
+      const time = value(driver.number) ?? "";
+      const seconds = lapSeconds(time);
+      return seconds !== null && (best === null || seconds < lapSeconds(best.value)!)
+        ? { number: driver.number, tla: driver.tla, color: driver.color, value: time }
+        : best;
+    }, null);
+  return {
+    sectors: [0, 1, 2].map((i) => fastest((n) => values(stats[n]?.BestSectors)[i]?.Value)),
+    lap: fastest((n) => stats[n]?.PersonalBestLapTime?.Value ?? timing[n]?.BestLapTime?.Value),
+  };
+};
+
+export const isQualifying = (info: Obj | undefined): boolean =>
+  /Qualifying|Shootout/i.test(info?.Name ?? "");
 
 export type Message = { utc: string; category: string; flag: string; text: string };
 
@@ -159,3 +183,12 @@ export const highlight = (text: string): { text: string; tone?: Tone }[] =>
     if (s) out.push(k ? { text: s, tone: TONES[k - 1]![0] } : { text: s });
     return out;
   }, []);
+
+export const qualifyingPart = (state: Obj): string | null =>
+  state.SessionInfo?.Type === "Qualifying" && state.TimingData?.SessionPart ? `${/Sprint/.test(state.SessionInfo.Name) ? "SQ" : "Q"}${state.TimingData.SessionPart}` : null;
+
+export const sectorSplits = (rows: Row[]): number[] => {
+  const laps = rows.map((r) => r.sectors.map((s) => lapSeconds(s.value) ?? 0)).filter((s) => s.length === 3 && s.every(Boolean));
+  const [a, b, c] = [0, 1, 2].map((i) => laps.reduce((sum, s) => sum + s[i]!, 0));
+  return laps.length ? [a! / (a! + b! + c!), (a! + b!) / (a! + b! + c!)] : [];
+};

@@ -1,0 +1,13 @@
+{
+  "id": "04710e37",
+  "ts": "2026-09-25T14:00:02+00:00",
+  "text": "git worktree add cannot write linked Git metadata in the sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-d515a0f1",
+  "branch": "t3code/qualifying-sector-times"
+}

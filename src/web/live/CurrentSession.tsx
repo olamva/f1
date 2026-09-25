@@ -1,9 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
-import { hashPart, setHashPart } from "../hash.ts";
+import { pathPart, setPathPart } from "../path.ts";
 import { Loading } from "../Loading.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
@@ -13,11 +13,11 @@ import { ReplayPicker } from "./ReplayPicker.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
-import { messages, radios, remaining, rows as towerRows, sessionStart, trackStatus } from "./view.ts";
+import { isQualifying, messages, qualifyingPart, radios, remaining, rows as towerRows, sessionBests, sessionStart, trackStatus } from "./view.ts";
 
-export type LiveInfo = { live: boolean; positions: boolean };
+export type LiveInfo = { live: boolean; recent: boolean; positions: boolean };
 
-interface CurrentSessionProps {
+interface LiveSessionProps {
   season: Loaded<Season>;
   info: Loaded<LiveInfo>;
 }
@@ -59,8 +59,11 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
   const now = useTick(1000);
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => towerRows(state), [state]);
+  const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
   const race = /Race|Sprint$/.test(state.SessionInfo?.Type ?? "") || state.SessionInfo?.Name === "Sprint";
+  const qualifying = isQualifying(state.SessionInfo);
   const status = trackStatus(state);
+  const part = qualifyingPart(state);
   const toggle = (n: string) =>
     setSelected((s) => {
       const next = new Set(s);
@@ -81,6 +84,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
           <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
           {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
         </h1>
+        {part && <span className="rounded bg-zinc-700 px-2 py-0.5 text-sm font-bold">{part}</span>}
         {state.LapCount && (
           <span className="tabular text-zinc-300">
             Lap {state.LapCount.CurrentLap}/{state.LapCount.TotalLaps}
@@ -93,7 +97,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
       </header>
       {banner}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-        <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
+        <TimingTower rows={rows} race={race} qualifying={qualifying} bests={bests} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
           <TrackMap outline={outline} positions={state.Position} rows={rows} race={race} selected={selected} onToggle={(n) => setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} banner={banner} />
           <Weather weather={state.WeatherData} />
@@ -110,9 +114,11 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
 
 interface LiveProps {
   positions: boolean;
+  onClose: () => void;
+  finished: boolean;
 }
 
-const Live = ({ positions }: LiveProps) => {
+const Live = ({ positions, onClose, finished }: LiveProps) => {
   const [delay, setDelay] = useState(() => Number(localStorage.getItem("delay")) || 0);
   const feed = useFeed("/api/live/stream", delay * 1000);
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
@@ -123,14 +129,17 @@ const Live = ({ positions }: LiveProps) => {
     setDelay(s);
   };
   return (
-    feed ? (
-      <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} delay={delay * 1000} onDelay={change} />
-    ) : (
-      <div className="space-y-4">
-        <div className="flex justify-end"><DelayInput delay={delay} onDelay={change} /></div>
-        <Loading label="Connecting to live timing…" />
-      </div>
-    )
+    <div className="space-y-4">
+      {finished && <button type="button" onClick={onClose} className="text-sm text-zinc-400 hover:text-zinc-100">Close timing</button>}
+      {feed ? (
+        <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} delay={delay * 1000} onDelay={change} />
+      ) : (
+        <div className="space-y-4">
+          <div className="flex justify-end"><DelayInput delay={delay} onDelay={change} /></div>
+          <Loading label="Connecting to live timing…" />
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -168,27 +177,34 @@ const Replay = ({ session, onClose }: ReplayProps) => {
   );
 };
 
-export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
+export const LiveSession = ({ season, info }: LiveSessionProps) => {
+  const [closed, setClosed] = useState(false);
+  const wasLive = useRef(false);
+  if (info.data?.live) wasLive.current = true;
+  useEffect(() => {
+    if (info.data?.live) setClosed(false);
+  }, [info.data?.live]);
+  if (!info.data || !season.data) return <Loading label="Loading…" error={info.error ?? season.error} />;
+  if (info.data.live || (!closed && (info.data.recent || wasLive.current)))
+    return <Live positions={info.data.positions} finished={!info.data.live} onClose={() => setClosed(true)} />;
+  const scheduled = current(season.data.rounds, Date.now());
+  return scheduled ? (
+    <div className="rounded-xl bg-gradient-to-r from-red-700/40 to-surface p-4">
+      <h1 className="text-lg font-bold"><Flag country={scheduled.round.country} />{scheduled.round.name} · {scheduled.label}</h1>
+      <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
+    </div>
+  ) : <Countdown rounds={season.data.rounds} />;
+};
+
+export const Replays = () => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
-  const [path, setPath] = useState(() => hashPart("session"));
+  const [path, setPath] = useState(() => pathPart("replay") ?? pathPart("session"));
   const choose = (s: SessionRef | null) => {
-    setHashPart("session", s?.path ?? null);
+    setPathPart("replay", s?.path ?? null);
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
-  if (!info.data || !season.data || (path && !sessions.data && !sessions.error)) return <Loading label="Loading…" error={info.error ?? season.error} />;
-  if (info.data.live) return <Live positions={info.data.positions} />;
+  if (!sessions.data) return <Loading label="Loading past sessions…" error={sessions.error} />;
   if (chosen) return <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />;
-  const scheduled = current(season.data.rounds, Date.now());
-  return (
-    <div className="space-y-4">
-      {scheduled ? (
-        <div className="rounded-xl bg-gradient-to-r from-red-700/40 to-surface p-4">
-          <h1 className="text-lg font-bold"><Flag country={scheduled.round.country} />{scheduled.round.name} · {scheduled.label}</h1>
-          <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
-        </div>
-      ) : <Countdown rounds={season.data.rounds} />}
-      {sessions.data ? <ReplayPicker sessions={sessions.data} onStart={choose} /> : <Loading label="Loading past sessions…" error={sessions.error} />}
-    </div>
-  );
+  return <ReplayPicker sessions={sessions.data} onStart={choose} />;
 };

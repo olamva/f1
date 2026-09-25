@@ -1,0 +1,14 @@
+{
+  "id": "6b740879",
+  "ts": "2026-09-25T13:53:56+00:00",
+  "text": "T3 preview_snapshot fails on every tab after preview_open, while preview_evaluate works",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-8464042e",
+  "branch": "t3code/persist-live-timing-state"
+}
