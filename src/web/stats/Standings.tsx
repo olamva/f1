@@ -27,7 +27,7 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
               <div
                 className={`flex flex-col items-center justify-center rounded-t-lg ${["h-24", "h-16", "h-12"][i]}`}
                 style={{
-                  backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${who.get(s.id)?.color ?? "#888888"} 35%, #27272a), #27272a 25%)`,
+                  backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${who.get(s.id)?.color ?? "#888888"} 20%, #27272a), #27272a 25%)`,
                 }}
               >
                 <span className="text-xl font-bold">{i + 1}</span>
