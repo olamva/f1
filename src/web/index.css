@@ -130,9 +130,8 @@ textarea {
     display: none;
   }
 
-  .app-nav > div > button:first-child {
-    padding-inline: 0.375rem;
-    font-size: 0.75rem;
+  .glass-tabs:not(.glass-tabs-small) .glass-tab {
+    font-size: 0.8125rem;
   }
 }
 
