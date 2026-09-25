@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Pause, Play } from "lucide-react";
 import { useJson } from "../api.ts";
-import { elapsed, highlight, type Message, type Radio, type Row, type Tone } from "./view.ts";
+import {
+  elapsed,
+  highlight,
+  type Message,
+  type Radio,
+  type Row,
+  type Tone,
+} from "./view.ts";
 
 const time = (utc: string) =>
   new Date(utc.endsWith("Z") ? utc : `${utc}Z`).toLocaleTimeString([], {
@@ -31,8 +38,10 @@ interface PanelProps {
 }
 
 export const Panel = ({ title, children }: PanelProps) => (
-  <section className="rounded-xl bg-surface p-3">
-    <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">{title}</h2>
+  <section className="bg-surface rounded-xl p-3">
+    <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+      {title}
+    </h2>
     {children}
   </section>
 );
@@ -52,19 +61,49 @@ const TONE: Record<Exclude<Tone, "car">, string> = {
 
 export const RaceControl = ({ messages, rows, start }: RaceControlProps) => (
   <Panel title="Race control">
-    <ul className="max-h-72 space-y-2 overflow-y-auto text-sm" aria-live="polite">
-      {messages.length === 0 && <li className="text-zinc-500">No messages yet.</li>}
+    <ul
+      className="max-h-72 space-y-2 overflow-y-auto text-sm"
+      aria-live="polite"
+    >
+      {messages.length === 0 && (
+        <li className="text-zinc-500">No messages yet.</li>
+      )}
       {messages.map((m, i) => (
         <li key={i} className="flex gap-2">
           <span className="group tabular grid shrink-0 font-mono text-xs text-zinc-500 *:col-start-1 *:row-start-1 *:transition-[opacity,filter] *:duration-200">
-            <span className={start === null ? undefined : "group-hover:opacity-0 group-hover:blur-sm"}>{time(m.utc)}</span>
-            {start !== null && <span className="text-right text-sky-400 opacity-0 blur-sm group-hover:opacity-100 group-hover:blur-none">{elapsed(m.utc, start)}</span>}
+            <span
+              className={
+                start === null
+                  ? undefined
+                  : "group-hover:opacity-0 group-hover:blur-sm"
+              }
+            >
+              {time(m.utc)}
+            </span>
+            {start !== null && (
+              <span className="text-right text-sky-400 opacity-0 blur-sm group-hover:opacity-100 group-hover:blur-none">
+                {elapsed(m.utc, start)}
+              </span>
+            )}
           </span>
-          {m.flag && <span className={`shrink-0 self-start rounded px-1.5 py-0.5 text-xs font-semibold ${FLAG[m.flag.toUpperCase()] ?? "bg-zinc-600 text-white"}`}>{m.flag}</span>}
+          {m.flag && (
+            <span
+              className={`shrink-0 self-start rounded px-1.5 py-0.5 text-xs font-semibold ${FLAG[m.flag.toUpperCase()] ?? "bg-zinc-600 text-white"}`}
+            >
+              {m.flag}
+            </span>
+          )}
           <span>
             {highlight(m.text).map((t, j) =>
               t.tone === "car" ? (
-                <span key={j} className="font-semibold" style={{ color: rows.find((r) => r.number === t.text.split(" ")[0])?.color }}>
+                <span
+                  key={j}
+                  className="font-semibold"
+                  style={{
+                    color: rows.find((r) => r.number === t.text.split(" ")[0])
+                      ?.color,
+                  }}
+                >
                   {t.text}
                 </span>
               ) : (
@@ -99,13 +138,17 @@ export const Weather = ({ weather }: WeatherProps) => (
           <dt className="text-xs text-zinc-500">{label}</dt>
           <dd className="tabular text-lg font-semibold">
             {weather?.[k] ?? "—"}
-            <span className="text-xs text-zinc-400">{weather?.[k] ? unit : ""}</span>
+            <span className="text-xs text-zinc-400">
+              {weather?.[k] ? unit : ""}
+            </span>
           </dd>
         </div>
       ))}
       <div>
         <dt className="text-xs text-zinc-500">Rain</dt>
-        <dd className="text-lg font-semibold">{weather?.Rainfall === "1" ? "Yes" : "No"}</dd>
+        <dd className="text-lg font-semibold">
+          {weather?.Rainfall === "1" ? "Yes" : "No"}
+        </dd>
       </div>
     </dl>
   </Panel>
@@ -116,18 +159,28 @@ interface TeamRadioProps {
   rows: Row[];
 }
 
-const clip = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+const clip = (s: number) =>
+  `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
 const Transcript = ({ url, color }: { url: string; color: string }) => {
-  const { data, error } = useJson<{ turns: { speaker: "driver" | "engineer"; text: string }[] }>(
-    `/api/radio/transcript?url=${encodeURIComponent(url)}`,
-  );
+  const { data, error } = useJson<{
+    turns: { speaker: "driver" | "engineer"; text: string }[];
+  }>(`/api/radio/transcript?url=${encodeURIComponent(url)}`);
   if (error) return null;
-  if (!data) return <p className="animate-pulse text-sm font-semibold tracking-wide text-zinc-500 uppercase">Transcribing…</p>;
+  if (!data)
+    return (
+      <p className="animate-pulse text-sm font-semibold tracking-wide text-zinc-500 uppercase">
+        Transcribing…
+      </p>
+    );
   return (
     <blockquote className="space-y-1 text-lg leading-snug font-bold tracking-tight uppercase">
       {data.turns.map((t, i) => (
-        <p key={i} className={t.speaker === "driver" ? "text-right" : ""} style={{ color: t.speaker === "driver" ? color : "white" }}>
+        <p
+          key={i}
+          className={t.speaker === "driver" ? "text-right" : ""}
+          style={{ color: t.speaker === "driver" ? color : "white" }}
+        >
           {t.text}
         </p>
       ))}
@@ -141,21 +194,34 @@ const analysers = new WeakMap<HTMLAudioElement, AnalyserNode>();
 const analyserOf = (el: HTMLAudioElement) => {
   if (!analysers.has(el)) {
     const ctx = new AudioContext();
-    const a = Object.assign(ctx.createAnalyser(), { fftSize: 512, minDecibels: -75, maxDecibels: -40 });
+    const a = Object.assign(ctx.createAnalyser(), {
+      fftSize: 512,
+      minDecibels: -75,
+      maxDecibels: -40,
+    });
     ctx.createMediaElementSource(el).connect(a).connect(ctx.destination);
     analysers.set(el, a);
   }
   return analysers.get(el)!;
 };
 
-const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioElement | null>; playing: boolean; color: string }) => {
+const Bars = ({
+  audio,
+  playing,
+  color,
+}: {
+  audio: React.RefObject<HTMLAudioElement | null>;
+  playing: boolean;
+  color: string;
+}) => {
   const bars = useRef<HTMLSpanElement[]>([]);
   useEffect(() => {
     if (!playing) return;
     const a = analyserOf(audio.current!);
     void (a.context as AudioContext).resume();
     const data = new Uint8Array(a.frequencyBinCount);
-    const bin = (hz: number) => Math.round((hz / a.context.sampleRate) * a.fftSize);
+    const bin = (hz: number) =>
+      Math.round((hz / a.context.sampleRate) * a.fftSize);
     let frame = requestAnimationFrame(function draw() {
       a.getByteFrequencyData(data);
       bars.current.forEach((b, i) => {
@@ -170,7 +236,10 @@ const Bars = ({ audio, playing, color }: { audio: React.RefObject<HTMLAudioEleme
     };
   }, [playing, audio]);
   return (
-    <span className="flex h-10 items-end gap-1 self-center px-3" aria-hidden="true">
+    <span
+      className="flex h-10 items-end gap-1 self-center px-3"
+      aria-hidden="true"
+    >
       {BANDS.slice(1).map((_, i) => (
         <span
           key={i}
@@ -207,7 +276,8 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
     const r = radios[0];
     if (!r || r.url === newest.current) return;
     newest.current = r.url;
-    if (localStorage.getItem("autoplay") === "1" && audio.current!.paused) toggle(r);
+    if (localStorage.getItem("autoplay") === "1" && audio.current!.paused)
+      toggle(r);
   });
   return (
     <Panel title="Team radio">
@@ -216,20 +286,35 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
         preload="none"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-        onTimeUpdate={(e) => setAt({ t: e.currentTarget.currentTime, d: Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : 0 })}
+        onTimeUpdate={(e) =>
+          setAt({
+            t: e.currentTarget.currentTime,
+            d: Number.isFinite(e.currentTarget.duration)
+              ? e.currentTarget.duration
+              : 0,
+          })
+        }
       />
       {!current && <p className="text-sm text-zinc-500">No radio yet.</p>}
       {current && (
         <div className="mb-3 overflow-hidden rounded-md bg-zinc-950">
           <div className="flex items-stretch">
-            <span className="grid w-16 shrink-0 place-items-center text-3xl font-black text-white italic" style={{ background: color }}>
+            <span
+              className="grid w-16 shrink-0 place-items-center text-3xl font-black text-white italic"
+              style={{ background: color }}
+            >
               {current.number}
             </span>
             <div className="min-w-0 flex-1 px-3 py-2 leading-none">
-              <p className="truncate text-2xl font-black tracking-tight uppercase" style={{ color }}>
+              <p
+                className="truncate text-2xl font-black tracking-tight uppercase"
+                style={{ color }}
+              >
                 {driver?.last ?? current.number}
               </p>
-              <p className="text-2xl font-black tracking-tight text-white">RADIO</p>
+              <p className="text-2xl font-black tracking-tight text-white">
+                RADIO
+              </p>
             </div>
             <Bars audio={audio} playing={playing} color={color} />
             <button
@@ -238,11 +323,21 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
               title={playing ? "Pause radio" : "Play radio"}
               className="grid w-14 shrink-0 place-items-center text-white hover:bg-zinc-800"
             >
-              {playing ? <Pause aria-hidden="true" className="size-6 fill-current" /> : <Play aria-hidden="true" className="size-6 fill-current" />}
+              {playing ? (
+                <Pause aria-hidden="true" className="size-6 fill-current" />
+              ) : (
+                <Play aria-hidden="true" className="size-6 fill-current" />
+              )}
             </button>
           </div>
           <div className="h-0.5 bg-zinc-800">
-            <div className="h-full" style={{ width: `${at.d ? (at.t / at.d) * 100 : 0}%`, background: color }} />
+            <div
+              className="h-full"
+              style={{
+                width: `${at.d ? (at.t / at.d) * 100 : 0}%`,
+                background: color,
+              }}
+            />
           </div>
           <div className="flex min-h-28 flex-col justify-between gap-2 px-3 py-3">
             <Transcript key={current.url} url={current.url} color={color} />
@@ -263,12 +358,23 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
                 aria-current={active}
                 className={`flex w-full items-center gap-3 px-2 py-1.5 text-left hover:bg-zinc-800 ${active ? "bg-zinc-800" : ""}`}
               >
-                <span className="w-7 text-center font-black italic" style={{ color: d?.color }}>
+                <span
+                  className="w-7 text-center font-black italic"
+                  style={{ color: d?.color }}
+                >
                   {r.number}
                 </span>
-                <span className="font-bold tracking-tight uppercase">{d?.last ?? r.number}</span>
-                <span className="tabular ml-auto font-mono text-xs text-zinc-500">{time(r.utc)}</span>
-                {active && playing ? <Pause aria-hidden="true" className="size-4 text-zinc-400" /> : <Play aria-hidden="true" className="size-4 text-zinc-400" />}
+                <span className="font-bold tracking-tight uppercase">
+                  {d?.last ?? r.number}
+                </span>
+                <span className="tabular ml-auto font-mono text-xs text-zinc-500">
+                  {time(r.utc)}
+                </span>
+                {active && playing ? (
+                  <Pause aria-hidden="true" className="size-4 text-zinc-400" />
+                ) : (
+                  <Play aria-hidden="true" className="size-4 text-zinc-400" />
+                )}
               </button>
             </li>
           );

@@ -25,20 +25,52 @@ export type Row = {
   status: string;
 };
 
-export type SessionBest = { number: string; tla: string; color: string; value: string };
+export type SessionBest = {
+  number: string;
+  tla: string;
+  color: string;
+  value: string;
+};
 
-export type SessionBests = { sectors: (SessionBest | null)[]; lap: SessionBest | null };
+export type SessionBests = {
+  sectors: (SessionBest | null)[];
+  lap: SessionBest | null;
+};
 
 const mark = (x: Obj | undefined): Mark =>
-  !x?.Value ? "none" : x.OverallFastest ? "overall" : x.PersonalFastest ? "personal" : "normal";
+  !x?.Value
+    ? "none"
+    : x.OverallFastest
+      ? "overall"
+      : x.PersonalFastest
+        ? "personal"
+        : "normal";
 
-const SEGMENT: Record<number, Mark> = { 2048: "normal", 2049: "personal", 2051: "overall" };
+const SEGMENT: Record<number, Mark> = {
+  2048: "normal",
+  2049: "personal",
+  2051: "overall",
+};
 
 const values = (x: unknown): Obj[] =>
-  Array.isArray(x) ? x : x && typeof x === "object" ? Object.values(x as Obj) : [];
+  Array.isArray(x)
+    ? x
+    : x && typeof x === "object"
+      ? Object.values(x as Obj)
+      : [];
 
 const statusOf = (l: Obj): string =>
-  l.Retired ? "OUT" : l.Stopped ? "STOP" : l.KnockedOut ? "KO" : l.InPit ? "PIT" : l.PitOut ? "OUT LAP" : "";
+  l.Retired
+    ? "OUT"
+    : l.Stopped
+      ? "STOP"
+      : l.KnockedOut
+        ? "KO"
+        : l.InPit
+          ? "PIT"
+          : l.PitOut
+            ? "OUT LAP"
+            : "";
 
 function tyre(app: Obj | undefined): { tyre: string; tyreAge: number | null } {
   const stint = values(app?.Stints).at(-1);
@@ -50,7 +82,12 @@ const lapGap = (gap: string): number | null => {
   return laps ? Number(laps) : null;
 };
 
-function row(number: string, line: Obj, driver: Obj, app: Obj | undefined): Row {
+function row(
+  number: string,
+  line: Obj,
+  driver: Obj,
+  app: Obj | undefined,
+): Row {
   const gap = line.GapToLeader ?? line.TimeDiffToFastest ?? "";
   return {
     number,
@@ -62,7 +99,8 @@ function row(number: string, line: Obj, driver: Obj, app: Obj | undefined): Row 
     position: Number(line.Position ?? driver.Line ?? 99),
     gap,
     lapsBehind: lapGap(gap),
-    interval: line.IntervalToPositionAhead?.Value ?? line.TimeDiffToPositionAhead ?? "",
+    interval:
+      line.IntervalToPositionAhead?.Value ?? line.TimeDiffToPositionAhead ?? "",
     lastLap: line.LastLapTime?.Value ?? "",
     lastMark: mark(line.LastLapTime),
     bestLap: line.BestLapTime?.Value ?? "",
@@ -90,38 +128,70 @@ export function rows(state: Obj): Row[] {
 export const sessionBests = (state: Obj, drivers: Row[]): SessionBests => {
   const stats: Obj = state.TimingStats?.Lines ?? {};
   const timing: Obj = state.TimingData?.Lines ?? {};
-  const fastest = (value: (number: string) => string | undefined): SessionBest | null =>
+  const fastest = (
+    value: (number: string) => string | undefined,
+  ): SessionBest | null =>
     drivers.reduce<SessionBest | null>((best, driver) => {
       const time = value(driver.number) ?? "";
       const seconds = lapSeconds(time);
-      return seconds !== null && (best === null || seconds < lapSeconds(best.value)!)
-        ? { number: driver.number, tla: driver.tla, color: driver.color, value: time }
+      return seconds !== null &&
+        (best === null || seconds < lapSeconds(best.value)!)
+        ? {
+            number: driver.number,
+            tla: driver.tla,
+            color: driver.color,
+            value: time,
+          }
         : best;
     }, null);
   return {
-    sectors: [0, 1, 2].map((i) => fastest((n) => values(stats[n]?.BestSectors)[i]?.Value)),
-    lap: fastest((n) => stats[n]?.PersonalBestLapTime?.Value ?? timing[n]?.BestLapTime?.Value),
+    sectors: [0, 1, 2].map((i) =>
+      fastest((n) => values(stats[n]?.BestSectors)[i]?.Value),
+    ),
+    lap: fastest(
+      (n) =>
+        stats[n]?.PersonalBestLapTime?.Value ?? timing[n]?.BestLapTime?.Value,
+    ),
   };
 };
 
 export const isQualifying = (info: Obj | undefined): boolean =>
   /Qualifying|Shootout/i.test(info?.Name ?? "");
 
-export type Message = { utc: string; category: string; flag: string; text: string };
+export type Message = {
+  utc: string;
+  category: string;
+  flag: string;
+  text: string;
+};
 
 export const messages = (state: Obj): Message[] =>
   values(state.RaceControlMessages?.Messages)
-    .map((m) => ({ utc: m.Utc, category: m.Category, flag: m.Flag ?? "", text: m.Message }))
+    .map((m) => ({
+      utc: m.Utc,
+      category: m.Category,
+      flag: m.Flag ?? "",
+      text: m.Message,
+    }))
     .reverse();
 
 export const sessionStart = (state: Obj): number | null => {
   const info = state.SessionInfo;
   const offset = String(info?.GmtOffset ?? "00:00");
-  return info?.StartDate ? Date.parse(`${info.StartDate}${offset.startsWith("-") ? "" : "+"}${offset.slice(0, 5)}`) : null;
+  return info?.StartDate
+    ? Date.parse(
+        `${info.StartDate}${offset.startsWith("-") ? "" : "+"}${offset.slice(0, 5)}`,
+      )
+    : null;
 };
 
 export const elapsed = (utc: string, start: number): string => {
-  const total = Math.max(0, Math.round((Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`) - start) / 1000));
+  const total = Math.max(
+    0,
+    Math.round(
+      (Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`) - start) / 1000,
+    ),
+  );
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${pad(Math.floor(total / 3600))}:${pad(Math.floor(total / 60) % 60)}:${pad(total % 60)}`;
 };
@@ -145,10 +215,17 @@ const TRACK_STATUS: Record<string, { label: string; tone: string }> = {
   "7": { label: "VSC ending", tone: "bg-yellow-300 text-black" },
 };
 
-export const trackStatus = (state: Obj): { label: string; tone: string } | null => {
+export const trackStatus = (
+  state: Obj,
+): { label: string; tone: string } | null => {
   const code = state.TrackStatus?.Status;
   if (!code || code === "1") return null;
-  return TRACK_STATUS[code] ?? { label: state.TrackStatus?.Message ?? code, tone: "bg-zinc-700" };
+  return (
+    TRACK_STATUS[code] ?? {
+      label: state.TrackStatus?.Message ?? code,
+      tone: "bg-zinc-700",
+    }
+  );
 };
 
 export function remaining(state: Obj, utcNow: number): string {
@@ -163,7 +240,11 @@ export function remaining(state: Obj, utcNow: number): string {
 }
 
 export const gapSeconds = (gap: string): number | null =>
-  /^LAP|^$/.test(gap) ? 0 : /L/.test(gap) ? null : lapSeconds(gap.replace("+", ""));
+  /^LAP|^$/.test(gap)
+    ? 0
+    : /L/.test(gap)
+      ? null
+      : lapSeconds(gap.replace("+", ""));
 
 export type Tone = "car" | "bad" | "warn" | "good" | "time";
 
@@ -171,11 +252,20 @@ const TONES: [Tone, string][] = [
   ["car", String.raw`\b\d{1,2} \([A-Z]{3}\)`],
   ["time", String.raw`\b\d{1,2}:\d{2}\.\d{3}\b`],
   ["good", "NO FURTHER (?:ACTION|INVESTIGATION)|REINSTATED|OPEN|ENABLED"],
-  ["bad", String.raw`(?:\d+ SECOND )?(?:TIME |STOP\/GO |DRIVE THROUGH )?PENALTY|DELETED|DISQUALIFIED|CLOSED|DISABLED`],
-  ["warn", "UNDER INVESTIGATION|WILL BE INVESTIGATED AFTER THE (?:RACE|SESSION)|NOTED|REVIEWED|(?:VIRTUAL )?SAFETY CAR|VSC|SLIPPERY"],
+  [
+    "bad",
+    String.raw`(?:\d+ SECOND )?(?:TIME |STOP\/GO |DRIVE THROUGH )?PENALTY|DELETED|DISQUALIFIED|CLOSED|DISABLED`,
+  ],
+  [
+    "warn",
+    "UNDER INVESTIGATION|WILL BE INVESTIGATED AFTER THE (?:RACE|SESSION)|NOTED|REVIEWED|(?:VIRTUAL )?SAFETY CAR|VSC|SLIPPERY",
+  ],
 ];
 
-const TOKEN = new RegExp(String.raw`(?<![:.])\b(?:${TONES.map(([, p]) => `(${p})`).join("|")})(?![A-Z])`, "g");
+const TOKEN = new RegExp(
+  String.raw`(?<![:.])\b(?:${TONES.map(([, p]) => `(${p})`).join("|")})(?![A-Z])`,
+  "g",
+);
 
 export const highlight = (text: string): { text: string; tone?: Tone }[] =>
   text.split(TOKEN).reduce<{ text: string; tone?: Tone }[]>((out, s, i) => {
@@ -185,10 +275,16 @@ export const highlight = (text: string): { text: string; tone?: Tone }[] =>
   }, []);
 
 export const qualifyingPart = (state: Obj): string | null =>
-  state.SessionInfo?.Type === "Qualifying" && state.TimingData?.SessionPart ? `${/Sprint/.test(state.SessionInfo.Name) ? "SQ" : "Q"}${state.TimingData.SessionPart}` : null;
+  state.SessionInfo?.Type === "Qualifying" && state.TimingData?.SessionPart
+    ? `${/Sprint/.test(state.SessionInfo.Name) ? "SQ" : "Q"}${state.TimingData.SessionPart}`
+    : null;
 
 export const sectorSplits = (rows: Row[]): number[] => {
-  const laps = rows.map((r) => r.sectors.map((s) => lapSeconds(s.value) ?? 0)).filter((s) => s.length === 3 && s.every(Boolean));
-  const [a, b, c] = [0, 1, 2].map((i) => laps.reduce((sum, s) => sum + s[i]!, 0));
+  const laps = rows
+    .map((r) => r.sectors.map((s) => lapSeconds(s.value) ?? 0))
+    .filter((s) => s.length === 3 && s.every(Boolean));
+  const [a, b, c] = [0, 1, 2].map((i) =>
+    laps.reduce((sum, s) => sum + s[i]!, 0),
+  );
   return laps.length ? [a! / (a! + b! + c!), (a! + b!) / (a! + b! + c!)] : [];
 };

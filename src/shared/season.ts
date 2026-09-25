@@ -23,12 +23,24 @@ export type Round = {
   circuit: string;
   country: string;
   sessions: Record<
-    "fp1" | "fp2" | "fp3" | "sprintQualifying" | "sprint" | "qualifying" | "race",
+    | "fp1"
+    | "fp2"
+    | "fp3"
+    | "sprintQualifying"
+    | "sprint"
+    | "qualifying"
+    | "race",
     string | null
   >;
 };
 
-export type DriverInfo = { id: string; code: string; name: string; number: string; team: string };
+export type DriverInfo = {
+  id: string;
+  code: string;
+  name: string;
+  number: string;
+  team: string;
+};
 
 export type Season = {
   year: number;
@@ -47,5 +59,11 @@ export type Pace = Record<string, number[]>;
 
 export type Records = Record<
   string,
-  { starts: number; wins: number; podiums: number; poles: number; titles: number }
+  {
+    starts: number;
+    wins: number;
+    podiums: number;
+    poles: number;
+    titles: number;
+  }
 >;

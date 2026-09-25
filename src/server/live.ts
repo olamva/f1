@@ -2,7 +2,13 @@ import * as signalR from "@microsoft/signalr";
 import type { Json } from "../shared/merge.ts";
 import type { Delta } from "../shared/timing.ts";
 import { F1_ORIGIN } from "./origin.ts";
-import { inflate, positionEvents, Session, TOPICS, type Event } from "./timing.ts";
+import {
+  inflate,
+  positionEvents,
+  Session,
+  TOPICS,
+  type Event,
+} from "./timing.ts";
 import * as token from "./token.ts";
 
 const URL = `${F1_ORIGIN}/signalrcore`;
@@ -29,7 +35,8 @@ function events(topic: string, data: Json, t: number): Event[] {
 }
 
 function handle(topic: string, data: Json) {
-  const infoKey = topic === "SessionInfo" ? (data as { Key?: unknown }).Key : undefined;
+  const infoKey =
+    topic === "SessionInfo" ? (data as { Key?: unknown }).Key : undefined;
   if (infoKey !== undefined && infoKey !== key) {
     key = infoKey;
     session = new Session();
@@ -42,7 +49,10 @@ function handle(topic: string, data: Json) {
 
 async function cookie(): Promise<string> {
   const r = await fetch(`${URL}/negotiate`, { method: "OPTIONS" });
-  return r.headers.getSetCookie().map((c) => c.split(";")[0]).join("; ");
+  return r.headers
+    .getSetCookie()
+    .map((c) => c.split(";")[0])
+    .join("; ");
 }
 
 async function connect() {
@@ -60,7 +70,10 @@ async function connect() {
   });
   await conn.start();
   connection = conn;
-  const state = (await conn.invoke("Subscribe", TOPICS)) as Record<string, Json>;
+  const state = (await conn.invoke("Subscribe", TOPICS)) as Record<
+    string,
+    Json
+  >;
   if (state.SessionInfo) handle("SessionInfo", state.SessionInfo);
   for (const [topic, data] of Object.entries(state)) handle(topic, data);
 }
@@ -92,24 +105,31 @@ export function start() {
 }
 
 const at = (date: unknown, offset: unknown) =>
-  Date.parse(`${date}${String(offset ?? "00:00").startsWith("-") ? "" : "+"}${String(offset ?? "00:00").slice(0, 5)}`);
+  Date.parse(
+    `${date}${String(offset ?? "00:00").startsWith("-") ? "" : "+"}${String(offset ?? "00:00").slice(0, 5)}`,
+  );
 
 export function isLive(): boolean {
   const info = session.state.SessionInfo as Record<string, any> | undefined;
   if (!info) return false;
-  const status = (session.state.SessionStatus as { Status?: string } | undefined)?.Status;
-  if (status === "Finished" || status === "Finalised" || status === "Ends") return false;
+  const status = (
+    session.state.SessionStatus as { Status?: string } | undefined
+  )?.Status;
+  if (status === "Finished" || status === "Finalised" || status === "Ends")
+    return false;
   const now = Date.now();
   if (now < at(info.StartDate, info.GmtOffset) - EDGE_MS) return false;
   if (now <= at(info.EndDate, info.GmtOffset) + EDGE_MS) return true;
-  const utc = (session.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
+  const utc =
+    (session.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
   const beat = Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`);
   return now >= beat && now - beat <= FRESH_MS;
 }
 
 export function hasRecentTiming(): boolean {
   if (!session.state.SessionInfo) return false;
-  const utc = (session.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
+  const utc =
+    (session.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
   const beat = Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`);
   const now = Date.now();
   return now >= beat && now - beat <= EDGE_MS;

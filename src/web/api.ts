@@ -17,7 +17,8 @@ export function useJson<T>(url: string | null, refreshMs?: number): Loaded<T> {
     const load = () =>
       getJson<T>(url).then(
         (data) => alive && setState({ data, error: null }),
-        (e: Error) => alive && setState((s) => ({ data: s.data, error: e.message })),
+        (e: Error) =>
+          alive && setState((s) => ({ data: s.data, error: e.message })),
       );
     setState({ data: null, error: null });
     load();

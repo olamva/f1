@@ -1,6 +1,12 @@
 import { useState } from "react";
 import { RotateCcw } from "lucide-react";
-import { simulate, type Championship, type Picks, type Standing, type Upcoming } from "../../shared/clinch.ts";
+import {
+  simulate,
+  type Championship,
+  type Picks,
+  type Standing,
+  type Upcoming,
+} from "../../shared/clinch.ts";
 import { Flag } from "../Flag.tsx";
 import type { Who } from "./derive.ts";
 
@@ -23,7 +29,9 @@ interface SlotProps {
 const Slot = ({ value, taken, onChange }: SlotProps) => (
   <select
     value={value ?? ""}
-    onChange={(e) => onChange(e.target.value ? Number(e.target.value) : undefined)}
+    onChange={(e) =>
+      onChange(e.target.value ? Number(e.target.value) : undefined)
+    }
     className="w-14 rounded bg-zinc-800 px-1 py-0.5 text-xs"
   >
     <option value="">—</option>
@@ -35,7 +43,13 @@ const Slot = ({ value, taken, onChange }: SlotProps) => (
   </select>
 );
 
-export const Simulator = ({ champ, table, events, contenders, who }: SimulatorProps) => {
+export const Simulator = ({
+  champ,
+  table,
+  events,
+  contenders,
+  who,
+}: SimulatorProps) => {
   const [picks, setPicks] = useState<Picks>([]);
   const cars = champ === "drivers" ? 1 : 2;
   const set = (event: number, id: string, car: number, p: number | undefined) =>
@@ -49,21 +63,32 @@ export const Simulator = ({ champ, table, events, contenders, who }: SimulatorPr
       return next;
     });
   const clean: Picks = picks.map((row) =>
-    Object.fromEntries(Object.entries(row ?? {}).map(([id, ps]) => [id, ps.filter((p) => p !== undefined && p !== null)])),
+    Object.fromEntries(
+      Object.entries(row ?? {}).map(([id, ps]) => [
+        id,
+        ps.filter((p) => p !== undefined && p !== null),
+      ]),
+    ),
   );
   const result = simulate(table, events, clean, champ);
   const decided = result.decided;
   return (
-    <section className="rounded-xl bg-surface p-3">
+    <section className="bg-surface rounded-xl p-3">
       <div className="mb-2 flex items-center gap-3">
-        <h2 className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">Simulator</h2>
-        <button onClick={() => setPicks([])} className="ml-auto inline-flex items-center gap-1 rounded bg-zinc-800 px-2 py-0.5 text-xs">
+        <h2 className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+          Simulator
+        </h2>
+        <button
+          onClick={() => setPicks([])}
+          className="ml-auto inline-flex items-center gap-1 rounded bg-zinc-800 px-2 py-0.5 text-xs"
+        >
           <RotateCcw aria-hidden="true" className="size-3" />
           Reset
         </button>
       </div>
       <p className="mb-3 text-sm text-zinc-500">
-        Set finishes for the contenders. A contender with no finish scores nothing in that event.
+        Set finishes for the contenders. A contender with no finish scores
+        nothing in that event.
       </p>
       <p className="mb-3 text-base">
         {decided
@@ -76,7 +101,9 @@ export const Simulator = ({ champ, table, events, contenders, who }: SimulatorPr
             <tr>
               <th className="p-1 text-left text-xs text-zinc-500">Event</th>
               {contenders.map((id) => (
-                <th key={id} className="p-1 text-xs text-zinc-300">{who.get(id)?.code ?? id}</th>
+                <th key={id} className="p-1 text-xs text-zinc-300">
+                  {who.get(id)?.code ?? id}
+                </th>
               ))}
             </tr>
           </thead>
@@ -84,13 +111,24 @@ export const Simulator = ({ champ, table, events, contenders, who }: SimulatorPr
             {events.map((e, i) => {
               const taken = new Set(Object.values(clean[i] ?? {}).flat());
               return (
-                <tr key={`${e.round}-${e.kind}`} className={`border-t border-zinc-800 ${decided && i > decided.index ? "opacity-40" : ""}`}>
-                  <td className="p-1 pr-3 text-xs whitespace-nowrap text-zinc-400"><Flag country={e.country} />{e.name}</td>
+                <tr
+                  key={`${e.round}-${e.kind}`}
+                  className={`border-t border-zinc-800 ${decided && i > decided.index ? "opacity-40" : ""}`}
+                >
+                  <td className="p-1 pr-3 text-xs whitespace-nowrap text-zinc-400">
+                    <Flag country={e.country} />
+                    {e.name}
+                  </td>
                   {contenders.map((id) => (
                     <td key={id} className="p-1">
                       <span className="flex gap-1">
                         {Array.from({ length: cars }, (_, car) => (
-                          <Slot key={car} value={picks[i]?.[id]?.[car]} taken={taken} onChange={(p) => set(i, id, car, p)} />
+                          <Slot
+                            key={car}
+                            value={picks[i]?.[id]?.[car]}
+                            taken={taken}
+                            onChange={(p) => set(i, id, car, p)}
+                          />
                         ))}
                       </span>
                     </td>
@@ -101,7 +139,9 @@ export const Simulator = ({ champ, table, events, contenders, who }: SimulatorPr
             <tr className="border-t border-zinc-600 font-semibold">
               <td className="p-1 text-xs text-zinc-400">Final points</td>
               {contenders.map((id) => (
-                <td key={id} className="tabular p-1 text-center">{result.final.find((s) => s.id === id)?.points}</td>
+                <td key={id} className="tabular p-1 text-center">
+                  {result.final.find((s) => s.id === id)?.points}
+                </td>
               ))}
             </tr>
           </tbody>

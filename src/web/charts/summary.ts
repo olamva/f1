@@ -6,7 +6,13 @@ const quantile = (sorted: number[], q: number): number => {
 
 export const summary = (values: number[]) => {
   const s = [...values].sort((a, b) => a - b);
-  return { min: s[0]!, q1: quantile(s, 0.25), median: quantile(s, 0.5), q3: quantile(s, 0.75), max: s.at(-1)! };
+  return {
+    min: s[0]!,
+    q1: quantile(s, 0.25),
+    median: quantile(s, 0.5),
+    q3: quantile(s, 0.75),
+    max: s.at(-1)!,
+  };
 };
 
 export const lapTime = (s: number): string => {

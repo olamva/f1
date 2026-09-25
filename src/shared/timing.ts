@@ -1,4 +1,10 @@
-export type LapRow = { lap: number; t: number; time: string; position: string; gap: string };
+export type LapRow = {
+  lap: number;
+  t: number;
+  time: string;
+  position: string;
+  gap: string;
+};
 
 export type Point = [t: number, x: number, y: number];
 

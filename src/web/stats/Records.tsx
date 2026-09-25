@@ -32,7 +32,7 @@ export const Records = ({ rows, who, hasSprints }: RecordsProps) => {
     (a, b) => b.wins - a.wins || b.podiums - a.podiums || b.poles - a.poles,
   );
   return (
-    <section className="overflow-x-auto rounded-xl bg-surface p-3">
+    <section className="bg-surface overflow-x-auto rounded-xl p-3">
       <table className="tabular w-full text-sm">
         <thead className="text-xs text-zinc-500">
           <tr>

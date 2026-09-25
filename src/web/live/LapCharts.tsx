@@ -30,14 +30,29 @@ const seriesOf = (
       .filter((r) => until === null || r.t <= until)
       .map((r) => [r.lap, value(r)] as [number, number | null])
       .filter((p): p is [number, number] => p[1] !== null);
-    return { id: n, label: d?.tla ?? n, color: d?.color ?? "#888", dashed: teams.get(team)! > 1, points };
+    return {
+      id: n,
+      label: d?.tla ?? n,
+      color: d?.color ?? "#888",
+      dashed: teams.get(team)! > 1,
+      points,
+    };
   });
 };
 
-export const LapCharts = ({ laps, rows, focus, until, race }: LapChartsProps) => {
+export const LapCharts = ({
+  laps,
+  rows,
+  focus,
+  until,
+  race,
+}: LapChartsProps) => {
   const raw = seriesOf(laps, rows, focus, until, (r) => lapSeconds(r.time));
   const fastest = Math.min(...raw.flatMap((s) => s.points.map((p) => p[1])));
-  const times = raw.map((s) => ({ ...s, points: s.points.filter((p) => p[1] <= fastest * 1.08) }));
+  const times = raw.map((s) => ({
+    ...s,
+    points: s.points.filter((p) => p[1] <= fastest * 1.08),
+  }));
   const gaps = seriesOf(laps, rows, focus, until, (r) => gapSeconds(r.gap));
   const hint = "Click drivers in the timing tower to compare them.";
   return (
@@ -51,7 +66,12 @@ export const LapCharts = ({ laps, rows, focus, until, race }: LapChartsProps) =>
       </Panel>
       {race && (
         <Panel title="Gap to leader (s)">
-          <LineChart series={gaps} xLabel="Lap" yFormat={(v) => v.toFixed(0)} invert />
+          <LineChart
+            series={gaps}
+            xLabel="Lap"
+            yFormat={(v) => v.toFixed(0)}
+            invert
+          />
         </Panel>
       )}
     </>
