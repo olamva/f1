@@ -34,7 +34,7 @@ export const Tabs = <T extends string>({
     const observer = new ResizeObserver(measure);
     observer.observe(track);
     observer.observe(button);
-    if (small && matchMedia("(max-width: 639px)").matches) {
+    if (track.scrollWidth > track.clientWidth) {
       track.scrollTo({
         left:
           button.offsetLeft - track.clientWidth / 2 + button.offsetWidth / 2,
@@ -42,7 +42,7 @@ export const Tabs = <T extends string>({
       });
     }
     return () => observer.disconnect();
-  }, [items, small, value]);
+  }, [items, value]);
 
   return (
     <nav

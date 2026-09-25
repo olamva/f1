@@ -47,7 +47,7 @@ export const App = () => {
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
-      <header className="app-nav flex flex-wrap items-center gap-1.5 sm:gap-6">
+      <header className="flex flex-wrap items-center gap-1.5 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
           className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
@@ -60,7 +60,7 @@ export const App = () => {
             className="w-10 min-[390px]:w-14 sm:w-20"
           />
         </button>
-        <div className="order-3 flex min-w-0 basis-full justify-center sm:order-none sm:flex-1 sm:basis-auto">
+        <div className="flex min-w-0 flex-1 justify-center">
           <Tabs
             items={NAV_TABS}
             value={tab === "Settings" ? null : tab}
