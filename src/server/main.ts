@@ -64,8 +64,8 @@ app.get("/api/radio/audio", async (c) => {
   return res?.ok ? new Response(res.body, { headers: { "content-type": "audio/mpeg", "cache-control": "public, max-age=86400" } }) : c.notFound();
 });
 app.get("/api/radio/transcript", async (c) => {
-  const text = transcript(c.req.query("url") ?? "");
-  return text ? c.json({ text: await text }) : c.json({ error: "Transcripts are off." }, 404);
+  const turns = transcript(c.req.query("url") ?? "");
+  return turns ? c.json({ turns: await turns }) : c.json({ error: "Transcripts are off." }, 404);
 });
 
 app.get("/api/replay/sessions", async (c) => {
@@ -118,8 +118,7 @@ app.onError((e, c) => {
   return c.json({ error: e.message }, 500);
 });
 
-token.start().catch((e) => console.error("token:", e.message));
-live.start();
+token.start().catch((e) => console.error("token:", e.message)).finally(live.start);
 
 serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 8787) }, (info) =>
   console.log(`listening on ${info.port}`),
