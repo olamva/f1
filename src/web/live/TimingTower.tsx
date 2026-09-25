@@ -147,14 +147,12 @@ const TowerRow = ({ row, race, qualifying, lapOwner, fastestLap, selected, swap,
       <span className="flex gap-1.5">
         {row.sectors.map((s, i) => (
           <span key={i} title={s.value} className={`flex flex-col gap-0.5 ${qualifying ? "min-w-17" : "min-w-5"}`}>
-            {qualifying ? (
-              <span className={`text-right text-[11px] leading-3 ${MARK[s.mark]}`}>{s.value || "—"}</span>
-            ) : (
-              <span className={`h-2 rounded-sm ${BAR[s.mark]}`} />
-            )}
+            <span className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}>
+              {qualifying && s.value}
+            </span>
             <span className="flex gap-px">
               {s.segments.map((m, j) => (
-                <span key={j} className={`h-1 w-1.5 rounded-[1px] ${BAR[m]}`} />
+                <span key={j} className={`h-1 w-1.5 ${BAR[m]}`} />
               ))}
             </span>
           </span>
