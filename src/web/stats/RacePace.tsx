@@ -15,9 +15,15 @@ interface RacePaceProps {
 const SLOW = 1.07;
 
 export const RacePace = ({ season, who }: RacePaceProps) => {
-  const rounds = season.races.map((r) => r.round);
-  const [round, setRound] = useState(rounds.at(-1) ?? 1);
-  const pace = useJson<Pace>(`/api/pace/${round}`);
+  const events = [
+    ...season.races.map((r) => ({ ...r, kind: "race" as const })),
+    ...season.sprints.map((r) => ({ ...r, kind: "sprint" as const })),
+  ].sort((a, b) => a.round - b.round || (a.kind === "sprint" ? -1 : 1));
+  const [event, setEvent] = useState(
+    () => `${events.at(-1)?.round ?? 1}:${events.at(-1)?.kind ?? "race"}`,
+  );
+  const [round, kind] = event.split(":");
+  const pace = useJson<Pace>(`/api/pace/${season.year}/${round}/${kind}`);
   const name = (r: number) =>
     season.rounds.find((x) => x.round === r)?.name ?? `Round ${r}`;
   const medians = Object.values(pace.data ?? {})
@@ -34,15 +40,15 @@ export const RacePace = ({ season, who }: RacePaceProps) => {
     .filter((b) => b.values.length > 5)
     .sort((a, b) => summary(a.values).median - summary(b.values).median);
   return (
-    <Panel title="Race pace: green-flag lap times">
+    <Panel title="Race and sprint pace: lap times">
       <select
-        value={round}
-        onChange={(e) => setRound(Number(e.target.value))}
+        value={event}
+        onChange={(e) => setEvent(e.target.value)}
         className="mb-3 rounded-md bg-zinc-800 px-2 py-1 text-sm"
       >
-        {rounds.map((r) => (
-          <option key={r} value={r}>
-            {name(r)}
+        {events.map(({ round, kind }) => (
+          <option key={`${round}:${kind}`} value={`${round}:${kind}`}>
+            {name(round)} {kind === "sprint" ? "Sprint" : "Race"}
           </option>
         ))}
       </select>

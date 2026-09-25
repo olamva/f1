@@ -1,0 +1,14 @@
+{
+  "id": "a2949cc8",
+  "ts": "2026-09-25T20:14:33+00:00",
+  "text": "pnpm auto-download of pinned 12.6.0 stalls without registry DNS; pnpm_config_pm_on_fail=ignore uses installed 11.12.0",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "package.json",
+  "branch": "t3code/cache-race-pace"
+}

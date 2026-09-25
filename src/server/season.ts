@@ -183,21 +183,21 @@ export async function season(): Promise<Season> {
   };
 }
 
-const seconds = (t: string): number => {
+export const seconds = (t: string): number => {
   const [m, s] = t.includes(":") ? t.split(":") : ["0", t];
   return Number(m) * 60 + Number(s);
 };
 
-export async function pace(round: number): Promise<Pace> {
+export async function racePace(year: number, round: number): Promise<Pace> {
   const day = 24 * 60 * 60_000;
   const [laps, stops] = await Promise.all([
     all(
-      `current/${round}/laps.json`,
+      `${year}/${round}/laps.json`,
       (d) => races(d).flatMap((r) => r.Laps),
       day,
     ),
     all(
-      `current/${round}/pitstops.json`,
+      `${year}/${round}/pitstops.json`,
       (d) => races(d).flatMap((r) => r.PitStops),
       day,
     ),

@@ -14,7 +14,8 @@ import { requireGoogle } from "./auth.ts";
 import * as live from "./live.ts";
 import { driverProfile, raceArchive } from "./history.ts";
 import { audio, transcript } from "./radio.ts";
-import { pace, records, season } from "./season.ts";
+import { pace, type PaceKind } from "./pace.ts";
+import { records, season } from "./season.ts";
 import * as token from "./token.ts";
 
 const DIST = process.env.DIST_DIR ?? "dist";
@@ -28,9 +29,22 @@ const send = (s: SSEStreamingApi, event: string, data: unknown) =>
   s.writeSSE({ event, data: JSON.stringify(data) });
 
 app.get("/api/season", async (c) => c.json(await season()));
-app.get("/api/pace/:round", async (c) =>
-  c.json(await pace(Number(c.req.param("round")))),
-);
+app.get("/api/pace/:year/:round/:kind", async (c) => {
+  const year = Number(c.req.param("year"));
+  const round = Number(c.req.param("round"));
+  const kind = c.req.param("kind");
+  if (
+    !Number.isInteger(year) ||
+    year < 1950 ||
+    year > new Date().getFullYear() ||
+    !Number.isInteger(round) ||
+    round < 1 ||
+    round > 30 ||
+    (kind !== "race" && kind !== "sprint")
+  )
+    return c.notFound();
+  return c.json(await pace(year, round, kind as PaceKind));
+});
 app.get("/api/records", async (c) => {
   const s = await season();
   return c.json(await records(s.drivers.map((d) => d.id)));
