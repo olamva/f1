@@ -3,6 +3,7 @@ import { F1_ORIGIN } from "./origin.ts";
 
 const STATIC = "https://livetiming.formula1.com/static/";
 const ENDPOINT = process.env.SPEECH_ENDPOINT;
+const VOICE = process.env.VOICE_ENDPOINT;
 const credential = new DefaultAzureCredential({ managedIdentityClientId: process.env.AZURE_CLIENT_ID });
 const cache = new Map<string, Promise<Turn[]>>();
 
@@ -11,21 +12,11 @@ export interface Turn {
   text: string;
 }
 
-const TURNS = {
+const ROLES = {
   type: "object",
   additionalProperties: false,
-  required: ["turns"],
-  properties: {
-    turns: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: ["speaker", "text"],
-        properties: { speaker: { enum: ["driver", "engineer"] }, text: { type: "string" } },
-      },
-    },
-  },
+  required: ["driver"],
+  properties: { driver: { type: "integer" } },
 };
 
 const pathOf = (url: string) => (url.startsWith(STATIC) && !url.includes("..") ? url.slice(STATIC.length) : null);
@@ -35,18 +26,18 @@ export const audio = (url: string) => {
   return path ? fetch(`${F1_ORIGIN}/static/${path}`) : null;
 };
 
-const openai = async (path: string, body: FormData | string): Promise<any> => {
+const post = async (url: string, body: FormData | string): Promise<any> => {
   const { token } = await credential.getToken("https://cognitiveservices.azure.com/.default");
-  const res = await fetch(`${ENDPOINT}openai/deployments/${path}`, {
+  const res = await fetch(url, {
     method: "POST",
     headers: { authorization: `Bearer ${token}`, ...(typeof body === "string" && { "content-type": "application/json" }) },
     body,
   });
   if (res.status === 429) {
     await new Promise((r) => setTimeout(r, Number(res.headers.get("retry-after") ?? 10) * 1000));
-    return openai(path, body);
+    return post(url, body);
   }
-  if (!res.ok) throw new Error(`${path} ${res.status}`);
+  if (!res.ok) throw new Error(`${url} ${res.status}`);
   return res.json();
 };
 
@@ -54,30 +45,40 @@ async function transcribe(path: string): Promise<Turn[]> {
   const audio = await fetch(`${F1_ORIGIN}/static/${path}`);
   if (!audio.ok) throw new Error(`radio ${audio.status}`);
   const form = new FormData();
-  form.set("file", new File([await audio.blob()], "radio.mp3", { type: "audio/mpeg" }));
-  form.set("language", "en");
-  const { text } = (await openai("whisper/audio/transcriptions?api-version=2024-06-01", form)) as { text: string };
-  const { choices } = await openai(
-    "turns/chat/completions?api-version=2024-10-21",
+  form.set("audio", new File([await audio.blob()], "radio.mp3", { type: "audio/mpeg" }));
+  form.set("definition", JSON.stringify({ locales: ["en-GB"], diarization: { enabled: true, maxSpeakers: 2 } }));
+  const { phrases } = (await post(`${VOICE}speechtotext/transcriptions:transcribe?api-version=2024-11-15`, form)) as {
+    phrases: { speaker: number; text: string }[];
+  };
+  if (!phrases.length) return [];
+  const { choices } = await post(
+    `${ENDPOINT}openai/deployments/turns/chat/completions?api-version=2024-10-21`,
     JSON.stringify({
       temperature: 0,
-      response_format: { type: "json_schema", json_schema: { name: "turns", strict: true, schema: TURNS } },
+      response_format: { type: "json_schema", json_schema: { name: "roles", strict: true, schema: ROLES } },
       messages: [
         {
           role: "system",
           content:
-            "Split this Formula 1 team radio transcript into consecutive turns by the driver and the race engineer. Keep every word in order and unchanged. The file name contains the driver code.",
+            "This Formula 1 team radio is split into phrases by voice. Each speaker number is one voice: the driver or the race engineer. Return the speaker number of the driver, or 0 if the driver does not speak. The file name contains the driver code.",
         },
-        { role: "user", content: `File: ${path}\nTranscript: ${text.trim()}` },
+        { role: "user", content: `File: ${path}\n${phrases.map((p) => `Speaker ${p.speaker}: ${p.text}`).join("\n")}` },
       ],
     }),
   );
-  return (JSON.parse(choices[0].message.content) as { turns: Turn[] }).turns;
+  const { driver } = JSON.parse(choices[0].message.content) as { driver: number };
+  return phrases.reduce<Turn[]>((turns, p) => {
+    const speaker = p.speaker === driver ? "driver" : "engineer";
+    const last = turns.at(-1);
+    if (last?.speaker === speaker) last.text += ` ${p.text}`;
+    else turns.push({ speaker, text: p.text });
+    return turns;
+  }, []);
 }
 
 export function transcript(url: string): Promise<Turn[]> | null {
   const path = pathOf(url);
-  if (!ENDPOINT || !path) return null;
+  if (!ENDPOINT || !VOICE || !path) return null;
   if (!cache.has(path)) cache.set(path, transcribe(path).catch((e) => (cache.delete(path), Promise.reject(e))));
   return cache.get(path)!;
 }

@@ -128,6 +128,10 @@ resource "azurerm_container_app" "f1" {
         value = azurerm_cognitive_account.speech.endpoint
       }
       env {
+        name  = "VOICE_ENDPOINT"
+        value = azurerm_cognitive_account.voice.endpoint
+      }
+      env {
         name  = "ALLOWED_EMAILS"
         value = join(",", var.allowed_emails)
       }
@@ -292,6 +296,22 @@ resource "azurerm_cognitive_deployment" "turns" {
     name     = "GlobalStandard"
     capacity = 10
   }
+}
+
+resource "azurerm_cognitive_account" "voice" {
+  name                  = "${var.name}-voice-${local.digest}"
+  resource_group_name   = azurerm_resource_group.f1.name
+  location              = azurerm_resource_group.f1.location
+  kind                  = "SpeechServices"
+  sku_name              = "S0"
+  custom_subdomain_name = "${var.name}-voice-${local.digest}"
+  local_auth_enabled    = false
+}
+
+resource "azurerm_role_assignment" "app_voice" {
+  scope                = azurerm_cognitive_account.voice.id
+  role_definition_name = "Cognitive Services Speech User"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
 }
 
 resource "azurerm_role_assignment" "app_speech" {
