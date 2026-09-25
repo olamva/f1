@@ -1,0 +1,14 @@
+{
+  "id": "af352882",
+  "ts": "2026-09-25T09:10:18+00:00",
+  "text": "pnpm dev hardcodes ports 5173/8787 with strictPort, so parallel worktrees cannot run dev servers",
+  "tags": [
+    "dev",
+    "worktree"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "d7c26e70",
+  "where": "vite.config.ts",
+  "branch": "t3code/refine-delay-input"
+}
