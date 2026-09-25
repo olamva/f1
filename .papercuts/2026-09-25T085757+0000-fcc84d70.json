@@ -1,0 +1,13 @@
+{
+  "id": "fcc84d70",
+  "ts": "2026-09-25T08:57:57+00:00",
+  "text": "In-app browser is unavailable for local visual review",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-ae3135ec",
+  "branch": "t3code/add-standings-podium"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "90fb36d7",
+  "ts": "2026-09-25T09:05:39+00:00",
+  "text": "Vite cache writes fail through symlinked main node_modules in task worktree",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-ae3135ec",
+  "branch": "t3code/add-standings-podium"
+}

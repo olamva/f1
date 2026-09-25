@@ -1,0 +1,13 @@
+{
+  "id": "55e025dc",
+  "ts": "2026-09-25T08:57:22+00:00",
+  "text": "zsh unmatched .env glob stopped a repository search",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-ae3135ec",
+  "branch": "t3code/add-standings-podium"
+}
