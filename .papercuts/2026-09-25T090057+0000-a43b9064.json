@@ -1,0 +1,13 @@
+{
+  "id": "a43b9064",
+  "ts": "2026-09-25T09:00:57+00:00",
+  "text": "Computer Use has no in-app browser and denied Arc access during local UI screenshots",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-cc2bdeb7",
+  "branch": "t3code/leader-crown-lap-gap"
+}

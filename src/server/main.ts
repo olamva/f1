@@ -118,8 +118,7 @@ app.onError((e, c) => {
   return c.json({ error: e.message }, 500);
 });
 
-token.start().catch((e) => console.error("token:", e.message));
-live.start();
+token.start().catch((e) => console.error("token:", e.message)).finally(live.start);
 
 serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 8787) }, (info) =>
   console.log(`listening on ${info.port}`),

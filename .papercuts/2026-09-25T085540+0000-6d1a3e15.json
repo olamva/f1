@@ -1,0 +1,14 @@
+{
+  "id": "6d1a3e15",
+  "ts": "2026-09-25T08:55:40+00:00",
+  "text": "T3 preview webview never resolves element.requestFullscreen() and the tab hangs until reload",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "cefda406",
+  "where": "mcp__t3-code__preview",
+  "branch": "t3code/fullscreen-trackmap"
+}
