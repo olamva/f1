@@ -1,0 +1,13 @@
+{
+  "id": "fe383eee",
+  "ts": "2026-09-25T09:17:51+00:00",
+  "text": "Arc computer use was denied; T3 preview tools worked instead",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "Arc",
+  "branch": "t3code/add-sprint-quali-h2h"
+}
