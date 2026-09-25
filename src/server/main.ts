@@ -39,7 +39,7 @@ app.post("/api/token", async (c) => {
 });
 
 app.get("/api/live", (c) =>
-  c.json({ live: live.isLive(), positions: live.hasPositions(), info: live.session.state.SessionInfo ?? null }),
+  c.json({ live: live.isLive(), recent: live.hasRecentTiming(), positions: live.hasPositions(), info: live.session.state.SessionInfo ?? null }),
 );
 app.get("/api/live/laps", (c) => c.json(live.session.laps));
 app.get("/api/live/outline", async (c) =>

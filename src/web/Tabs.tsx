@@ -6,6 +6,7 @@ interface TabsProps<T extends string> {
   onChange: (v: T) => void;
   small?: boolean;
   labels?: Partial<Record<T, string>>;
+  live?: T;
 }
 
 export const Tabs = <T extends string>({
@@ -14,6 +15,7 @@ export const Tabs = <T extends string>({
   onChange,
   small,
   labels,
+  live,
 }: TabsProps<T>) => {
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
@@ -69,6 +71,7 @@ export const Tabs = <T extends string>({
           data-active={value === i}
           className={`glass-tab relative z-10 shrink-0 capitalize ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 font-semibold sm:px-4"}`}
         >
+          {live === i && <span aria-hidden="true" className="live-dot" />}
           {labels?.[i] ?? i}
         </button>
       ))}

@@ -62,8 +62,8 @@ const swapFrames = (dy: number, up: boolean): Keyframe[] => {
   const layer = up ? LIFT : { zIndex: 1 };
   return [
     { ...layer, transform: `translateY(${dy}px) scale(1)` },
-    { ...layer, transform: `translateY(${dy}px) scale(${scale})`, offset: 0.25 },
-    { ...layer, transform: `translateY(0) scale(${scale})`, offset: 0.75 },
+    { ...layer, transform: `translateY(${dy}px) scaleY(${scale})`, offset: 0.25 },
+    { ...layer, transform: `translateY(0) scaleY(${scale})`, offset: 0.75 },
     { ...layer, transform: "translateY(0) scale(1)" },
   ];
 };
