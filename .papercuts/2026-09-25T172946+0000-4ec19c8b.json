@@ -1,0 +1,13 @@
+{
+  "id": "4ec19c8b",
+  "ts": "2026-09-25T17:29:46+00:00",
+  "text": "preview_click on an aria-disabled button fails with a generic 'click failed' error",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "bf2cbff8",
+  "where": "mcp__t3-code__preview_click",
+  "branch": "t3code/275dd319"
+}

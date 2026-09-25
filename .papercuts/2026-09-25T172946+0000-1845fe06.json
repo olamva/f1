@@ -1,0 +1,13 @@
+{
+  "id": "1845fe06",
+  "ts": "2026-09-25T17:29:46+00:00",
+  "text": "jolpica 429 rate limit blocks /api/replay/sessions on local server start for about a minute",
+  "tags": [
+    "api"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "bf2cbff8",
+  "where": "src/server/jolpica.ts",
+  "branch": "t3code/275dd319"
+}
