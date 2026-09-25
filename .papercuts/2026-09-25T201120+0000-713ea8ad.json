@@ -1,0 +1,13 @@
+{
+  "id": "713ea8ad",
+  "ts": "2026-09-25T20:11:20+00:00",
+  "text": "pnpm dev in sandbox hits EMFILE watch and EPERM on local Vite port",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-17c89363",
+  "branch": "t3code/race-history-driver-profiles"
+}

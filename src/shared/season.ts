@@ -67,3 +67,40 @@ export type Records = Record<
     titles: number;
   }
 >;
+
+export type RaceArchive = {
+  year: number;
+  races: {
+    round: number;
+    name: string;
+    date: string;
+    country: string;
+    results: {
+      driver: string;
+      name: string;
+      number: string;
+      team: string;
+      teamName: string;
+      grid: number;
+      position: number;
+      positionText: string;
+      points: number;
+      status: string;
+    }[];
+  }[];
+};
+
+export type DriverProfile = {
+  id: string;
+  name: string;
+  nationality: string | null;
+  dateOfBirth: string | null;
+  number: string | null;
+  url: string | null;
+  firstSeason: number | null;
+  lastSeason: number | null;
+  starts: number;
+  wins: number;
+  podiums: number;
+  poles: number | null;
+};

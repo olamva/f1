@@ -1,0 +1,13 @@
+{
+  "id": "86ba3731",
+  "ts": "2026-09-25T20:06:42+00:00",
+  "text": "pnpm launcher cannot verify configured pnpm@12.6.0 signature during local checks",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-17c89363",
+  "branch": "t3code/race-history-driver-profiles"
+}

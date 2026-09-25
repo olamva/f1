@@ -1,0 +1,14 @@
+{
+  "id": "ff38e2ce",
+  "ts": "2026-09-25T20:09:14+00:00",
+  "text": "Web open cannot access Jolpica JSON endpoints for API shape verification",
+  "tags": [
+    "docs",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "https://api.jolpi.ca/ergast/f1/",
+  "branch": "t3code/race-history-driver-profiles"
+}
