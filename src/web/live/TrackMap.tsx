@@ -3,12 +3,9 @@ import { Crown, Maximize, Minimize } from "lucide-react";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import type { Row } from "./view.ts";
-import { placeLabels } from "./labels.ts";
 
 const SIZE = 1000;
 const PAD = 60;
-const TLA = 26;
-const BADGE = 28;
 
 interface TrackMapProps {
   outline: Outline | null;
@@ -61,19 +58,6 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
         : "",
     [outline, project],
   );
-  const badged = (r: Row) => (r.position === 1 && (race || !!r.bestLap)) || (race && !!r.lapsBehind);
-  const visible = (r: Row) => {
-    const p = positions?.[r.number];
-    return r.status !== "PIT" && !!p && (p[0] !== 0 || p[1] !== 0);
-  };
-  const labels = project
-    ? placeLabels(
-        rows.filter(visible).map((r) => {
-          const [x, y] = project(...positions![r.number]!);
-          return { number: r.number, x, y, h: TLA + (badged(r) ? BADGE : 0) };
-        }),
-      )
-    : {};
   useLayoutEffect(() => {
     if (!project || !positionTrail || speed <= 1) return;
     for (const [number, car] of cars.current) {
@@ -132,10 +116,9 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
         })}
         {project &&
           [...rows].reverse().map((r) => {
-            if (!visible(r)) return null;
-            const [x, y] = project(...positions![r.number]!);
-            const label = labels[r.number]!;
-            const top = -(TLA + (badged(r) ? BADGE : 0)) / 2;
+            const p = positions?.[r.number];
+            if (r.status === "PIT" || !p || (p[0] === 0 && p[1] === 0)) return null;
+            const [x, y] = project(p[0], p[1]);
             const focus = selected.size === 0 || selected.has(r.number);
             return (
               <g
@@ -163,21 +146,17 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
                 style={{ transform: `translate(${x}px, ${y}px)`, transition: speed > 1 ? "none" : "transform 1000ms linear" }}
                 opacity={focus || hovered === r.number ? 1 : 0.35}
               >
-                {label.lead && <line x2={label.dx} y2={label.dy} stroke={r.color} strokeWidth={2} />}
                 <circle r={14} fill={r.color} stroke="#18181b" strokeWidth={4} className="group-focus-visible:stroke-zinc-100" />
-                <g style={{ transform: `translate(${label.dx}px, ${label.dy}px)`, transition: "transform 300ms ease-out" }}>
-                  {label.lead && <rect x={-28} y={top} width={56} height={-2 * top} rx={6} fill="#18181b" opacity={0.85} />}
-                  <text y={-top - 6} textAnchor="middle" className="fill-zinc-100 text-[22px] font-semibold">
-                    {r.tla}
+                <text y={-22} textAnchor="middle" className="fill-zinc-100 text-[22px] font-semibold">
+                  {r.tla}
+                </text>
+                {r.position === 1 && (race || r.bestLap) ? (
+                  <Crown x={-13} y={-62} width={26} height={26} className="stroke-yellow-300" strokeWidth={2.5} />
+                ) : race && r.lapsBehind ? (
+                  <text y={-43} textAnchor="middle" className="fill-zinc-300 text-[21px] font-bold">
+                    +{r.lapsBehind}
                   </text>
-                  {r.position === 1 && (race || r.bestLap) ? (
-                    <Crown x={-13} y={top + 1} width={26} height={26} className="stroke-yellow-300" strokeWidth={2.5} />
-                  ) : race && r.lapsBehind ? (
-                    <text y={top + 22} textAnchor="middle" className="fill-zinc-300 text-[21px] font-bold">
-                      +{r.lapsBehind}
-                    </text>
-                  ) : null}
-                </g>
+                ) : null}
               </g>
             );
           })}

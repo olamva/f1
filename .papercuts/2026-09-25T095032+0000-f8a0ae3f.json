@@ -1,0 +1,14 @@
+{
+  "id": "f8a0ae3f",
+  "ts": "2026-09-25T09:50:32+00:00",
+  "text": "pnpm auto-switch to project version 12.6.0 waits, then fails registry signature verification when fetch is unavailable",
+  "tags": [
+    "dependencies",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-f34785ae",
+  "branch": "t3code/revert-pull-request-72"
+}
