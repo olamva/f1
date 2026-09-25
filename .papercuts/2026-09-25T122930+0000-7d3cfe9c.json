@@ -1,0 +1,14 @@
+{
+  "id": "7d3cfe9c",
+  "ts": "2026-09-25T12:29:30+00:00",
+  "text": "Auto-mode classifier blocks terraform apply of a reviewed saved plan even after the user explicitly allows it in chat",
+  "tags": [
+    "permissions",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "a8069e53",
+  "where": "terraform apply",
+  "branch": "t3code/b999d43d"
+}

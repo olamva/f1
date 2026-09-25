@@ -1,0 +1,14 @@
+{
+  "id": "bdb3312a",
+  "ts": "2026-09-25T12:38:03+00:00",
+  "text": "terraform azurerm provider 403s on storage account with shared keys off; needs storage_use_azuread = true",
+  "tags": [
+    "infra",
+    "terraform"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "a8069e53",
+  "where": "infra/main.tf",
+  "branch": "t3code/b999d43d"
+}
