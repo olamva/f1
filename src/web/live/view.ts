@@ -25,7 +25,7 @@ export type Row = {
   status: string;
 };
 
-export type SessionBest = { number: string; tla: string; value: string };
+export type SessionBest = { number: string; tla: string; color: string; value: string };
 
 export type SessionBests = { sectors: (SessionBest | null)[]; lap: SessionBest | null };
 
@@ -95,7 +95,7 @@ export const sessionBests = (state: Obj, drivers: Row[]): SessionBests => {
       const time = value(driver.number) ?? "";
       const seconds = lapSeconds(time);
       return seconds !== null && (best === null || seconds < lapSeconds(best.value)!)
-        ? { number: driver.number, tla: driver.tla, value: time }
+        ? { number: driver.number, tla: driver.tla, color: driver.color, value: time }
         : best;
     }, null);
   return {

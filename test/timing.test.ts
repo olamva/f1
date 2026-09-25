@@ -61,7 +61,7 @@ test("timing rows count lapped cars without reading the leader lap counter as a 
 
 test("session best owners use personal records instead of the latest sectors", () => {
   const state = {
-    DriverList: { "1": { Tla: "VER" }, "2": { Tla: "RUS" }, "3": { Tla: "HAM" } },
+    DriverList: { "1": { Tla: "VER", TeamColour: "3671C6" }, "2": { Tla: "RUS", TeamColour: "27F4D2" }, "3": { Tla: "HAM", TeamColour: "E8002D" } },
     TimingData: { Lines: {
       "1": { Position: "1", BestLapTime: { Value: "1:44.500" }, Sectors: [{ Value: "40.000" }] },
       "2": { Position: "2", BestLapTime: { Value: "1:44.000" }, Sectors: [{ Value: "34.000" }] },
@@ -75,10 +75,10 @@ test("session best owners use personal records instead of the latest sectors", (
   };
   assert.deepEqual(sessionBests(state, rows(state)), {
     sectors: [
-      { number: "1", tla: "VER", value: "35.000" },
-      { number: "2", tla: "RUS", value: "41.000" },
-      { number: "3", tla: "HAM", value: "24.000" },
+      { number: "1", tla: "VER", color: "#3671C6", value: "35.000" },
+      { number: "2", tla: "RUS", color: "#27F4D2", value: "41.000" },
+      { number: "3", tla: "HAM", color: "#E8002D", value: "24.000" },
     ],
-    lap: { number: "2", tla: "RUS", value: "1:44.000" },
+    lap: { number: "2", tla: "RUS", color: "#27F4D2", value: "1:44.000" },
   });
 });

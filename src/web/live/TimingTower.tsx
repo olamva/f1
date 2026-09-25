@@ -147,8 +147,11 @@ const TowerRow = ({ row, race, qualifying, lapOwner, fastestLap, selected, swap,
       <span className="flex gap-1.5">
         {row.sectors.map((s, i) => (
           <span key={i} title={s.value} className={`flex flex-col gap-0.5 ${qualifying ? "min-w-17" : "min-w-5"}`}>
-            <span className={`h-2 rounded-sm ${BAR[s.mark]}`} />
-            {qualifying && <span className={`text-right text-[11px] ${MARK[s.mark]}`}>{s.value || "—"}</span>}
+            {qualifying ? (
+              <span className={`text-right text-[11px] leading-3 ${MARK[s.mark]}`}>{s.value || "—"}</span>
+            ) : (
+              <span className={`h-2 rounded-sm ${BAR[s.mark]}`} />
+            )}
             <span className="flex gap-px">
               {s.segments.map((m, j) => (
                 <span key={j} className={`h-1 w-1.5 rounded-[1px] ${BAR[m]}`} />
@@ -173,7 +176,13 @@ export const TimingTower = ({ rows, race, qualifying, bests, selected, onToggle 
         {[...bests.sectors, bests.lap].map((best, i) => (
           <span key={i} className="flex items-center gap-1.5">
             <span className="text-zinc-500">{i === 3 ? "Lap" : `S${i + 1}`}</span>
-            <span className={best ? "font-semibold text-purple" : "text-zinc-600"}>{best ? `${best.tla} ${best.value}` : "—"}</span>
+            {best ? (
+              <span className="font-semibold">
+                <span style={{ color: best.color }}>{best.tla}</span> <span className="text-purple">{best.value}</span>
+              </span>
+            ) : (
+              <span className="text-zinc-600">—</span>
+            )}
           </span>
         ))}
       </div>
