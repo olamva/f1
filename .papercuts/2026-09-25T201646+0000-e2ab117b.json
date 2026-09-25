@@ -1,0 +1,14 @@
+{
+  "id": "e2ab117b",
+  "ts": "2026-09-25T20:16:46+00:00",
+  "text": "Sandbox rejects loopback server binds with EPERM during visual review",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "127.0.0.1",
+  "branch": "t3code/cache-race-pace"
+}
