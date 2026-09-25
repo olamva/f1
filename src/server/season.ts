@@ -44,6 +44,84 @@ const quali = (r: any): QualiResult => ({
 
 const when = (s: any): string | null => (s ? `${s.date}T${s.time ?? "00:00:00Z"}` : null);
 
+const alpha = "https://api.jolpi.ca/f1/alpha";
+const alphaCache = new Map<string, { at: number; body: Promise<any> }>();
+
+function alphaGet(path: string): Promise<any> {
+  const cached = alphaCache.get(path);
+  if (cached && Date.now() - cached.at < 10 * 60_000) return cached.body;
+  const request = fetch(`${alpha}/${path}`, {
+    headers: { "User-Agent": "f1.ola-vassbotn.no" },
+  }).then((res) => {
+    if (!res.ok) throw new Error(`jolpica ${res.status} ${path}`);
+    return res.json();
+  });
+  const entry = { at: Date.now(), body: request };
+  alphaCache.set(path, entry);
+  request.catch(() => {
+    if (alphaCache.get(path) === entry) alphaCache.delete(path);
+  });
+  return request;
+}
+
+const rows = (data: any): any[] =>
+  Array.isArray(data)
+    ? data
+    : ([data?.results, data?.schedules, data?.data].find(Array.isArray) ?? []);
+
+const alphaDriverName = (r: any): string => {
+  const d = r.driver ?? r.Driver ?? r;
+  return `${d.given_name ?? d.givenName ?? ""} ${d.family_name ?? d.familyName ?? ""}`
+    .trim()
+    .toLocaleLowerCase();
+};
+
+async function sprintQualifying(
+  year: number,
+  rounds: Round[],
+  drivers: DriverInfo[],
+) {
+  const schedules = rows(await alphaGet(`schedules/${year}/`));
+  const byName = new Map(
+    drivers.map((d) => [d.name.toLocaleLowerCase(), d.id]),
+  );
+  const sprints = rounds
+    .filter((r) => r.sessions.sprintQualifying)
+    .map((round) => {
+      const schedule = schedules.find(
+        (r) => Number(r.round_number ?? r.round) === round.round,
+      );
+      return { round, id: schedule?.round_id ?? schedule?.id };
+    })
+    .filter((x) => x.id);
+  const results = await Promise.all(
+    sprints.map(async ({ round, id }) => {
+      const response = await alphaGet(`results/${id}/SQ/`);
+      const entries = rows(response);
+      return {
+        round: round.round,
+        results: entries.flatMap((r) => {
+          const driver = byName.get(alphaDriverName(r));
+          const position = Number(r.position ?? r.position_number);
+          return driver && Number.isFinite(position)
+            ? [
+                {
+                  driver,
+                  team: drivers.find((d) => d.id === driver)?.team ?? "",
+                  position,
+                  q1: null,
+                  q2: null,
+                  q3: null,
+                },
+              ]
+            : [];
+        }),
+      };
+    }),
+  );
+  return results.filter((r) => r.results.length);
+}
+
 const schedule = (r: any): Round => ({
   round: Number(r.round),
   name: r.raceName,
@@ -78,14 +156,21 @@ export async function season(): Promise<Season> {
     number: d.Driver.permanentNumber,
     team: d.Constructors.at(-1)?.constructorId ?? "",
   }));
+  const rounds = races(calendar).map(schedule);
+  const sprintQualifyingResults = await sprintQualifying(
+    Number(calendar.RaceTable.season),
+    rounds,
+    drivers,
+  ).catch(() => []);
   return {
     year: Number(calendar.RaceTable.season),
-    rounds: races(calendar).map(schedule),
+    rounds,
     drivers,
     teams: teamRows.map((t: any) => ({ id: t.Constructor.constructorId, name: t.Constructor.name })),
     races: [...byRound(results, "Results")].map(([round, rows]) => ({ round, results: rows.map(classified) })),
     sprints: [...byRound(sprints, "SprintResults")].map(([round, rows]) => ({ round, results: rows.map(classified) })),
     qualifying: [...byRound(qualifying, "QualifyingResults")].map(([round, rows]) => ({ round, results: rows.map(quali) })),
+    sprintQualifying: sprintQualifyingResults,
     driverStandings: driverRows.map((d: any) => ({ id: d.Driver.driverId, points: Number(d.points) })),
     constructorStandings: teamRows.map((t: any) => ({ id: t.Constructor.constructorId, points: Number(t.points) })),
   };
