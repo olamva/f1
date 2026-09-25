@@ -17,7 +17,7 @@ import { messages, radios, remaining, rows as towerRows, sessionStart, trackStat
 
 export type LiveInfo = { live: boolean; recent: boolean; positions: boolean };
 
-interface CurrentSessionProps {
+interface LiveSessionProps {
   season: Loaded<Season>;
   info: Loaded<LiveInfo>;
 }
@@ -173,34 +173,34 @@ const Replay = ({ session, onClose }: ReplayProps) => {
   );
 };
 
-export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
-  const sessions = useJson<SessionRef[]>("/api/replay/sessions");
-  const [path, setPath] = useState(() => hashPart("session"));
+export const LiveSession = ({ season, info }: LiveSessionProps) => {
   const [closed, setClosed] = useState(false);
   const wasLive = useRef(false);
   if (info.data?.live) wasLive.current = true;
   useEffect(() => {
     if (info.data?.live) setClosed(false);
   }, [info.data?.live]);
+  if (!info.data || !season.data) return <Loading label="Loading…" error={info.error ?? season.error} />;
+  if (info.data.live || (!closed && (info.data.recent || wasLive.current)))
+    return <Live positions={info.data.positions} finished={!info.data.live} onClose={() => setClosed(true)} />;
+  const scheduled = current(season.data.rounds, Date.now());
+  return scheduled ? (
+    <div className="rounded-xl bg-gradient-to-r from-red-700/40 to-surface p-4">
+      <h1 className="text-lg font-bold"><Flag country={scheduled.round.country} />{scheduled.round.name} · {scheduled.label}</h1>
+      <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
+    </div>
+  ) : <Countdown rounds={season.data.rounds} />;
+};
+
+export const Replays = () => {
+  const sessions = useJson<SessionRef[]>("/api/replay/sessions");
+  const [path, setPath] = useState(() => hashPart("replay") ?? hashPart("session"));
   const choose = (s: SessionRef | null) => {
-    setHashPart("session", s?.path ?? null);
+    setHashPart("replay", s?.path ?? null);
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
-  if (!info.data || !season.data || (path && !sessions.data && !sessions.error)) return <Loading label="Loading…" error={info.error ?? season.error} />;
-  if (info.data.live || (!closed && (info.data.recent || wasLive.current)))
-    return <Live positions={info.data.positions} finished={!info.data.live} onClose={() => setClosed(true)} />;
+  if (!sessions.data) return <Loading label="Loading past sessions…" error={sessions.error} />;
   if (chosen) return <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />;
-  const scheduled = current(season.data.rounds, Date.now());
-  return (
-    <div className="space-y-4">
-      {scheduled ? (
-        <div className="rounded-xl bg-gradient-to-r from-red-700/40 to-surface p-4">
-          <h1 className="text-lg font-bold"><Flag country={scheduled.round.country} />{scheduled.round.name} · {scheduled.label}</h1>
-          <p className="mt-1 text-sm text-zinc-300">Live timing is unavailable. Reconnecting…</p>
-        </div>
-      ) : <Countdown rounds={season.data.rounds} />}
-      {sessions.data ? <ReplayPicker sessions={sessions.data} onStart={choose} /> : <Loading label="Loading past sessions…" error={sessions.error} />}
-    </div>
-  );
+  return <ReplayPicker sessions={sessions.data} onStart={choose} />;
 };
