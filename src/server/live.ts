@@ -106,4 +106,12 @@ export function isLive(): boolean {
   return now >= beat && now - beat <= FRESH_MS;
 }
 
+export function hasRecentTiming(): boolean {
+  if (!session.state.SessionInfo) return false;
+  const utc = (session.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
+  const beat = Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`);
+  const now = Date.now();
+  return now >= beat && now - beat <= EDGE_MS;
+}
+
 export const hasPositions = () => !!token.current();
