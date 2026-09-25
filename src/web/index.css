@@ -141,6 +141,24 @@ textarea {
   }
 }
 
+.swap-arrow {
+  display: inline-flex;
+  animation: swap-arrow 4s ease forwards;
+}
+
+@keyframes swap-arrow {
+  0% {
+    opacity: 0;
+  }
+  8%,
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .glass-highlight,
   .glass-tab {
