@@ -1,5 +1,5 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Crown } from "lucide-react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Crown, Maximize, Minimize } from "lucide-react";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import type { Row } from "./view.ts";
@@ -17,6 +17,7 @@ interface TrackMapProps {
   note: string | null;
   positionTrail?: PositionTrail;
   speed?: number;
+  banner?: React.ReactNode;
 }
 
 const projector = (outline: Outline) => {
@@ -38,7 +39,9 @@ const projector = (outline: Outline) => {
   };
 };
 
-export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, note, positionTrail, speed = 1 }: TrackMapProps) => {
+export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, note, positionTrail, speed = 1, banner }: TrackMapProps) => {
+  const frame = useRef<HTMLDivElement>(null);
+  const [full, setFull] = useState(false);
   const cars = useRef(new Map<string, SVGGElement>());
   const svg = useRef<SVGSVGElement>(null);
   const pointer = useRef("");
@@ -67,12 +70,26 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
       });
     }
   }, [positionTrail, project, speed]);
+  useEffect(() => {
+    const sync = () => setFull(document.fullscreenElement === frame.current);
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
   return (
-    <div className="relative rounded-xl bg-surface p-2">
+    <div ref={frame} className={`relative bg-surface p-2 ${full ? "flex flex-col gap-2" : "rounded-xl"}`}>
+      {full && banner}
+      <button
+        type="button"
+        aria-label={full ? "Exit full screen" : "Show the map in full screen"}
+        onClick={() => (full ? document.exitFullscreen() : frame.current!.requestFullscreen())}
+        className="glass-gear absolute right-3 bottom-3 z-10 cursor-pointer p-2"
+      >
+        {full ? <Minimize size={18} /> : <Maximize size={18} />}
+      </button>
       <svg
         ref={svg}
         viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="aspect-square w-full"
+        className={full ? "min-h-0 w-full flex-1" : "aspect-square w-full"}
         onPointerMove={(event) => {
           const at = `${event.clientX},${event.clientY}`;
           if (at === pointer.current) return;
