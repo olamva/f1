@@ -165,6 +165,22 @@ const median = (v: number[]) => {
     : null;
 };
 
+function qualifyingHeadToHead(
+  events: { results: QualiResult[] }[],
+  a: string,
+  b: string,
+): [number, number] {
+  const wins: [number, number] = [0, 0];
+  for (const q of events) {
+    const [x, y] = [
+      q.results.find((r) => r.driver === a),
+      q.results.find((r) => r.driver === b),
+    ];
+    if (x && y) wins[x.position < y.position ? 0 : 1]++;
+  }
+  return wins;
+}
+
 const pairOf = (s: Season, team: string): [string, string] | null => {
   const count = new Map<string, number>();
   for (const r of [...s.races, ...s.sprints]
@@ -199,13 +215,7 @@ function duel(s: Season, team: string, a: string, b: string): Duel {
     const g = qualiGap(x, y);
     if (g !== null && Math.abs(g) < 3) gaps.push(g);
   }
-  for (const q of s.sprintQualifying) {
-    const [x, y] = [
-      q.results.find((r) => r.driver === a),
-      q.results.find((r) => r.driver === b),
-    ];
-    if (x && y) d.sprintQuali[x.position < y.position ? 0 : 1]++;
-  }
+  d.sprintQuali = qualifyingHeadToHead(s.sprintQualifying, a, b);
   for (const [events, results, points] of [
     [s.races, d.race, d.racePoints],
     [s.sprints, d.sprint, d.sprintPoints],
