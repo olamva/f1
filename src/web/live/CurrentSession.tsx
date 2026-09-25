@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
@@ -15,7 +15,7 @@ import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
 import { messages, radios, remaining, rows as towerRows, sessionStart, trackStatus } from "./view.ts";
 
-export type LiveInfo = { live: boolean; positions: boolean };
+export type LiveInfo = { live: boolean; recent: boolean; positions: boolean };
 
 interface CurrentSessionProps {
   season: Loaded<Season>;
@@ -110,9 +110,11 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
 
 interface LiveProps {
   positions: boolean;
+  onClose: () => void;
+  finished: boolean;
 }
 
-const Live = ({ positions }: LiveProps) => {
+const Live = ({ positions, onClose, finished }: LiveProps) => {
   const [delay, setDelay] = useState(() => Number(localStorage.getItem("delay")) || 0);
   const feed = useFeed("/api/live/stream", delay * 1000);
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
@@ -123,14 +125,17 @@ const Live = ({ positions }: LiveProps) => {
     setDelay(s);
   };
   return (
-    feed ? (
-      <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} delay={delay * 1000} onDelay={change} />
-    ) : (
-      <div className="space-y-4">
-        <div className="flex justify-end"><DelayInput delay={delay} onDelay={change} /></div>
-        <Loading label="Connecting to live timing…" />
-      </div>
-    )
+    <div className="space-y-4">
+      {finished && <button type="button" onClick={onClose} className="text-sm text-zinc-400 hover:text-zinc-100">Close timing</button>}
+      {feed ? (
+        <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} delay={delay * 1000} onDelay={change} />
+      ) : (
+        <div className="space-y-4">
+          <div className="flex justify-end"><DelayInput delay={delay} onDelay={change} /></div>
+          <Loading label="Connecting to live timing…" />
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -171,13 +176,20 @@ const Replay = ({ session, onClose }: ReplayProps) => {
 export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
   const [path, setPath] = useState(() => hashPart("session"));
+  const [closed, setClosed] = useState(false);
+  const wasLive = useRef(false);
+  if (info.data?.live) wasLive.current = true;
+  useEffect(() => {
+    if (info.data?.live) setClosed(false);
+  }, [info.data?.live]);
   const choose = (s: SessionRef | null) => {
     setHashPart("session", s?.path ?? null);
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
   if (!info.data || !season.data || (path && !sessions.data && !sessions.error)) return <Loading label="Loading…" error={info.error ?? season.error} />;
-  if (info.data.live) return <Live positions={info.data.positions} />;
+  if (info.data.live || (!closed && (info.data.recent || wasLive.current)))
+    return <Live positions={info.data.positions} finished={!info.data.live} onClose={() => setClosed(true)} />;
   if (chosen) return <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />;
   const scheduled = current(season.data.rounds, Date.now());
   return (
