@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { merge, type Json } from "../../shared/merge.ts";
 import type { Delta, Snapshot } from "../../shared/timing.ts";
 
@@ -26,20 +26,38 @@ export const applyDelta = (f: Feed, batch: Delta[]): Feed => {
   return { ...f, state, t, beat, positionTrail };
 };
 
-export function useFeed(url: string | null): Feed | null {
+type Update = (f: Feed | null) => Feed | null;
+
+export function useFeed(url: string | null, delay = 0): Feed | null {
   const [feed, setFeed] = useState<Feed | null>(null);
+  const lag = useRef(delay);
+  lag.current = delay;
   useEffect(() => {
     if (!url) return;
+    const queue: [number, Update][] = [];
+    const flush = () => {
+      const n = queue.findIndex(([at]) => at + lag.current > Date.now());
+      const due = queue.splice(0, n < 0 ? queue.length : n).map(([, u]) => u);
+      if (due.length) setFeed((f) => due.reduce((acc, u) => u(acc), f));
+    };
+    const push = (u: Update) => {
+      queue.push([Date.now(), u]);
+      flush();
+    };
+    const timer = setInterval(flush, 200);
     const source = new EventSource(url);
     source.addEventListener("snapshot", (m) => {
       const snap = JSON.parse(m.data) as Feed;
-      setFeed({ ...snap, beat: snap.t, src: url });
+      push(() => ({ ...snap, beat: snap.t, src: url }));
     });
     source.addEventListener("delta", (m) => {
       const batch = JSON.parse(m.data) as Delta[];
-      setFeed((f) => (f ? applyDelta(f, batch) : f));
+      push((f) => (f ? applyDelta(f, batch) : f));
     });
-    return () => source.close();
+    return () => {
+      source.close();
+      clearInterval(timer);
+    };
   }, [url]);
   return feed;
 }
