@@ -10,9 +10,11 @@ A private F1 site: live timing, replays of recent sessions, and season stats wit
 
 ```sh
 pnpm install
-DEV_NO_AUTH=1 pnpm dev
+pnpm dev
 pnpm test
 ```
+
+`pnpm dev` turns off Google sign-in. Set `PORT` and `VITE_PORT` to run more than one dev server, such as `PORT=8788 VITE_PORT=5174 pnpm dev`. Set `NO_LIVE=1` to turn off live timing, so that the app shows replays during a live session.
 
 ## Deploy
 

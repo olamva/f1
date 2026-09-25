@@ -80,6 +80,7 @@ async function reconnect() {
 }
 
 export function start() {
+  if (process.env.NO_LIVE === "1") return;
   token.onChange(() => void reconnect());
   run();
   setInterval(() => {
