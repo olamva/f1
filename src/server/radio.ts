@@ -35,13 +35,17 @@ export const audio = (url: string) => {
   return path ? fetch(`${F1_ORIGIN}/static/${path}`) : null;
 };
 
-const openai = async (path: string, body: FormData | string) => {
+const openai = async (path: string, body: FormData | string): Promise<any> => {
   const { token } = await credential.getToken("https://cognitiveservices.azure.com/.default");
   const res = await fetch(`${ENDPOINT}openai/deployments/${path}`, {
     method: "POST",
     headers: { authorization: `Bearer ${token}`, ...(typeof body === "string" && { "content-type": "application/json" }) },
     body,
   });
+  if (res.status === 429) {
+    await new Promise((r) => setTimeout(r, Number(res.headers.get("retry-after") ?? 10) * 1000));
+    return openai(path, body);
+  }
   if (!res.ok) throw new Error(`${path} ${res.status}`);
   return res.json();
 };
