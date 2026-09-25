@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parseStream, Session } from "../src/server/timing.ts";
 import { merge, type Json } from "../src/shared/merge.ts";
-import { rows } from "../src/web/live/view.ts";
+import { qualifyingPart, rows } from "../src/web/live/view.ts";
 
 const fixture = (name: string) =>
   readFileSync(new URL(`fixtures/${name}`, import.meta.url), "utf8");
@@ -57,4 +57,10 @@ test("timing rows count lapped cars without reading the leader lap counter as a 
     } },
   });
   assert.deepEqual(result.map(({ lapsBehind }) => lapsBehind), [null, 1, 2]);
+});
+
+test("qualifyingPart names the qualifying segment", () => {
+  assert.equal(qualifyingPart({ SessionInfo: { Type: "Qualifying", Name: "Qualifying" }, TimingData: { SessionPart: 2 } }), "Q2");
+  assert.equal(qualifyingPart({ SessionInfo: { Type: "Qualifying", Name: "Sprint Qualifying" }, TimingData: { SessionPart: 3 } }), "SQ3");
+  assert.equal(qualifyingPart({ SessionInfo: { Type: "Race", Name: "Race" }, TimingData: {} }), null);
 });
