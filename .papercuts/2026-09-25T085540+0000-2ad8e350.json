@@ -1,0 +1,14 @@
+{
+  "id": "2ad8e350",
+  "ts": "2026-09-25T08:55:40+00:00",
+  "text": "Dev app cannot show a replay while a live session runs; no env switch to force live=false for local review",
+  "tags": [
+    "dev",
+    "review"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "cefda406",
+  "where": "src/server/main.ts",
+  "branch": "t3code/fullscreen-trackmap"
+}
