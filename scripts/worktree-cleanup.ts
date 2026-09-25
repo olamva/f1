@@ -18,12 +18,9 @@ const git = (cwd: string, ...args: string[]) =>
   }).trim();
 
 const [path, ...flags] = process.argv.slice(2);
-if (!path || flags.some((flag) => !["--apply", "--branch-only"].includes(flag)))
-  throw new Error(
-    "Use pnpm worktree:cleanup <path> [--branch-only] [--apply].",
-  );
+if (!path || flags.some((flag) => flag !== "--apply"))
+  throw new Error("Use pnpm worktree:cleanup <path> [--apply].");
 const apply = flags.includes("--apply");
-const branchOnly = flags.includes("--branch-only");
 
 const cwd = process.cwd();
 const target = realpathSync(path);
@@ -32,8 +29,7 @@ const main = realpathSync(
 );
 if (target === main) throw new Error("Preserve the main checkout.");
 const current = realpathSync(cwd);
-if (!branchOnly && (current === target || current.startsWith(target + sep)))
-  throw new Error("Run worktree removal from another checkout.");
+const self = current === target || current.startsWith(target + sep);
 
 git(cwd, "fetch", "--prune", "origin");
 const branch = git(target, "branch", "--show-current");
@@ -57,7 +53,7 @@ const kept = git(
 )
   .split("\n")
   .filter((name) => name && !regenerable.includes(name));
-if (!branchOnly && kept.length)
+if (kept.length)
   throw new Error(`Preserve the ignored paths: ${kept.join(", ")}`);
 
 const users = execFileSync(
@@ -77,7 +73,7 @@ const users = execFileSync(
           : state,
     { pid: "", pids: [] },
   ).pids;
-if (!branchOnly && users.length)
+if (!self && users.length)
   throw new Error(
     `Stop the processes that use the worktree: ${users.join(", ")}`,
   );
@@ -87,13 +83,13 @@ if (apply) {
     git(target, "switch", "--detach");
     git(target, "branch", "-d", branch);
   }
-  if (!branchOnly) git(cwd, "worktree", "remove", target);
+  git(main, "worktree", "remove", target);
 }
 console.log(
   JSON.stringify({
     target,
     branch,
-    removed: apply && !branchOnly,
+    removed: apply,
     branchRemoved: apply && !!branch,
   }),
 );
