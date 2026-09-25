@@ -1,0 +1,13 @@
+{
+  "id": "871e10fc",
+  "ts": "2026-09-25T20:14:37+00:00",
+  "text": "pnpm dev leaves an orphan server on port 8787 after it fails",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-8d0702d7",
+  "branch": "t3code/add-pwa-support"
+}
