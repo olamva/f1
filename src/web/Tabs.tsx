@@ -69,7 +69,7 @@ export const Tabs = <T extends string>({
           type="button"
           aria-pressed={value === i}
           data-active={value === i}
-          className={`glass-tab relative z-10 shrink-0 capitalize ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 font-semibold sm:px-4"}`}
+          className={`glass-tab relative z-10 shrink-0 capitalize ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
         >
           {live === i && <span aria-hidden="true" className="live-dot" />}
           {labels?.[i] ?? i}

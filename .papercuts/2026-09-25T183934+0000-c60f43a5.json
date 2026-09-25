@@ -1,0 +1,13 @@
+{
+  "id": "c60f43a5",
+  "ts": "2026-09-25T18:39:34+00:00",
+  "text": "Local dev without .env.local shows 'Unexpected token <' JSON error on the countdown page",
+  "tags": [
+    "dev"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "bd11d982",
+  "where": "src/web/api.ts",
+  "branch": "style/mobile-nav-row"
+}

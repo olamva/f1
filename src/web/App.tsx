@@ -45,23 +45,32 @@ export const App = () => {
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
-      <header className="app-nav grid grid-cols-[1fr_auto] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-6">
+      <header className="app-nav flex items-center gap-1.5 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
           className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
           aria-label="Go to live session"
           type="button"
         >
-          <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />
-        </button>
-        <div className="order-3 col-span-2 flex items-center justify-center gap-2 sm:order-none sm:col-span-1 sm:gap-3">
-          <Tabs
-            items={["Countdown"] as const}
-            value={tab === "Countdown" ? tab : null}
-            onChange={go}
-            labels={info.data?.live ? { Countdown: "Live" } : undefined}
-            live={info.data?.live ? "Countdown" : undefined}
+          <img
+            src={f1Logo}
+            alt="F1"
+            className="w-10 min-[390px]:w-14 sm:w-20"
           />
+        </button>
+        <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5 sm:gap-3">
+          <button
+            onClick={() => go("Countdown")}
+            className="glass-gear flex h-12 shrink-0 items-center px-2.5 text-sm font-semibold sm:h-13 sm:px-4 sm:text-base"
+            data-active={tab === "Countdown"}
+            aria-pressed={tab === "Countdown"}
+            type="button"
+          >
+            {info.data?.live && (
+              <span aria-hidden="true" className="live-dot" />
+            )}
+            {info.data?.live ? "Live" : "Countdown"}
+          </button>
           <Tabs
             items={CONTENT_TABS}
             value={tab === "Replays" || tab === "Stats" ? tab : null}
@@ -70,7 +79,7 @@ export const App = () => {
         </div>
         <button
           onClick={() => go("Settings")}
-          className="glass-gear order-2 ml-auto grid size-10 place-items-center sm:order-none sm:size-11"
+          className="glass-gear grid size-10 shrink-0 place-items-center sm:size-11"
           data-active={tab === "Settings"}
           aria-label="Settings"
           aria-pressed={tab === "Settings"}
