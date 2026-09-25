@@ -1,0 +1,13 @@
+{
+  "id": "177f7655",
+  "ts": "2026-09-25T20:05:33+00:00",
+  "text": "pnpm --version stalls while resolving pinned pnpm 12.6.0",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-8d0702d7",
+  "branch": "t3code/add-pwa-support"
+}
