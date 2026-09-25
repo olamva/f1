@@ -18,17 +18,37 @@ const weekends = (sessions: SessionRef[]) =>
 
 const Weekend = ({ sessions, onStart }: ReplayPickerProps) => (
   <div className="flex flex-wrap gap-2">
-    {sessions.map((s) => (
-      <button
-        key={s.path}
-        onClick={() => onStart(s)}
-        aria-label={`Start replay: ${s.meeting} · ${s.name}`}
-        className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 hover:bg-red-600"
-      >
-        <Play aria-hidden="true" className="size-3.5" />
-        {s.name}
-      </button>
-    ))}
+    {sessions.map((s) =>
+      s.path ? (
+        <button
+          key={s.path}
+          onClick={() => onStart(s)}
+          aria-label={`Start replay: ${s.meeting} · ${s.name}`}
+          className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 hover:bg-red-600"
+        >
+          <Play aria-hidden="true" className="size-3.5" />
+          {s.name}
+        </button>
+      ) : (
+        <span key={s.name} className="group/pending relative">
+          <button
+            aria-disabled="true"
+            aria-describedby={`pending-${s.start}`}
+            className="striped-border flex cursor-not-allowed items-center gap-1.5 rounded-md px-3 py-1.5 text-zinc-500"
+          >
+            <Play aria-hidden="true" className="size-3.5" />
+            {s.name}
+          </button>
+          <span
+            id={`pending-${s.start}`}
+            role="tooltip"
+            className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-md bg-zinc-800 px-3 py-2 text-xs text-zinc-300 opacity-0 shadow-lg group-focus-within/pending:opacity-100 group-hover/pending:opacity-100"
+          >
+            Session replay is not available yet.
+          </span>
+        </span>
+      ),
+    )}
   </div>
 );
 
