@@ -1,0 +1,14 @@
+{
+  "id": "108060c0",
+  "ts": "2026-09-25T09:06:37+00:00",
+  "text": "Sandbox denies local loopback listeners needed for app screenshots",
+  "tags": [
+    "sandbox",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "127.0.0.1:8787",
+  "branch": "t3code/add-sprint-quali-h2h"
+}

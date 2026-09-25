@@ -14,6 +14,31 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
       <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
         {title}
       </h2>
+      {table.length >= 3 && (
+        <div className="mb-4 grid grid-cols-3 items-end gap-2 pt-2 text-center">
+          {table.slice(0, 3).map((s, i) => (
+            <div
+              key={s.id}
+              className={`min-w-0 ${["order-2", "order-1", "order-3"][i]}`}
+            >
+              <div className="mb-2 flex min-h-10 items-end justify-center text-xs font-medium break-words">
+                {who.get(s.id)?.name ?? s.id}
+              </div>
+              <div
+                className={`flex flex-col items-center justify-center rounded-t-lg ${["h-24", "h-16", "h-12"][i]}`}
+                style={{
+                  backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${who.get(s.id)?.color ?? "#888888"} 20%, #27272a), #27272a 25%)`,
+                }}
+              >
+                <span className="text-xl font-bold">{i + 1}</span>
+                <span className="tabular text-xs text-zinc-400">
+                  {s.points} pts
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
       <table className="tabular w-full text-sm">
         <tbody>
           {table.map((s, i) => {

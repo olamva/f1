@@ -1,0 +1,14 @@
+{
+  "id": "8ea20313",
+  "ts": "2026-09-25T09:02:25+00:00",
+  "text": "pnpm 12.6.0 cannot verify its registry signature because registry fetches fail",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "pnpm",
+  "branch": "t3code/add-sprint-quali-h2h"
+}

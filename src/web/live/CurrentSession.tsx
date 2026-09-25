@@ -13,7 +13,7 @@ import { ReplayPicker } from "./ReplayPicker.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
-import { messages, radios, remaining, rows as towerRows, trackStatus } from "./view.ts";
+import { messages, radios, remaining, rows as towerRows, sessionStart, trackStatus } from "./view.ts";
 
 export type LiveInfo = { live: boolean; positions: boolean };
 
@@ -31,6 +31,7 @@ interface BoardProps {
   speed?: number;
   paused?: boolean;
   delay?: number;
+  onDelay?: (s: number) => void;
 }
 
 const useTick = (ms: number) => {
@@ -42,7 +43,18 @@ const useTick = (ms: number) => {
   return now;
 };
 
-const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, delay = 0 }: BoardProps) => {
+interface DelayInputProps {
+  delay: number;
+  onDelay: (s: number) => void;
+}
+
+const DelayInput = ({ delay, onDelay }: DelayInputProps) => (
+  <label title="Delay behind live, to match the F1TV stream" className="tabular flex items-center text-xs text-zinc-500">
+    −<input inputMode="numeric" placeholder="0" value={delay || ""} onChange={(e) => onDelay(Number(e.target.value.replace(/\D/g, "")))} className="w-7 bg-transparent text-right text-zinc-400 outline-none placeholder:text-zinc-600 focus:text-zinc-100" />s
+  </label>
+);
+
+const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, delay = 0, onDelay }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const now = useTick(1000);
   const state = feed.state as Record<string, any>;
@@ -74,7 +86,10 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
             Lap {state.LapCount.CurrentLap}/{state.LapCount.TotalLaps}
           </span>
         )}
-        <span className="tabular ml-auto font-mono text-lg">{remaining(state, utc)}</span>
+        <div className="ml-auto flex items-center gap-2">
+          {onDelay && <DelayInput delay={delay / 1000} onDelay={onDelay} />}
+          <span className="tabular font-mono text-lg">{remaining(state, utc)}</span>
+        </div>
       </header>
       {banner}
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
@@ -85,7 +100,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
-        <RaceControl messages={messages(state)} rows={rows} />
+        <RaceControl messages={messages(state)} rows={rows} start={sessionStart(state)} />
         <LapCharts laps={laps} rows={rows} focus={focus} until={replay ? feed.t : null} race={race} />
       </div>
       <TeamRadio radios={radios(state)} rows={rows} />
@@ -108,14 +123,14 @@ const Live = ({ positions }: LiveProps) => {
     setDelay(s);
   };
   return (
-    <div className="space-y-4">
-      <label className="flex items-center gap-2 text-sm text-zinc-400">
-        Delay
-        <input type="number" min={0} step={1} value={delay} onChange={(e) => change(Math.max(0, Number(e.target.value)))} className="tabular w-20 rounded-md bg-zinc-800 px-2 py-1 text-zinc-100" />
-        seconds behind live, to match the F1TV stream
-      </label>
-      {feed ? <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} delay={delay * 1000} /> : <Loading label="Connecting to live timing…" />}
-    </div>
+    feed ? (
+      <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} delay={delay * 1000} onDelay={change} />
+    ) : (
+      <div className="space-y-4">
+        <div className="flex justify-end"><DelayInput delay={delay} onDelay={change} /></div>
+        <Loading label="Connecting to live timing…" />
+      </div>
+    )
   );
 };
 

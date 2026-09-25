@@ -1,0 +1,14 @@
+{
+  "id": "b05cec0e",
+  "ts": "2026-09-25T08:58:06+00:00",
+  "text": "curl cannot resolve api.jolpi.ca in the restricted shell",
+  "tags": [
+    "network",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "https://api.jolpi.ca/f1/alpha/schedules/2026/",
+  "branch": "t3code/add-sprint-quali-h2h"
+}
