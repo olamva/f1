@@ -1,0 +1,13 @@
+{
+  "id": "dd4a4235",
+  "ts": "2026-09-25T09:04:26+00:00",
+  "text": "Git staging fails because task worktree metadata is outside writable sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-cc2bdeb7",
+  "branch": "t3code/leader-crown-lap-gap"
+}
