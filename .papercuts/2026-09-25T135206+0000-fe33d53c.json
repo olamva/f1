@@ -1,0 +1,14 @@
+{
+  "id": "fe33d53c",
+  "ts": "2026-09-25T13:52:06+00:00",
+  "text": "Node preview servers cannot bind a local port inside the workspace sandbox",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-8464042e",
+  "branch": "t3code/persist-live-timing-state"
+}
