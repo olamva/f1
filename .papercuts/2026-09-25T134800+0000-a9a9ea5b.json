@@ -1,0 +1,13 @@
+{
+  "id": "a9a9ea5b",
+  "ts": "2026-09-25T13:48:00+00:00",
+  "text": "pnpm waits without output while installing the pinned package manager version",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-d515a0f1",
+  "branch": "t3code/qualifying-sector-times"
+}

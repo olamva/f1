@@ -1,0 +1,13 @@
+{
+  "id": "155af025",
+  "ts": "2026-09-25T13:57:39+00:00",
+  "text": "T3 preview_snapshot fails on every tab although preview_evaluate works",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-d515a0f1",
+  "branch": "t3code/qualifying-sector-times"
+}

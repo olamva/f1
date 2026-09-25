@@ -25,6 +25,10 @@ export type Row = {
   status: string;
 };
 
+export type SessionBest = { number: string; tla: string; color: string; value: string };
+
+export type SessionBests = { sectors: (SessionBest | null)[]; lap: SessionBest | null };
+
 const mark = (x: Obj | undefined): Mark =>
   !x?.Value ? "none" : x.OverallFastest ? "overall" : x.PersonalFastest ? "personal" : "normal";
 
@@ -82,6 +86,26 @@ export function rows(state: Obj): Row[] {
     .map(([n, line]) => row(n, line, drivers[n], apps[n]))
     .sort((a, b) => a.position - b.position);
 }
+
+export const sessionBests = (state: Obj, drivers: Row[]): SessionBests => {
+  const stats: Obj = state.TimingStats?.Lines ?? {};
+  const timing: Obj = state.TimingData?.Lines ?? {};
+  const fastest = (value: (number: string) => string | undefined): SessionBest | null =>
+    drivers.reduce<SessionBest | null>((best, driver) => {
+      const time = value(driver.number) ?? "";
+      const seconds = lapSeconds(time);
+      return seconds !== null && (best === null || seconds < lapSeconds(best.value)!)
+        ? { number: driver.number, tla: driver.tla, color: driver.color, value: time }
+        : best;
+    }, null);
+  return {
+    sectors: [0, 1, 2].map((i) => fastest((n) => values(stats[n]?.BestSectors)[i]?.Value)),
+    lap: fastest((n) => stats[n]?.PersonalBestLapTime?.Value ?? timing[n]?.BestLapTime?.Value),
+  };
+};
+
+export const isQualifying = (info: Obj | undefined): boolean =>
+  /Qualifying|Shootout/i.test(info?.Name ?? "");
 
 export type Message = { utc: string; category: string; flag: string; text: string };
 
