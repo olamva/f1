@@ -14,7 +14,8 @@ terraform {
 
 provider "azurerm" {
   features {}
-  subscription_id = var.subscription_id
+  subscription_id     = var.subscription_id
+  storage_use_azuread = true
 }
 
 provider "azapi" {}
@@ -128,13 +129,17 @@ resource "azurerm_container_app" "f1" {
         value = azurerm_cognitive_account.speech.endpoint
       }
       env {
+        name  = "TRANSCRIPT_STORE"
+        value = "${azurerm_storage_account.f1.primary_blob_endpoint}${azurerm_storage_container.transcripts.name}"
+      }
+      env {
         name  = "ALLOWED_EMAILS"
         value = join(",", var.allowed_emails)
       }
     }
   }
 
-  depends_on = [azurerm_role_assignment.app_secrets]
+  depends_on = [azurerm_role_assignment.app_secrets, azurerm_role_assignment.app_transcripts]
 
   lifecycle {
     ignore_changes = [template[0].container[0].image]
@@ -297,5 +302,27 @@ resource "azurerm_cognitive_deployment" "turns" {
 resource "azurerm_role_assignment" "app_speech" {
   scope                = azurerm_cognitive_account.speech.id
   role_definition_name = "Cognitive Services OpenAI User"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
+resource "azurerm_storage_account" "f1" {
+  name                            = "${var.name}store${local.digest}"
+  resource_group_name             = azurerm_resource_group.f1.name
+  location                        = azurerm_resource_group.f1.location
+  account_tier                    = "Standard"
+  account_replication_type        = "LRS"
+  shared_access_key_enabled       = false
+  allow_nested_items_to_be_public = false
+  default_to_oauth_authentication = true
+}
+
+resource "azurerm_storage_container" "transcripts" {
+  name               = "transcripts"
+  storage_account_id = azurerm_storage_account.f1.id
+}
+
+resource "azurerm_role_assignment" "app_transcripts" {
+  scope                = azurerm_storage_container.transcripts.id
+  role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.app.principal_id
 }
