@@ -1,3 +1,5 @@
+import { ArrowDown, ArrowUp } from "lucide-react";
+import { useLayoutEffect, useRef, useState } from "react";
 import type { Mark, Row } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
@@ -46,19 +48,85 @@ const Tyre = ({ compound, age }: TyreProps) =>
     </span>
   ) : null;
 
+interface Swap {
+  up: boolean;
+  id: number;
+}
+
+const LIFT = { zIndex: 2, backgroundColor: "#27272a", boxShadow: "0 4px 12px rgb(0 0 0 / 0.5)" };
+
+const swapFrames = (dy: number, up: boolean): Keyframe[] => {
+  const scale = up ? 1.04 : 1;
+  const layer = up ? LIFT : { zIndex: 1 };
+  return [
+    { ...layer, transform: `translateY(${dy}px) scale(1)` },
+    { ...layer, transform: `translateY(${dy}px) scale(${scale})`, offset: 0.25 },
+    { ...layer, transform: `translateY(0) scale(${scale})`, offset: 0.75 },
+    { ...layer, transform: "translateY(0) scale(1)" },
+  ];
+};
+
+const useSwaps = (rows: Row[]) => {
+  const nodes = useRef(new Map<string, HTMLTableRowElement>());
+  const last = useRef(new Map<string, { position: number; top: number }>());
+  const count = useRef(0);
+  const [swaps, setSwaps] = useState<Record<string, Swap>>({});
+
+  useLayoutEffect(() => {
+    const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const moved: Record<string, Swap> = {};
+    for (const row of rows) {
+      const node = nodes.current.get(row.number);
+      const before = last.current.get(row.number);
+      if (!node) continue;
+      last.current.set(row.number, { position: row.position, top: node.offsetTop });
+      if (!before || before.position === row.position) continue;
+      const up = row.position < before.position;
+      moved[row.number] = { up, id: ++count.current };
+      if (!still) node.animate(swapFrames(before.top - node.offsetTop, up), { duration: 650, easing: "ease-in-out" });
+    }
+    if (Object.keys(moved).length) setSwaps((s) => ({ ...s, ...moved }));
+  }, [rows]);
+
+  const bind = (number: string) => (node: HTMLTableRowElement | null) => {
+    if (node) nodes.current.set(number, node);
+    else nodes.current.delete(number);
+  };
+
+  return { swaps, bind };
+};
+
+const SwapArrow = ({ swap }: { swap?: Swap }) => (
+  <span className="inline-block w-3">
+    {swap && (
+      <span key={swap.id} className={`swap-arrow ${swap.up ? "text-emerald-400" : "text-red-500"}`}>
+        {swap.up ? <ArrowUp size={12} strokeWidth={3} /> : <ArrowDown size={12} strokeWidth={3} />}
+      </span>
+    )}
+  </span>
+);
+
 interface TowerRowProps {
   row: Row;
   race: boolean;
   selected: boolean;
+  swap?: Swap;
+  bind: (node: HTMLTableRowElement | null) => void;
   onToggle: () => void;
 }
 
-const TowerRow = ({ row, race, selected, onToggle }: TowerRowProps) => (
+const TowerRow = ({ row, race, selected, swap, bind, onToggle }: TowerRowProps) => (
   <tr
+    ref={bind}
     onClick={onToggle}
-    className={`cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
+    className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
   >
-    <td className="px-2 py-1 text-right text-zinc-400">{row.position}</td>
+    <td className="px-2 py-1 text-right text-zinc-400">
+      <span className="inline-flex items-center gap-1">
+        <SwapArrow swap={swap} />
+        {row.position}
+      </span>
+    </td>
     <td className="px-2 py-1">
       <span className="flex items-center gap-2">
         <span className="h-4 w-1 rounded-sm" style={{ background: row.color }} />
@@ -89,34 +157,39 @@ const TowerRow = ({ row, race, selected, onToggle }: TowerRowProps) => (
   </tr>
 );
 
-export const TimingTower = ({ rows, race, selected, onToggle }: TimingTowerProps) => (
-  <div className="overflow-x-auto rounded-xl bg-surface">
-    <table className="tabular w-full font-mono text-sm">
-      <thead className="text-left text-xs text-zinc-500">
-        <tr>
-          <th className="px-2 py-2 text-right">P</th>
-          <th className="px-2 py-2">Driver</th>
-          <th className="px-2 py-2 text-right">{race ? "Gap" : "Diff"}</th>
-          {race && <th className="px-2 py-2 text-right">Int</th>}
-          <th className="px-2 py-2 text-right">Last</th>
-          <th className="px-2 py-2 text-right">Best</th>
-          <th className="px-2 py-2">Sectors</th>
-          <th className="px-2 py-2">Tyre</th>
-          <th className="px-2 py-2 text-right">Pit</th>
-          <th className="px-2 py-2" />
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <TowerRow
-            key={r.number}
-            row={r}
-            race={race}
-            selected={selected.has(r.number)}
-            onToggle={() => onToggle(r.number)}
-          />
-        ))}
-      </tbody>
-    </table>
-  </div>
-);
+export const TimingTower = ({ rows, race, selected, onToggle }: TimingTowerProps) => {
+  const { swaps, bind } = useSwaps(rows);
+  return (
+    <div className="overflow-x-auto rounded-xl bg-surface">
+      <table className="tabular w-full font-mono text-sm">
+        <thead className="text-left text-xs text-zinc-500">
+          <tr>
+            <th className="px-2 py-2 text-right">P</th>
+            <th className="px-2 py-2">Driver</th>
+            <th className="px-2 py-2 text-right">{race ? "Gap" : "Diff"}</th>
+            {race && <th className="px-2 py-2 text-right">Int</th>}
+            <th className="px-2 py-2 text-right">Last</th>
+            <th className="px-2 py-2 text-right">Best</th>
+            <th className="px-2 py-2">Sectors</th>
+            <th className="px-2 py-2">Tyre</th>
+            <th className="px-2 py-2 text-right">Pit</th>
+            <th className="px-2 py-2" />
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <TowerRow
+              key={r.number}
+              row={r}
+              race={race}
+              selected={selected.has(r.number)}
+              swap={swaps[r.number]}
+              bind={bind(r.number)}
+              onToggle={() => onToggle(r.number)}
+            />
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+};
