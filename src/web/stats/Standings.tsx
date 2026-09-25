@@ -25,8 +25,10 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
                 {who.get(s.id)?.name ?? s.id}
               </div>
               <div
-                className={`flex flex-col items-center justify-center rounded-t-lg border-t-4 bg-zinc-800 ${["h-24", "h-16", "h-12"][i]}`}
-                style={{ borderColor: who.get(s.id)?.color }}
+                className={`flex flex-col items-center justify-center rounded-t-lg ${["h-24", "h-16", "h-12"][i]}`}
+                style={{
+                  backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${who.get(s.id)?.color ?? "#888888"} 35%, #27272a), #27272a 25%)`,
+                }}
               >
                 <span className="text-xl font-bold">{i + 1}</span>
                 <span className="tabular text-xs text-zinc-400">
