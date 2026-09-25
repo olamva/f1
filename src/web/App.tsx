@@ -25,6 +25,7 @@ const fromHash = (): Tab =>
 export const App = () => {
   const [tab, setTab] = useState<Tab>(fromHash);
   const [visit, setVisit] = useState(0);
+  const [session, setSession] = useState(0);
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
   useEffect(() => {
@@ -34,6 +35,7 @@ export const App = () => {
   }, []);
   const go = (t: Tab) => {
     history.pushState(null, "", t === "Countdown" ? "/" : `#${SLUG[t]}`);
+    if (t === "Countdown" && tab === "Countdown") setSession((s) => s + 1);
     setTab(t);
     setVisit((v) => v + 1);
   };
@@ -70,8 +72,10 @@ export const App = () => {
           />
         </button>
       </header>
-      <main key={visit}>
-        {tab === "Countdown" && <CurrentSession season={season} info={info} />}
+      <main key={`session-${session}`} hidden={tab !== "Countdown"}>
+        <CurrentSession season={season} info={info} />
+      </main>
+      <main key={visit} hidden={tab === "Countdown"}>
         {tab === "Stats" &&
           (season.data ? (
             <Stats season={season.data} />
