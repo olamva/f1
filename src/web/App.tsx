@@ -4,18 +4,20 @@ import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { LiveSession, Replays, type LiveInfo } from "./live/CurrentSession.tsx";
 import { Loading } from "./Loading.tsx";
+import { Results } from "./Results.tsx";
 import { Settings } from "./Settings.tsx";
 import { Stats } from "./stats/Stats.tsx";
 import { Tabs } from "./Tabs.tsx";
 import f1Logo from "./f1-logo.svg";
 
-const TABS = ["Countdown", "Replays", "Stats", "Settings"] as const;
-const NAV_TABS = ["Countdown", "Replays", "Stats"] as const;
+const TABS = ["Countdown", "Replays", "Results", "Stats", "Settings"] as const;
+const NAV_TABS = ["Countdown", "Replays", "Results", "Stats"] as const;
 type Tab = (typeof TABS)[number];
 
 const SLUG: Record<Tab, string> = {
   Countdown: "session",
   Replays: "replay",
+  Results: "results",
   Stats: "stats",
   Settings: "settings",
 };
@@ -45,7 +47,7 @@ export const App = () => {
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
-      <header className="app-nav flex items-center gap-1.5 sm:gap-6">
+      <header className="flex flex-wrap items-center gap-1.5 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
           className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
@@ -69,7 +71,7 @@ export const App = () => {
         </div>
         <button
           onClick={() => go("Settings")}
-          className="glass-gear grid size-10 shrink-0 place-items-center sm:size-11"
+          className="glass-gear ml-auto grid size-10 shrink-0 place-items-center sm:ml-0 sm:size-11"
           data-active={tab === "Settings"}
           aria-label="Settings"
           aria-pressed={tab === "Settings"}
@@ -88,6 +90,7 @@ export const App = () => {
       </main>
       <main key={visit} hidden={tab === "Countdown"}>
         {tab === "Replays" && <Replays />}
+        {tab === "Results" && <Results />}
         {tab === "Stats" &&
           (season.data ? (
             <Stats season={season.data} />

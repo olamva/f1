@@ -12,6 +12,7 @@ import {
 } from "./archive.ts";
 import { requireGoogle } from "./auth.ts";
 import * as live from "./live.ts";
+import { driverProfile, raceArchive } from "./history.ts";
 import { audio, transcript } from "./radio.ts";
 import { pace, type PaceKind } from "./pace.ts";
 import { records, season } from "./season.ts";
@@ -47,6 +48,23 @@ app.get("/api/pace/:year/:round/:kind", async (c) => {
 app.get("/api/records", async (c) => {
   const s = await season();
   return c.json(await records(s.drivers.map((d) => d.id)));
+});
+app.get("/api/results/:year", async (c) => {
+  const year = Number(c.req.param("year"));
+  if (
+    !Number.isInteger(year) ||
+    year < 1950 ||
+    year > new Date().getUTCFullYear()
+  )
+    return c.json({ error: "Invalid season." }, 400);
+  return c.json(await raceArchive(year));
+});
+app.get("/api/drivers/:id", async (c) => {
+  const id = c.req.param("id");
+  if (!/^[a-z0-9_]+$/.test(id))
+    return c.json({ error: "Invalid driver." }, 400);
+  const profile = await driverProfile(id);
+  return profile ? c.json(profile) : c.notFound();
 });
 
 app.get("/api/token", (c) => c.json(token.status()));
