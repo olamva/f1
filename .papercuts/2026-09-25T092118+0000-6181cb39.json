@@ -1,0 +1,14 @@
+{
+  "id": "6181cb39",
+  "ts": "2026-09-25T09:21:18+00:00",
+  "text": "T3 preview hangs on requestFullscreen; evaluate times out until reload",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "a48d1824",
+  "where": "mcp__t3-code__preview_evaluate",
+  "branch": "t3code/compact-track-map"
+}

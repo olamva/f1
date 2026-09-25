@@ -36,10 +36,12 @@ const projector = (outline: Outline) => {
   const scale = (SIZE - 2 * PAD) / Math.max(maxX - minX, maxY - minY);
   const offX = (SIZE - (maxX - minX) * scale) / 2;
   const offY = (SIZE - (maxY - minY) * scale) / 2;
-  return (x: number, y: number): [number, number] => {
+  const box = [offX - PAD, offY - PAD, SIZE - 2 * offX + 2 * PAD, SIZE - 2 * offY + 2 * PAD] as const;
+  const project = (x: number, y: number): [number, number] => {
     const [u, v] = turn(x, y);
     return [offX + (u - minX) * scale, SIZE - (offY + (v - minY) * scale)];
   };
+  return { project, box };
 };
 
 export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, note, positionTrail, speed = 1, banner }: TrackMapProps) => {
@@ -51,7 +53,7 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
   const [hover, setHover] = useState<{ number: string; x: number; y: number } | null>(null);
   const hovered = hover?.number ?? null;
   const card = rows.find((r) => r.number === hovered);
-  const project = useMemo(() => (outline ? projector(outline) : null), [outline]);
+  const { project, box } = useMemo(() => (outline ? projector(outline) : { project: null, box: [0, 0, SIZE, SIZE] as const }), [outline]);
   const path = useMemo(
     () =>
       outline && project
@@ -104,7 +106,7 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
       </button>
       <svg
         ref={svg}
-        viewBox={`0 0 ${SIZE} ${SIZE}`}
+        viewBox={box.join(" ")}
         className={full ? "min-h-0 w-full flex-1" : "aspect-square w-full"}
         onPointerMove={(event) => {
           const at = `${event.clientX},${event.clientY}`;
@@ -182,7 +184,7 @@ export const TrackMap = ({ outline, positions, rows, race, selected, onToggle, n
         {hover && card && (
           <>
             <circle data-number={card.number} cx={hover.x} cy={hover.y} r={18} fill="transparent" className="cursor-pointer" onMouseDown={(event) => event.preventDefault()} onClick={() => onToggle(card.number)} />
-            <foreignObject x={hover.x > SIZE / 2 ? hover.x - 340 : hover.x + 20} y={hover.y - 60} width={320} height={120} className="pointer-events-none overflow-visible">
+            <foreignObject x={hover.x > box[0] + box[2] / 2 ? hover.x - 340 : hover.x + 20} y={hover.y - 60} width={320} height={120} className="pointer-events-none overflow-visible">
               <div id="track-map-card" className="rounded-lg border-l-8 bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg" style={{ borderColor: card.color }}>
                 <p className="text-[26px] font-semibold text-zinc-100">{card.name}</p>
                 <p className="text-[20px] text-zinc-400">{card.team}</p>
