@@ -1,0 +1,13 @@
+{
+  "id": "32adf8aa",
+  "ts": "2026-09-25T13:50:03+00:00",
+  "text": "pnpm 11 stalls while fetching the project's pnpm 12.6.0, then reports a signature fetch failure",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-249eeec0",
+  "branch": "t3code/live-replay-tab"
+}
