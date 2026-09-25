@@ -304,12 +304,12 @@ resource "azurerm_cognitive_deployment" "turns" {
 }
 
 resource "azurerm_cognitive_account" "voice" {
-  name                  = "${var.name}-voice-${local.digest}"
+  name                  = "${var.name}-voice-se-${local.digest}"
   resource_group_name   = azurerm_resource_group.f1.name
-  location              = azurerm_resource_group.f1.location
+  location              = "swedencentral"
   kind                  = "SpeechServices"
   sku_name              = "S0"
-  custom_subdomain_name = "${var.name}-voice-${local.digest}"
+  custom_subdomain_name = "${var.name}-voice-se-${local.digest}"
   local_auth_enabled    = false
 }
 
