@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Settings as SettingsIcon, Timer } from "lucide-react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { LiveSession, Replays, type LiveInfo } from "./live/CurrentSession.tsx";
@@ -45,7 +45,7 @@ export const App = () => {
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
-      <header className="app-nav grid grid-cols-[1fr_auto] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-6">
+      <header className="app-nav grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
           className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
@@ -54,35 +54,47 @@ export const App = () => {
         >
           <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />
         </button>
-        <div className="order-3 col-span-2 flex items-center justify-center gap-2 sm:order-none sm:col-span-1 sm:gap-3">
-          <Tabs
-            items={["Countdown"] as const}
-            value={tab === "Countdown" ? tab : null}
-            onChange={go}
-            labels={info.data?.live ? { Countdown: "Live" } : undefined}
-            live={info.data?.live ? "Countdown" : undefined}
-          />
+        <div className="flex justify-center">
           <Tabs
             items={CONTENT_TABS}
             value={tab === "Replays" || tab === "Stats" ? tab : null}
             onChange={go}
           />
         </div>
-        <button
-          onClick={() => go("Settings")}
-          className="glass-gear order-2 ml-auto grid size-10 place-items-center sm:order-none sm:size-11"
-          data-active={tab === "Settings"}
-          aria-label="Settings"
-          aria-pressed={tab === "Settings"}
-          title="Settings"
-          type="button"
-        >
-          <SettingsIcon
-            aria-hidden="true"
-            className="size-5"
-            strokeWidth={1.8}
-          />
-        </button>
+        <div className="flex items-center gap-2 sm:gap-3">
+          <button
+            onClick={() => go("Countdown")}
+            className="glass-gear relative grid size-10 place-items-center sm:size-11"
+            data-active={tab === "Countdown"}
+            aria-label={info.data?.live ? "Live" : "Countdown"}
+            aria-pressed={tab === "Countdown"}
+            title={info.data?.live ? "Live" : "Countdown"}
+            type="button"
+          >
+            <Timer aria-hidden="true" className="size-5" strokeWidth={1.8} />
+            {info.data?.live && (
+              <span
+                aria-hidden="true"
+                className="live-dot absolute top-0 right-0 m-0!"
+              />
+            )}
+          </button>
+          <button
+            onClick={() => go("Settings")}
+            className="glass-gear grid size-10 place-items-center sm:size-11"
+            data-active={tab === "Settings"}
+            aria-label="Settings"
+            aria-pressed={tab === "Settings"}
+            title="Settings"
+            type="button"
+          >
+            <SettingsIcon
+              aria-hidden="true"
+              className="size-5"
+              strokeWidth={1.8}
+            />
+          </button>
+        </div>
       </header>
       <main key={`session-${session}`} hidden={tab !== "Countdown"}>
         {tab === "Countdown" && <LiveSession season={season} info={info} />}
