@@ -44,7 +44,7 @@ export const LapCharts = ({ laps, rows, focus, until, race }: LapChartsProps) =>
     <>
       <Panel title="Lap times (within 108% of the fastest)">
         {Number.isFinite(fastest) ? (
-          <LineChart series={times} xLabel="Lap" yFormat={lapTime} yDomain={[fastest * 1.08, fastest]} />
+          <LineChart series={times} xLabel="Lap" yFormat={lapTime} invert />
         ) : (
           <p className="text-sm text-zinc-500">{hint}</p>
         )}
