@@ -13,6 +13,7 @@ export type Row = {
   color: string;
   position: number;
   gap: string;
+  lapsBehind: number | null;
   interval: string;
   lastLap: string;
   lastMark: Mark;
@@ -40,7 +41,13 @@ function tyre(app: Obj | undefined): { tyre: string; tyreAge: number | null } {
   return { tyre: stint?.Compound ?? "", tyreAge: stint?.TotalLaps ?? null };
 }
 
+const lapGap = (gap: string): number | null => {
+  const laps = /^\+?(\d+) LAPS?$/i.exec(gap)?.[1];
+  return laps ? Number(laps) : null;
+};
+
 function row(number: string, line: Obj, driver: Obj, app: Obj | undefined): Row {
+  const gap = line.GapToLeader ?? line.TimeDiffToFastest ?? "";
   return {
     number,
     tla: driver.Tla ?? number,
@@ -49,7 +56,8 @@ function row(number: string, line: Obj, driver: Obj, app: Obj | undefined): Row 
     team: driver.TeamName ?? "",
     color: `#${driver.TeamColour ?? "888888"}`,
     position: Number(line.Position ?? driver.Line ?? 99),
-    gap: line.GapToLeader ?? line.TimeDiffToFastest ?? "",
+    gap,
+    lapsBehind: lapGap(gap),
     interval: line.IntervalToPositionAhead?.Value ?? line.TimeDiffToPositionAhead ?? "",
     lastLap: line.LastLapTime?.Value ?? "",
     lastMark: mark(line.LastLapTime),

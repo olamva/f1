@@ -46,3 +46,15 @@ test("mid-lap mini-sectors show each segment colour and leave unreached segments
     ],
   );
 });
+
+test("timing rows count lapped cars without reading the leader lap counter as a gap", () => {
+  const result = rows({
+    DriverList: { "1": {}, "2": {}, "3": {} },
+    TimingData: { Lines: {
+      "1": { Position: "1", GapToLeader: "LAP 12" },
+      "2": { Position: "2", GapToLeader: "1 LAP" },
+      "3": { Position: "3", GapToLeader: "+2 LAPS" },
+    } },
+  });
+  assert.deepEqual(result.map(({ lapsBehind }) => lapsBehind), [null, 1, 2]);
+});
