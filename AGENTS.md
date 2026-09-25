@@ -39,13 +39,11 @@ Treat a missing visual approval as a blocker.
 ## Deployment and cleanup
 
 Keep deployment on `main` through the existing workflow.
-Delete the merged remote branch. Preserve active T3 worktrees and thread history.
+Delete the merged remote branch. Preserve thread history.
 Stop every dev server and preview process that you started before the final response.
 Create each temporary checkout, such as a visual review "before" state, with `git worktree add --detach` under `/tmp`.
 Remove it with `pnpm worktree:cleanup <path> --apply` before the final response.
-After the merge, run `pnpm worktree:cleanup . --branch-only --apply` in the task worktree.
-This prunes remote references, verifies the merge, detaches the checkout, and deletes the local task branch.
+After the merge, run `pnpm worktree:cleanup . --apply` in the task worktree.
+This prunes remote references, verifies the merge, deletes the local task branch, and removes the worktree.
 Include the cleanup status in the final response.
-Run `pnpm worktree:cleanup <path>` from another checkout to inspect removal of a finished task's worktree.
-Add `--apply` only after the thread ends and no process uses the worktree.
 Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
