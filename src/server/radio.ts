@@ -65,16 +65,64 @@ async function stored(path: string): Promise<Turn[]> {
   return turns;
 }
 
+interface Word {
+  word: string;
+  start: number;
+  end: number;
+}
+
+interface Phrase {
+  speaker: number;
+  offsetMilliseconds: number;
+  durationMilliseconds: number;
+}
+
+const gap = (w: Word, p: Phrase) => {
+  const mid = ((w.start + w.end) / 2) * 1000;
+  return Math.max(p.offsetMilliseconds - mid, mid - p.offsetMilliseconds - p.durationMilliseconds, 0);
+};
+
+const mode = (xs: number[]) =>
+  xs.reduce<number | undefined>((m, x) => (m === undefined || xs.filter((y) => y === x).length > xs.filter((y) => y === m).length ? x : m), undefined);
+
+export const split = (text: string, words: Word[], phrases: Phrase[]) => {
+  const sentences = [...text.matchAll(/[^.?!]+[.?!]*/g)].map((m) => ({ at: m.index, text: m[0].trim(), votes: [] as number[] }));
+  let cursor = 0;
+  for (const w of words) {
+    const at = text.indexOf(w.word, cursor);
+    if (at < 0) continue;
+    cursor = at + w.word.length;
+    const speaker = phrases.reduce((best, p) => (gap(w, p) < gap(w, best) ? p : best), phrases[0])?.speaker;
+    if (speaker) sentences.findLast((s) => s.at <= at)?.votes.push(speaker);
+  }
+  return sentences.reduce<{ speaker: number; text: string }[]>((turns, s) => {
+    const speaker = mode(s.votes) ?? turns.at(-1)?.speaker ?? 1;
+    const last = turns.at(-1);
+    if (!s.text) return turns;
+    if (last?.speaker === speaker) last.text += ` ${s.text}`;
+    else turns.push({ speaker, text: s.text });
+    return turns;
+  }, []);
+};
+
 async function transcribe(path: string): Promise<Turn[]> {
   const audio = await fetch(`${F1_ORIGIN}/static/${path}`);
   if (!audio.ok) throw new Error(`radio ${audio.status}`);
-  const form = new FormData();
-  form.set("audio", new File([await audio.blob()], "radio.mp3", { type: "audio/mpeg" }));
-  form.set("definition", JSON.stringify({ locales: ["en-GB"], diarization: { enabled: true, maxSpeakers: 2 } }));
-  const { phrases } = (await post(`${VOICE}speechtotext/transcriptions:transcribe?api-version=2024-11-15`, form)) as {
-    phrases: { speaker: number; text: string }[];
-  };
-  if (!phrases.length) return [];
+  const file = new File([await audio.blob()], "radio.mp3", { type: "audio/mpeg" });
+  const whisper = new FormData();
+  whisper.set("file", file);
+  whisper.set("language", "en");
+  whisper.set("response_format", "verbose_json");
+  whisper.set("timestamp_granularities[]", "word");
+  const voice = new FormData();
+  voice.set("audio", file);
+  voice.set("definition", JSON.stringify({ locales: ["en-GB"], diarization: { enabled: true, maxSpeakers: 2 } }));
+  const [{ text, words }, { phrases }] = (await Promise.all([
+    post(`${ENDPOINT}openai/deployments/whisper/audio/transcriptions?api-version=2024-06-01`, whisper),
+    post(`${VOICE}speechtotext/transcriptions:transcribe?api-version=2024-11-15`, voice),
+  ])) as [{ text: string; words: Word[] }, { phrases: (Phrase & { text: string })[] }];
+  const parts = split(text, words, phrases);
+  if (!parts.length) return [];
   const { choices } = await post(
     `${ENDPOINT}openai/deployments/turns/chat/completions?api-version=2024-10-21`,
     JSON.stringify({
@@ -84,20 +132,14 @@ async function transcribe(path: string): Promise<Turn[]> {
         {
           role: "system",
           content:
-            "This Formula 1 team radio is split into phrases by voice. Each speaker number is one voice: the driver or the race engineer. Return the speaker number of the driver, or 0 if the driver does not speak. The file name contains the driver code.",
+            "This Formula 1 team radio is split into phrases by voice. Each speaker number is one voice: the driver or the race engineer. The file name contains the driver code. The engineer calls the driver by first name, gives instructions and answers questions about the car. The driver reports how the car feels. Return the speaker number of the driver, or 0 if the driver does not speak.",
         },
-        { role: "user", content: `File: ${path}\n${phrases.map((p) => `Speaker ${p.speaker}: ${p.text}`).join("\n")}` },
+        { role: "user", content: `File: ${path}\n${(phrases.length ? phrases : parts).map((p) => `Speaker ${p.speaker}: ${p.text}`).join("\n")}` },
       ],
     }),
   );
   const { driver } = JSON.parse(choices[0].message.content) as { driver: number };
-  return phrases.reduce<Turn[]>((turns, p) => {
-    const speaker = p.speaker === driver ? "driver" : "engineer";
-    const last = turns.at(-1);
-    if (last?.speaker === speaker) last.text += ` ${p.text}`;
-    else turns.push({ speaker, text: p.text });
-    return turns;
-  }, []);
+  return parts.map((p) => ({ speaker: p.speaker === driver ? "driver" : "engineer", text: p.text }));
 }
 
 export function transcript(url: string): Promise<Turn[]> | null {
