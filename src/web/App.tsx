@@ -10,7 +10,7 @@ import { Tabs } from "./Tabs.tsx";
 import f1Logo from "./f1-logo.svg";
 
 const TABS = ["Countdown", "Replays", "Stats", "Settings"] as const;
-const CONTENT_TABS = ["Replays", "Stats"] as const;
+const NAV_TABS = ["Countdown", "Replays", "Stats"] as const;
 type Tab = (typeof TABS)[number];
 
 const SLUG: Record<Tab, string> = {
@@ -58,23 +58,13 @@ export const App = () => {
             className="w-10 min-[390px]:w-14 sm:w-20"
           />
         </button>
-        <div className="flex min-w-0 flex-1 items-center justify-center gap-1.5 sm:gap-3">
-          <button
-            onClick={() => go("Countdown")}
-            className="glass-gear flex h-12 shrink-0 items-center px-2.5 text-sm font-semibold sm:h-13 sm:px-4 sm:text-base"
-            data-active={tab === "Countdown"}
-            aria-pressed={tab === "Countdown"}
-            type="button"
-          >
-            {info.data?.live && (
-              <span aria-hidden="true" className="live-dot" />
-            )}
-            {info.data?.live ? "Live" : "Countdown"}
-          </button>
+        <div className="flex min-w-0 flex-1 justify-center">
           <Tabs
-            items={CONTENT_TABS}
-            value={tab === "Replays" || tab === "Stats" ? tab : null}
+            items={NAV_TABS}
+            value={tab === "Settings" ? null : tab}
             onChange={go}
+            labels={info.data?.live ? { Countdown: "Live" } : undefined}
+            live={info.data?.live ? "Countdown" : undefined}
           />
         </div>
         <button
