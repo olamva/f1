@@ -20,25 +20,25 @@ const SLUG: Record<Tab, string> = {
   Settings: "settings",
 };
 
-const fromHash = (): Tab =>
-  location.hash.startsWith("#session/")
+const fromPath = (): Tab =>
+  location.pathname.startsWith("/session/")
     ? "Replays"
-    : (TABS.find((t) => location.hash.slice(1).startsWith(SLUG[t])) ??
+    : (TABS.find((t) => location.pathname.slice(1).startsWith(SLUG[t])) ??
       "Countdown");
 
 export const App = () => {
-  const [tab, setTab] = useState<Tab>(fromHash);
+  const [tab, setTab] = useState<Tab>(fromPath);
   const [visit, setVisit] = useState(0);
   const [session, setSession] = useState(0);
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
   useEffect(() => {
-    const on = () => setTab(fromHash());
-    addEventListener("hashchange", on);
-    return () => removeEventListener("hashchange", on);
+    const on = () => setTab(fromPath());
+    addEventListener("popstate", on);
+    return () => removeEventListener("popstate", on);
   }, []);
   const go = (t: Tab) => {
-    history.pushState(null, "", t === "Countdown" ? "/" : `#${SLUG[t]}`);
+    history.pushState(null, "", t === "Countdown" ? "/" : `/${SLUG[t]}`);
     if (t === "Countdown" && tab === "Countdown") setSession((s) => s + 1);
     setTab(t);
     setVisit((v) => v + 1);
@@ -48,7 +48,7 @@ export const App = () => {
       <header className="app-nav grid grid-cols-[1fr_auto] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-6">
         <button
           onClick={() => go("Countdown")}
-          className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
+          className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
           aria-label="Go to live session"
           type="button"
         >

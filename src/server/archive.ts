@@ -15,15 +15,17 @@ const text = async (url: string): Promise<string> => {
 const json = async (url: string): Promise<any> =>
   JSON.parse((await text(url)).replace(/^﻿/, ""));
 
+const local = (date: string, offset: string) => `${date}${offset.startsWith("-") ? "" : "+"}${offset.slice(0, 5)}`;
+
 export async function seasonSessions(year: number): Promise<SessionRef[]> {
   const index = await json(`${BASE}${year}/Index.json`);
   return index.Meetings.flatMap((m: any) =>
-    m.Sessions.filter((s: any) => s.Path).map((s: any) => ({
-      path: s.Path,
+    m.Sessions.filter((s: any) => s.Path || Date.parse(local(s.EndDate, s.GmtOffset)) < Date.now()).map((s: any) => ({
+      path: s.Path ?? "",
       meeting: m.Name,
       country: m.Country?.Name ?? "",
       name: s.Name,
-      start: `${s.StartDate}${s.GmtOffset.startsWith("-") ? "" : "+"}${s.GmtOffset.slice(0, 5)}`,
+      start: local(s.StartDate, s.GmtOffset),
     })),
   );
 }
@@ -48,6 +50,7 @@ export async function outlineFor(info: any, fallback: () => Outline | null): Pro
       return {
         x: c.x,
         y: c.y,
+        time: c.trackPositionTime ?? [],
         rotation: c.rotation ?? 0,
         corners: (c.corners ?? []).map((k: any) => ({ number: k.number, ...k.trackPosition })),
       };

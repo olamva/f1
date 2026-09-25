@@ -5,6 +5,7 @@ export type Point = [t: number, x: number, y: number];
 export type Outline = {
   x: number[];
   y: number[];
+  time: number[];
   rotation: number;
   corners: { number: number; x: number; y: number }[];
 };
