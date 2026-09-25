@@ -3,7 +3,7 @@ import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
-import { hashPart, setHashPart } from "../hash.ts";
+import { pathPart, setPathPart } from "../path.ts";
 import { Loading } from "../Loading.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
@@ -170,9 +170,9 @@ const Replay = ({ session, onClose }: ReplayProps) => {
 
 export const CurrentSession = ({ season, info }: CurrentSessionProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
-  const [path, setPath] = useState(() => hashPart("session"));
+  const [path, setPath] = useState(() => pathPart("session"));
   const choose = (s: SessionRef | null) => {
-    setHashPart("session", s?.path ?? null);
+    setPathPart("session", s?.path ?? null);
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
