@@ -202,6 +202,13 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
     if (a.paused) void a.play();
     else a.pause();
   };
+  const newest = useRef(radios[0]?.url);
+  useEffect(() => {
+    const r = radios[0];
+    if (!r || r.url === newest.current) return;
+    newest.current = r.url;
+    if (localStorage.getItem("autoplay") === "1" && audio.current!.paused) toggle(r);
+  });
   return (
     <Panel title="Team radio">
       <audio
