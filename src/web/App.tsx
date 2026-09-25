@@ -48,7 +48,7 @@ export const App = () => {
       <header className="app-nav grid grid-cols-[1fr_auto] items-center gap-2 sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:gap-6">
         <button
           onClick={() => go("Countdown")}
-          className="rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
+          className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
           aria-label="Go to live session"
           type="button"
         >
