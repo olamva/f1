@@ -21,7 +21,7 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
               key={s.id}
               className={`min-w-0 ${["order-2", "order-1", "order-3"][i]}`}
             >
-              <div className="mb-2 flex min-h-10 items-end justify-center text-xs font-medium break-words">
+              <div className="mb-2 flex min-h-10 items-end justify-center text-xs font-medium wrap-break-word">
                 {who.get(s.id)?.name ?? s.id}
               </div>
               <div
