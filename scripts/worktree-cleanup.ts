@@ -6,6 +6,7 @@ const regenerable = [
   "node_modules/",
   "node_modules",
   "dist/",
+  ".vite/",
   ".pnpm-store/",
   "infra/.terraform/",
 ];
