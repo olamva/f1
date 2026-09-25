@@ -1,0 +1,14 @@
+{
+  "id": "14981233",
+  "ts": "2026-09-25T09:04:29+00:00",
+  "text": "Vite cannot write its temporary config through the main checkout dependency symlink; --configLoader runner works",
+  "tags": [
+    "sandbox",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "node_modules/.vite-temp",
+  "branch": "t3code/add-sprint-quali-h2h"
+}
