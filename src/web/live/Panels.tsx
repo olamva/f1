@@ -115,12 +115,18 @@ interface TeamRadioProps {
 const clip = (s: number) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
 const Transcript = ({ url, color }: { url: string; color: string }) => {
-  const { data, error } = useJson<{ text: string }>(`/api/radio/transcript?url=${encodeURIComponent(url)}`);
+  const { data, error } = useJson<{ turns: { speaker: "driver" | "engineer"; text: string }[] }>(
+    `/api/radio/transcript?url=${encodeURIComponent(url)}`,
+  );
   if (error) return null;
   if (!data) return <p className="animate-pulse text-sm font-semibold tracking-wide text-zinc-500 uppercase">Transcribing…</p>;
   return (
-    <blockquote className="text-lg leading-snug font-bold tracking-tight uppercase" style={{ color }}>
-      “{data.text}”
+    <blockquote className="space-y-1 text-lg leading-snug font-bold tracking-tight uppercase">
+      {data.turns.map((t, i) => (
+        <p key={i} style={{ color: t.speaker === "driver" ? color : "white" }}>
+          {t.text}
+        </p>
+      ))}
     </blockquote>
   );
 };
