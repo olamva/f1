@@ -159,3 +159,6 @@ export const highlight = (text: string): { text: string; tone?: Tone }[] =>
     if (s) out.push(k ? { text: s, tone: TONES[k - 1]![0] } : { text: s });
     return out;
   }, []);
+
+export const qualifyingPart = (state: Obj): string | null =>
+  state.SessionInfo?.Type === "Qualifying" && state.TimingData?.SessionPart ? `${/Sprint/.test(state.SessionInfo.Name) ? "SQ" : "Q"}${state.TimingData.SessionPart}` : null;
