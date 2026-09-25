@@ -14,7 +14,7 @@ Coordinate changes to shared local paths, Azure resources, and GitHub settings w
 
 Create a pull request into `main` for each completed task. Do not merge a stack of pull requests.
 Explain the change and report validation in the pull request description.
-Do not run `prettier --write` or `pnpm format`. The code does not follow a Prettier config. Match the style of the surrounding code by hand.
+Run `pnpm format` before each commit. `pnpm test` fails on unformatted files.
 Run relevant local checks before pushing. Use `pnpm test`, `pnpm typecheck`, and `pnpm build` when applicable.
 Review the final diff. Resolve review feedback within the task scope.
 Wait for every expected PR check to pass. Treat missing, pending, skipped, cancelled, or failed checks as blockers.

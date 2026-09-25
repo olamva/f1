@@ -6,7 +6,7 @@
     "dev": "DEV_NO_AUTH=1 node --watch --env-file-if-exists=.env.local src/server/main.ts & vite --configLoader native",
     "build": "vite build --configLoader native",
     "start": "node src/server/main.ts",
-    "test": "oxlint && node --test 'test/**/*.test.ts'",
+    "test": "prettier --check . && oxlint && node --test 'test/**/*.test.ts'",
     "typecheck": "tsc --noEmit",
     "lint": "oxlint",
     "format": "prettier --write .",
@@ -36,5 +36,10 @@
     "typescript": "^7.0.2",
     "vite": "^8.3.0"
   },
-  "packageManager": "pnpm@12.6.0"
+  "packageManager": "pnpm@12.6.0",
+  "prettier": {
+    "plugins": [
+      "prettier-plugin-tailwindcss"
+    ]
+  }
 }
