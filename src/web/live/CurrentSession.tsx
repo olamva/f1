@@ -3,7 +3,7 @@ import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
-import { hashPart, setHashPart } from "../hash.ts";
+import { pathPart, setPathPart } from "../path.ts";
 import { Loading } from "../Loading.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
@@ -13,7 +13,7 @@ import { ReplayPicker } from "./ReplayPicker.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
-import { messages, radios, remaining, rows as towerRows, sessionStart, trackStatus } from "./view.ts";
+import { messages, qualifyingPart, radios, remaining, rows as towerRows, sessionStart, trackStatus } from "./view.ts";
 
 export type LiveInfo = { live: boolean; recent: boolean; positions: boolean };
 
@@ -61,6 +61,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
   const rows = useMemo(() => towerRows(state), [state]);
   const race = /Race|Sprint$/.test(state.SessionInfo?.Type ?? "") || state.SessionInfo?.Name === "Sprint";
   const status = trackStatus(state);
+  const part = qualifyingPart(state);
   const toggle = (n: string) =>
     setSelected((s) => {
       const next = new Set(s);
@@ -81,6 +82,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, dela
           <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
           {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
         </h1>
+        {part && <span className="rounded bg-zinc-700 px-2 py-0.5 text-sm font-bold">{part}</span>}
         {state.LapCount && (
           <span className="tabular text-zinc-300">
             Lap {state.LapCount.CurrentLap}/{state.LapCount.TotalLaps}
@@ -194,9 +196,9 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
 
 export const Replays = () => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
-  const [path, setPath] = useState(() => hashPart("replay") ?? hashPart("session"));
+  const [path, setPath] = useState(() => pathPart("replay") ?? pathPart("session"));
   const choose = (s: SessionRef | null) => {
-    setHashPart("replay", s?.path ?? null);
+    setPathPart("replay", s?.path ?? null);
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);

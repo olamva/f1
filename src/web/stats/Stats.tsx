@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import type { Championship } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
-import { hashPart, setHashPart } from "../hash.ts";
+import { pathPart, setPathPart } from "../path.ts";
 import { Tabs } from "../Tabs.tsx";
 import {
   driverTables,
@@ -38,9 +38,9 @@ interface StatsProps {
 }
 
 export const Stats = ({ season }: StatsProps) => {
-  const [view, setView] = useState<View>(() => VIEWS.find((v) => slug(v) === hashPart("stats")) ?? "Standings");
+  const [view, setView] = useState<View>(() => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Standings");
   const show = (v: View) => {
-    setHashPart("stats", slug(v));
+    setPathPart("stats", slug(v));
     setView(v);
   };
   const [champ, setChamp] = useState<Championship>("drivers");
