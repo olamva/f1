@@ -216,7 +216,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
         preload="none"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-        onTimeUpdate={(e) => setAt({ t: e.currentTarget.currentTime, d: e.currentTarget.duration || 0 })}
+        onTimeUpdate={(e) => setAt({ t: e.currentTarget.currentTime, d: Number.isFinite(e.currentTarget.duration) ? e.currentTarget.duration : 0 })}
       />
       {!current && <p className="text-sm text-zinc-500">No radio yet.</p>}
       {current && (
