@@ -26,7 +26,7 @@ const candidates = (h: number) =>
     DIRECTIONS.map(([ux, uy]) => ({
       dx: ux * (DOT + W / 2 + 4) * ring,
       dy: uy * (DOT + h / 2 + 4) * ring,
-      lead: ring > 1,
+      lead: ring > 1 || ux !== 0 || uy !== -1,
     })),
   );
 
