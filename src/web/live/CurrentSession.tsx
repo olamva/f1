@@ -30,6 +30,7 @@ interface BoardProps {
   positionsNote: string | null;
   speed?: number;
   paused?: boolean;
+  delay?: number;
 }
 
 const useTick = (ms: number) => {
@@ -41,7 +42,7 @@ const useTick = (ms: number) => {
   return now;
 };
 
-const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused }: BoardProps) => {
+const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused, delay = 0 }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const now = useTick(1000);
   const state = feed.state as Record<string, any>;
@@ -55,7 +56,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused }: Bo
       return next;
     });
   const focus = selected.size ? [...selected] : rows.slice(0, 5).map((r) => r.number);
-  const utc = replay ? feedUtc(feed) : now;
+  const utc = replay ? feedUtc(feed) : now - delay;
   const banner = status && (
     <div role="alert" className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? " paused" : ""}`}>
       {status.label}
@@ -79,7 +80,7 @@ const Board = ({ feed, laps, outline, replay, positionsNote, speed, paused }: Bo
       <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <TimingTower rows={rows} race={race} selected={selected} onToggle={toggle} />
         <div className="space-y-4">
-          <TrackMap outline={outline} positions={state.Position} rows={rows} selected={selected} onToggle={(n) => setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} banner={banner} />
+          <TrackMap outline={outline} positions={state.Position} rows={rows} race={race} selected={selected} onToggle={(n) => setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))} note={positionsNote} positionTrail={feed.positionTrail} speed={speed} banner={banner} />
           <Weather weather={state.WeatherData} />
         </div>
       </div>
@@ -97,12 +98,25 @@ interface LiveProps {
 }
 
 const Live = ({ positions }: LiveProps) => {
-  const feed = useFeed("/api/live/stream");
+  const [delay, setDelay] = useState(() => Number(localStorage.getItem("delay")) || 0);
+  const feed = useFeed("/api/live/stream", delay * 1000);
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
   const outline = useJson<Outline | null>("/api/live/outline", 60_000);
-  if (!feed) return <Loading label="Connecting to live timing…" />;
   const note = positions ? null : "Add an F1TV token in Settings to see the cars.";
-  return <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} />;
+  const change = (s: number) => {
+    localStorage.setItem("delay", String(s));
+    setDelay(s);
+  };
+  return (
+    <div className="space-y-4">
+      <label className="flex items-center gap-2 text-sm text-zinc-400">
+        Delay
+        <input type="number" min={0} step={1} value={delay} onChange={(e) => change(Math.max(0, Number(e.target.value)))} className="tabular w-20 rounded-md bg-zinc-800 px-2 py-1 text-zinc-100" />
+        seconds behind live, to match the F1TV stream
+      </label>
+      {feed ? <Board feed={feed} laps={laps.data ?? {}} outline={outline.data ?? null} replay={false} positionsNote={note} delay={delay * 1000} /> : <Loading label="Connecting to live timing…" />}
+    </div>
+  );
 };
 
 interface ReplayProps {

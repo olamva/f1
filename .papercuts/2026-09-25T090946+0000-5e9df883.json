@@ -1,0 +1,14 @@
+{
+  "id": "5e9df883",
+  "ts": "2026-09-25T09:09:46+00:00",
+  "text": "pnpm exec prettier --write ignores the repo style and rewraps whole files at 80 columns",
+  "tags": [
+    "formatting",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "8b647fc8",
+  "where": "src/web/live/Panels.tsx",
+  "branch": "radio-speakers"
+}
