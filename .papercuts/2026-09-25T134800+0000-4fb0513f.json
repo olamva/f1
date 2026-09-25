@@ -1,0 +1,13 @@
+{
+  "id": "4fb0513f",
+  "ts": "2026-09-25T13:48:00+00:00",
+  "text": "pnpm stalls while bootstrapping the pinned version in the task worktree",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1f870325",
+  "branch": "t3code/fix-overtake-card-scrollbar"
+}
