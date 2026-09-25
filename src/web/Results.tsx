@@ -199,15 +199,21 @@ export const Results = () => {
                   {race.name}
                 </h2>
               </div>
-              <table className="tabular w-full min-w-[34rem] text-sm">
+              <table className="tabular w-full text-sm">
                 <thead className="text-left text-xs text-zinc-500">
                   <tr>
-                    <th className="pb-2">Pos</th>
-                    <th className="pb-2">Driver</th>
-                    <th className="pb-2">Team</th>
-                    <th className="pb-2 text-right">Grid</th>
-                    <th className="pb-2 text-right">Pts</th>
-                    <th className="pb-2 text-right">Status</th>
+                    <th className="w-8 pb-2">Pos</th>
+                    <th className="pb-2 pl-3 sm:pl-0">Driver</th>
+                    <th className="hidden pb-2 sm:table-cell">Team</th>
+                    <th className="hidden pb-2 text-right sm:table-cell">
+                      Grid
+                    </th>
+                    <th className="hidden pb-2 text-right sm:table-cell">
+                      Pts
+                    </th>
+                    <th className="hidden pb-2 text-right sm:table-cell">
+                      Status
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -219,33 +225,39 @@ export const Results = () => {
                       <td className="py-2 font-semibold">
                         {result.positionText}
                       </td>
-                      <td className="py-2 pr-3">
+                      <td className="py-2 pl-3 sm:pl-0">
                         <button
                           type="button"
                           onClick={() => setDriver(result.driver)}
                           className="cursor-pointer text-left hover:text-red-400"
                         >
-                          <span
-                            className="mr-2 inline-block h-4 w-1 rounded-sm align-middle"
-                            style={{ background: teamColor(result.team) }}
-                          />
-                          <span className="tabular mr-2 text-xs text-zinc-500">
-                            {result.number}
+                          <span className="block">
+                            <span
+                              className="mr-2 inline-block h-4 w-1 rounded-sm align-middle"
+                              style={{ background: teamColor(result.team) }}
+                            />
+                            <span className="tabular mr-2 text-xs text-zinc-500">
+                              {result.number}
+                            </span>
+                            {result.name}
                           </span>
-                          {result.name}
+                          <span className="mt-1 block text-xs text-zinc-500 sm:hidden">
+                            {result.teamName} · Grid {result.grid || "Pit"} ·{" "}
+                            {result.points} pts · {result.status}
+                          </span>
                         </button>
                       </td>
-                      <td className="py-2 pr-3 text-zinc-400">
+                      <td className="hidden py-2 pr-3 text-zinc-400 sm:table-cell">
                         {result.teamName}
                       </td>
-                      <td className="py-2 text-right text-zinc-400">
+                      <td className="hidden py-2 text-right text-zinc-400 sm:table-cell">
                         {result.grid || "Pit"}
                       </td>
-                      <td className="py-2 text-right font-semibold">
+                      <td className="hidden py-2 text-right font-semibold sm:table-cell">
                         {result.points || "–"}
                       </td>
                       <td
-                        className="max-w-40 truncate py-2 pl-3 text-right text-zinc-400"
+                        className="hidden max-w-40 truncate py-2 pl-3 text-right text-zinc-400 sm:table-cell"
                         title={result.status}
                       >
                         {result.status}
