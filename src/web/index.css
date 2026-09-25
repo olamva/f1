@@ -170,3 +170,23 @@ textarea {
   }
 }
 
+.striped-border {
+  position: relative;
+}
+
+.striped-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1.5px;
+  border-radius: inherit;
+  background: repeating-linear-gradient(
+    45deg,
+    #52525b 0 4px,
+    transparent 4px 8px
+  );
+  mask:
+    linear-gradient(#000 0 0) content-box exclude,
+    linear-gradient(#000 0 0);
+  pointer-events: none;
+}
