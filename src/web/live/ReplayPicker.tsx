@@ -52,49 +52,28 @@ const Weekend = ({ sessions, onStart }: ReplayPickerProps) => (
   </div>
 );
 
-export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) => {
-  const [latest, ...earlier] = weekends(sessions);
-  if (!latest) return null;
-  return (
+export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) =>
+  sessions.length > 0 && (
     <section className="bg-surface space-y-3 rounded-xl p-4 text-sm">
       <h2 className="font-semibold text-zinc-300">Watch a replay</h2>
-      <div className="space-y-2">
-        <h3 className="text-zinc-400">
-          <Flag country={latest[0].country} />
-          {latest[0].meeting}
-        </h3>
-        <Weekend sessions={latest} onStart={onStart} />
-      </div>
-      {earlier.length > 0 && (
-        <details className="group">
-          <summary className="flex cursor-pointer list-none items-center gap-1 text-zinc-400 hover:text-zinc-100">
-            <ChevronRight
-              aria-hidden="true"
-              className="size-4 group-open:rotate-90"
-            />
-            Earlier race weekends
-          </summary>
-          <ul className="mt-2 space-y-1 pl-5">
-            {earlier.map((w) => (
-              <li key={w[0].path}>
-                <details className="group/weekend">
-                  <summary className="flex cursor-pointer list-none items-center gap-1 py-1 hover:text-zinc-100">
-                    <ChevronRight
-                      aria-hidden="true"
-                      className="size-4 group-open/weekend:rotate-90"
-                    />
-                    <Flag country={w[0].country} />
-                    {w[0].meeting}
-                  </summary>
-                  <div className="py-2 pl-5">
-                    <Weekend sessions={w} onStart={onStart} />
-                  </div>
-                </details>
-              </li>
-            ))}
-          </ul>
-        </details>
-      )}
+      <ul className="space-y-1">
+        {weekends(sessions).map((w, i) => (
+          <li key={w[0].start}>
+            <details open={i === 0} className="group/weekend">
+              <summary className="flex cursor-pointer list-none items-center gap-1 py-1 text-zinc-400 hover:text-zinc-100">
+                <ChevronRight
+                  aria-hidden="true"
+                  className="size-4 group-open/weekend:rotate-90"
+                />
+                <Flag country={w[0].country} />
+                {w[0].meeting}
+              </summary>
+              <div className="py-2 pl-5">
+                <Weekend sessions={w} onStart={onStart} />
+              </div>
+            </details>
+          </li>
+        ))}
+      </ul>
     </section>
   );
-};
