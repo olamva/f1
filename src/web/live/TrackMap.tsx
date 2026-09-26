@@ -294,13 +294,18 @@ export const TrackMap = ({
           const at = `${event.clientX},${event.clientY}`;
           if (at === pointer.current) return;
           pointer.current = at;
-          const number = (event.target as Element)
-            .closest("[data-number]")
-            ?.getAttribute("data-number");
+          const target = (event.target as Element).closest("[data-number]");
+          const number = target?.getAttribute("data-number");
           const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(
             svg.current!.getScreenCTM()!.inverse(),
           );
-          setHover(number ? { number, x: p.x, y: p.y } : null);
+          setHover((h) =>
+            !number
+              ? null
+              : target!.tagName === "g" || h?.number !== number
+                ? { number, x: p.x, y: p.y }
+                : h,
+          );
         }}
         onPointerLeave={() => {
           pointer.current = "";
@@ -403,7 +408,7 @@ export const TrackMap = ({
               data-number={card.number}
               cx={hover.x}
               cy={hover.y}
-              r={18}
+              r={6}
               fill="transparent"
               className="cursor-pointer"
               onMouseDown={(event) => event.preventDefault()}
@@ -411,24 +416,24 @@ export const TrackMap = ({
             />
             <foreignObject
               x={hover.x > box[0] + box[2] / 2 ? hover.x - 340 : hover.x + 20}
-              y={hover.y - 60}
+              y={hover.y - 45}
               width={320}
-              height={120}
+              height={90}
               className="pointer-events-none overflow-visible"
             >
               <div
                 id="track-map-card"
-                className="rounded-lg border-l-8 bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg"
-                style={{ borderColor: card.color }}
+                className="rounded-lg bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg"
               >
                 <p className="text-[26px] font-semibold text-zinc-100">
                   {card.name}
                 </p>
-                <p className="text-[20px] text-zinc-400">{card.team}</p>
-                <p className="mt-1 text-[18px] text-zinc-500">
-                  {selected.size === 1 && selected.has(card.number)
-                    ? "Click or press Enter to remove focus"
-                    : "Click or press Enter to focus the map"}
+                <p className="flex items-center gap-2 text-[20px] text-zinc-400">
+                  <span
+                    className="size-3 rounded-full"
+                    style={{ backgroundColor: card.color }}
+                  />
+                  {card.team}
                 </p>
               </div>
             </foreignObject>
