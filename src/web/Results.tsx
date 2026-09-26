@@ -9,7 +9,7 @@ import { pathPart } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { Tabs } from "./Tabs.tsx";
 
-const SESSIONS = ["race", "sprint"] as const;
+const SESSIONS = ["sprint", "race"] as const;
 
 const SprintMarker = () => (
   <span
@@ -117,63 +117,57 @@ interface ResultsTableProps {
 }
 
 const ResultsTable = ({ rows, onDriver }: ResultsTableProps) => (
-  <table className="tabular w-full text-sm">
+  <table className="tabular w-full text-xs sm:text-sm">
     <thead className="text-left text-xs text-zinc-500">
       <tr>
         <th className="w-8 pb-2">Pos</th>
-        <th className="pb-2 pl-3 sm:pl-0">Driver</th>
-        <th className="hidden pb-2 sm:table-cell">Team</th>
-        <th className="hidden pb-2 text-right sm:table-cell">Grid</th>
-        <th className="hidden pb-2 text-right sm:table-cell">Pts</th>
-        <th className="hidden pb-2 text-right sm:table-cell">Status</th>
+        <th className="pb-2">Driver</th>
+        <th className="pb-2 pl-2">Team</th>
+        <th className="pb-2 pl-2 text-right">Grid</th>
+        <th className="pb-2 pl-2 text-right">Status</th>
+        <th className="pb-2 pl-2 text-right">Pts</th>
       </tr>
     </thead>
     <tbody>
-      {rows.map((result, index) => (
-        <tr
-          key={`${result.driver}:${index}`}
-          className="border-t border-zinc-800"
-        >
-          <td className="py-2 font-semibold">{result.positionText}</td>
-          <td className="py-2 pl-3 sm:pl-0">
-            <button
-              type="button"
-              onClick={() => onDriver(result.driver)}
-              className="cursor-pointer text-left hover:text-red-400"
-            >
-              <span className="block">
+      {(rows.length >= 3 ? rows.slice(3) : rows).map((result, index) => {
+        const status = result.status === "Finished" ? "" : result.status;
+        return (
+          <tr
+            key={`${result.driver}:${index}`}
+            className="relative border-t border-zinc-800 hover:bg-zinc-800/50"
+          >
+            <td className="py-2 font-semibold">{result.positionText}</td>
+            <td className="py-2">
+              <button
+                type="button"
+                onClick={() => onDriver(result.driver)}
+                className="cursor-pointer text-left after:absolute after:inset-0"
+              >
                 <span
-                  className="mr-2 inline-block h-4 w-1 rounded-sm align-middle"
-                  style={{ background: teamColor(result.team) }}
-                />
-                <span className="tabular mr-2 text-xs text-zinc-500">
+                  className="tabular mr-1.5 font-semibold sm:mr-2 sm:text-xs"
+                  style={{ color: teamColor(result.team) }}
+                >
                   {result.number}
                 </span>
                 {result.name}
-              </span>
-              <span className="mt-1 block text-xs text-zinc-500 sm:hidden">
-                {result.teamName} · Grid {result.grid || "Pit"} ·{" "}
-                {result.points} pts · {result.status}
-              </span>
-            </button>
-          </td>
-          <td className="hidden py-2 pr-3 text-zinc-400 sm:table-cell">
-            {result.teamName}
-          </td>
-          <td className="hidden py-2 text-right text-zinc-400 sm:table-cell">
-            {result.grid || "Pit"}
-          </td>
-          <td className="hidden py-2 text-right font-semibold sm:table-cell">
-            {result.points || "–"}
-          </td>
-          <td
-            className="hidden max-w-40 truncate py-2 pl-3 text-right text-zinc-400 sm:table-cell"
-            title={result.status}
-          >
-            {result.status}
-          </td>
-        </tr>
-      ))}
+              </button>
+            </td>
+            <td className="py-2 pl-2 text-zinc-400">{result.teamName}</td>
+            <td className="py-2 pl-2 text-right text-zinc-400">
+              {result.grid || "Pit"}
+            </td>
+            <td
+              className="py-2 pl-2 text-right text-zinc-400 sm:max-w-40 sm:truncate"
+              title={status}
+            >
+              {status}
+            </td>
+            <td className="py-2 pl-2 text-right font-semibold">
+              {result.points || "–"}
+            </td>
+          </tr>
+        );
+      })}
     </tbody>
   </table>
 );
@@ -281,7 +275,7 @@ export const Results = () => {
                 onClose={() => setDriver(null)}
               />
             )}
-            <section className="bg-surface overflow-x-auto rounded-xl p-4">
+            <section className="bg-surface overflow-x-auto rounded-xl p-3 sm:p-4">
               <div className="mb-4 flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs text-zinc-400">
