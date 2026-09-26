@@ -226,6 +226,13 @@ export const trackStatus = (
 ): { label: string; tone: string } | null => {
   const code = state.TrackStatus?.Status;
   if (!code || code === "1") return null;
+  if (
+    code === "4" &&
+    /SAFETY CAR IN THIS LAP/i.test(
+      messages(state).find((m) => /SAFETY CAR/i.test(m.text))?.text ?? "",
+    )
+  )
+    return { label: "Safety Car ending", tone: "bg-yellow-300 text-black" };
   return (
     TRACK_STATUS[code] ?? {
       label: state.TrackStatus?.Message ?? code,
