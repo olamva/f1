@@ -1,0 +1,14 @@
+{
+  "id": "01e2100d",
+  "ts": "2026-09-26T13:43:14+00:00",
+  "text": "Local UI preview failed because Jolpica returned 429 for sprint data",
+  "tags": [
+    "api",
+    "preview"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-39d58057",
+  "branch": "t3code/expand-clickable-hover-area"
+}

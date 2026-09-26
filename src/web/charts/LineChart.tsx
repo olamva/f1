@@ -15,6 +15,7 @@ interface LineChartProps {
   invert?: boolean;
   yDomain?: [number, number];
   height?: number;
+  detailsBelow?: boolean;
 }
 
 const W = 800;
@@ -66,6 +67,7 @@ export const LineChart = ({
   invert,
   yDomain,
   height = 320,
+  detailsBelow = false,
 }: LineChartProps) => {
   const [hover, setHover] = useState<number | null>(null);
   const all = series.flatMap((s) => s.points);
@@ -90,11 +92,12 @@ export const LineChart = ({
     );
     setHover(xs.length ? near : null);
   };
+  const selected = hover ?? (detailsBelow ? (xs.at(-1) ?? null) : null);
   const at =
-    hover === null
+    selected === null
       ? []
       : series
-          .map((s) => ({ s, p: s.points.find((p) => p[0] === hover) }))
+          .map((s) => ({ s, p: s.points.find((p) => p[0] === selected) }))
           .filter((v) => v.p);
   return (
     <div className="relative">
@@ -193,28 +196,32 @@ export const LineChart = ({
           </g>
         )}
       </svg>
-      {hover !== null && at.length > 0 && (
-        <div className="pointer-events-none absolute top-8 right-2 rounded-lg bg-zinc-800/95 px-3 py-2 text-xs shadow-lg">
-          <div className="mb-1 text-zinc-400">
-            {xLabel} {hover}
+      <div className={detailsBelow ? "min-h-36" : ""}>
+        {selected !== null && at.length > 0 && (
+          <div
+            className={`pointer-events-none rounded-lg bg-zinc-800/95 px-3 py-2 text-xs shadow-lg ${detailsBelow ? "ml-auto w-fit min-w-48" : "absolute top-8 right-2"}`}
+          >
+            <div className="mb-1 text-zinc-400">
+              {xLabel} {selected}
+            </div>
+            {[...at]
+              .sort((a, b) => (invert ? a.p![1] - b.p![1] : b.p![1] - a.p![1]))
+              .slice(0, 12)
+              .map(({ s, p }) => (
+                <div key={s.id} className="flex items-center gap-2">
+                  <span
+                    className="size-2 rounded-full"
+                    style={{ background: s.color }}
+                  />
+                  <span className="w-24 text-zinc-300">{s.label}</span>
+                  <span className="tabular ml-auto font-mono text-zinc-100">
+                    {yFormat(p![1])}
+                  </span>
+                </div>
+              ))}
           </div>
-          {[...at]
-            .sort((a, b) => (invert ? a.p![1] - b.p![1] : b.p![1] - a.p![1]))
-            .slice(0, 12)
-            .map(({ s, p }) => (
-              <div key={s.id} className="flex items-center gap-2">
-                <span
-                  className="size-2 rounded-full"
-                  style={{ background: s.color }}
-                />
-                <span className="w-24 text-zinc-300">{s.label}</span>
-                <span className="tabular ml-auto font-mono text-zinc-100">
-                  {yFormat(p![1])}
-                </span>
-              </div>
-            ))}
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
