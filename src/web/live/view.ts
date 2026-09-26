@@ -12,6 +12,7 @@ export type Row = {
   team: string;
   color: string;
   position: number;
+  gained: number | null;
   gap: string;
   lapsBehind: number | null;
   interval: string;
@@ -80,6 +81,11 @@ const lapGap = (gap: string): number | null => {
   return laps ? Number(laps) : null;
 };
 
+const gained = (app: Obj | undefined, position: number): number | null => {
+  const grid = Number(app?.GridPos);
+  return grid ? grid - position : null;
+};
+
 function row(
   number: string,
   line: Obj,
@@ -87,6 +93,7 @@ function row(
   app: Obj | undefined,
 ): Row {
   const gap = line.GapToLeader ?? line.TimeDiffToFastest ?? "";
+  const position = Number(line.Position ?? driver.Line ?? 99);
   return {
     number,
     tla: driver.Tla ?? number,
@@ -94,7 +101,8 @@ function row(
     last: driver.LastName ?? driver.Tla ?? number,
     team: driver.TeamName ?? "",
     color: `#${driver.TeamColour ?? "888888"}`,
-    position: Number(line.Position ?? driver.Line ?? 99),
+    position,
+    gained: gained(app, position),
     gap,
     lapsBehind: lapGap(gap),
     interval:
