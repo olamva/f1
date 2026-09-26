@@ -23,6 +23,7 @@ Run relevant local checks before pushing. Use `pnpm test`, `pnpm typecheck`, and
 Review the final diff. Resolve review feedback within the task scope.
 Fetch `origin/main` before you push. Merge it into the task branch if the branch is behind.
 Enable auto-merge on your own PR with `gh pr merge --auto --merge` immediately after you push.
+Do not wait for user review before you merge a PR without visual changes.
 Let GitHub merge the PR when the required checks pass.
 Run `gh pr checks --watch --fail-fast` to wait. Then run `gh pr view --json state,mergeStateStatus`.
 If a check fails, fix the failure and push the correction. Auto-merge stays enabled for the new head commit.
