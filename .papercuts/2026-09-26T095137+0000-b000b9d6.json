@@ -1,0 +1,14 @@
+{
+  "id": "b000b9d6",
+  "ts": "2026-09-26T09:51:37+00:00",
+  "text": "pnpm hangs while resolving packageManager pnpm@12.6.0 in the sandbox",
+  "tags": [
+    "install",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-df717510",
+  "branch": "t3code/update-apple-favicon"
+}
