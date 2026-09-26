@@ -1,0 +1,14 @@
+{
+  "id": "369aa862",
+  "ts": "2026-09-26T21:16:04+00:00",
+  "text": "TypeScript 7 rejects explicit source files beside tsconfig.json unless --ignoreConfig is set",
+  "tags": [
+    "tools",
+    "typescript"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-b1d1a259",
+  "branch": "t3code/fix-papercuts"
+}

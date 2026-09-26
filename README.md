@@ -16,20 +16,38 @@ pnpm test
 
 `pnpm dev` turns off Google sign-in. Set `PORT` and `VITE_PORT` to run more than one dev server, such as `PORT=8788 VITE_PORT=5174 pnpm dev`. Set `NO_LIVE=1` to turn off live timing, so that the app shows replays during a live session.
 
+Stop `pnpm dev` with Ctrl+C. The command stops both servers and the Node watcher.
+The command checks both ports before startup. Select unused ports for each worktree.
+Wait for both readiness messages before opening the printed Vite URL.
+Run `DEV_WATCH=0 pnpm dev` if file watchers report `EMFILE`. Restart the command after edits in this mode.
+Give the command network permission if the sandbox blocks local ports.
+
+Jolpica requests share one queue per server, including sprint qualifying requests.
+The server retries HTTP 429 twice and follows `Retry-After` for waits of at most one minute.
+The server preserves cached responses after a failed refresh. Longer cooldowns fail without sending more requests.
+Start preview servers one at a time. Multiple servers share the upstream IP limit, but keep separate caches.
+See the [Jolpica rate limits](https://github.com/jolpica/jolpica-f1/blob/main/docs/rate_limits.md).
+
 ## T3 worktrees
 
 Import the `Setup Worktree` action from `t3.json` in T3 project settings once.
 Start each task in a new thread and worktree. The action updates the branch and installs dependencies.
+Run `CI=true pnpm install --frozen-lockfile` with network permission if an install requires confirmation without a terminal.
+Keep installation and checks in the same permission context. Keep dependencies separate for each worktree.
 After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` from the task worktree.
 Keep the worktree while its T3 thread is active. Remove it from another checkout after T3 stops.
 
 ## Deploy
 
-1. Copy `infra/terraform.tfvars.example` to `infra/terraform.tfvars` and fill it in.
-2. Run `terraform -chdir=infra init`, then `terraform -chdir=infra apply`.
-3. Set the values of `terraform -chdir=infra output github_variables` as GitHub Actions variables.
-4. Push to `main`. CI refreshes the bundled calendar, builds the image, and updates the app and wake job.
-5. For a custom domain, add the records from `terraform -chdir=infra output custom_domain_dns`, set `custom_domain`, and apply. Terraform creates the certificate but does not bind it. Bind it with `az containerapp hostname bind -g f1 -n f1 --hostname <domain> --environment f1 --certificate <certificate name> --validation-method CNAME`.
+1. Create `infra/terraform.tfvars` with `test -f infra/terraform.tfvars || cp infra/terraform.tfvars.example infra/terraform.tfvars`.
+2. Fill the placeholders in that ignored file. Each worktree needs its own values. Keep existing values when the file exists.
+3. Run `az login --scope https://storage.azure.com/.default` before `terraform -chdir=infra init` if storage authentication requires login.
+4. Run `terraform -chdir=infra init`, then `terraform -chdir=infra apply`.
+5. Set the values of `terraform -chdir=infra output github_variables` as GitHub Actions variables.
+6. Push to `main`. CI refreshes the bundled calendar, builds the image, and updates the app and wake job.
+7. For a custom domain, add the records from `terraform -chdir=infra output custom_domain_dns`, set `custom_domain`, and apply. Terraform creates the certificate but does not bind it. Bind it with `az containerapp hostname bind -g f1 -n f1 --hostname <domain> --environment f1 --certificate <certificate name> --validation-method CNAME`.
+
+Use the existing Azure account and backend permissions. See the [Azure CLI login options](https://learn.microsoft.com/en-us/cli/azure/reference-index#az-login).
 
 The wake job checks the current and next season calendars every five minutes. It wakes the app from 15 minutes before each session until 30 minutes after its expected end. On race days, it also wakes the app every 15 minutes. This covers delayed sessions outside their planned windows. The app scales to zero after the wake requests stop. No year-specific cron rule remains.
 

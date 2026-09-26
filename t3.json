@@ -3,7 +3,7 @@
   "scripts": [
     {
       "name": "Setup Worktree",
-      "command": "git fetch origin main && git merge --ff-only origin/main && pnpm install --frozen-lockfile",
+      "command": "git fetch origin main && git merge --ff-only origin/main && CI=true pnpm install --frozen-lockfile",
       "icon": "configure",
       "runOnWorktreeCreate": true
     }

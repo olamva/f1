@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "DEV_NO_AUTH=1 node --watch --env-file-if-exists=.env.local src/server/main.ts & vite --configLoader native",
+    "dev": "node scripts/dev.ts",
     "build": "vite build --configLoader native",
     "start": "node src/server/main.ts",
     "test": "prettier --check . && oxlint && node --test 'test/**/*.test.ts'",
