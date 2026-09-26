@@ -1,0 +1,14 @@
+{
+  "id": "8fb69242",
+  "ts": "2026-09-26T13:45:04+00:00",
+  "text": "git merge cannot update worktree refs inside shared Git metadata without escalation",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-luna",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-10d0cbfb",
+  "branch": "t3code/stats-teammates-to-h2h"
+}
