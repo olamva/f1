@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { Mark, Row, SessionBests } from "./view.ts";
 
@@ -135,7 +135,6 @@ interface TowerRowProps {
   race: boolean;
   qualifying: boolean;
   lapOwner: boolean;
-  fastestLap: boolean;
   selected: boolean;
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
@@ -147,7 +146,6 @@ const TowerRow = ({
   race,
   qualifying,
   lapOwner,
-  fastestLap,
   selected,
   swap,
   bind,
@@ -175,11 +173,11 @@ const TowerRow = ({
         </span>
         {lapOwner && (
           <span
-            className="text-purple text-[10px]"
+            className="bg-purple flex size-4 items-center justify-center rounded-sm text-white"
             title="Fastest lap owner"
             aria-label="Fastest lap owner"
           >
-            ◆
+            <Timer className="size-3" strokeWidth={2.5} />
           </span>
         )}
       </span>
@@ -193,11 +191,7 @@ const TowerRow = ({
     <td className={`px-2 py-1 text-right ${MARK[row.lastMark]}`}>
       {row.lastLap}
     </td>
-    <td
-      className={`px-2 py-1 text-right ${fastestLap ? "text-purple" : "text-zinc-300"}`}
-    >
-      {row.bestLap}
-    </td>
+    <td className="px-2 py-1 text-right text-zinc-300">{row.bestLap}</td>
     <td className="px-2 py-1">
       <span className="flex gap-1.5">
         {row.sectors.map((s, i) => (
@@ -282,9 +276,6 @@ export const TimingTower = ({
               race={race}
               qualifying={qualifying}
               lapOwner={bests.lap?.number === r.number}
-              fastestLap={
-                bests.lap?.number === r.number && r.bestLap === bests.lap?.value
-              }
               selected={selected.has(r.number)}
               swap={swaps[r.number]}
               bind={bind(r.number)}
