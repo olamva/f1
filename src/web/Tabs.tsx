@@ -46,13 +46,20 @@ export const Tabs = <T extends string>({
     let frame = 0;
     let x = drag.current?.x ?? 0;
     let speed = 0;
+    let trend = 0;
     let stretch = 0;
     let previous = performance.now();
     const animate = (now: number) => {
       const elapsed = Math.max(1, now - previous);
       const left = drag.current?.x ?? x;
       speed = ease(speed, Math.abs(left - x) / elapsed, elapsed, 40);
-      stretch = ease(stretch, Math.min(0.35, speed * 0.16), elapsed, 25);
+      trend = ease(trend, speed, elapsed, 150);
+      stretch = ease(
+        stretch,
+        Math.max(-0.25, Math.min(0.35, speed * 0.16 + (speed - trend) * 0.3)),
+        elapsed,
+        25,
+      );
       indicator.style.translate = `${left}px`;
       indicator.style.setProperty("--stretch", stretch.toFixed(3));
       x = left;
