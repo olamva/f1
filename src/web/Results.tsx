@@ -310,6 +310,7 @@ export const Results = () => {
                     value: `${result.points} pts`,
                     detail: result.teamName,
                   }))}
+                  crowned
                   onSelect={setDriver}
                 />
               )}

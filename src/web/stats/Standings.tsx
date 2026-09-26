@@ -1,4 +1,9 @@
-import type { Standing } from "../../shared/clinch.ts";
+import {
+  hasClinched,
+  type Championship,
+  type Standing,
+  type Upcoming,
+} from "../../shared/clinch.ts";
 import { Podium } from "../Podium.tsx";
 import type { Who } from "./derive.ts";
 
@@ -6,9 +11,17 @@ interface StandingsTableProps {
   title: string;
   table: Standing[];
   who: Map<string, Who>;
+  events: Upcoming[];
+  champ: Championship;
 }
 
-export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
+export const StandingsTable = ({
+  title,
+  table,
+  who,
+  events,
+  champ,
+}: StandingsTableProps) => {
   const lead = table[0]?.points ?? 0;
   return (
     <section className="bg-surface rounded-xl p-3">
@@ -23,6 +36,7 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
             color: who.get(s.id)?.color ?? "#888888",
             value: `${s.points} pts`,
           }))}
+          crowned={hasClinched(table, events, table[0].id, champ)}
         />
       )}
       <table className="tabular w-full text-sm">

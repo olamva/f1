@@ -11,6 +11,7 @@ export interface PodiumEntry {
 
 interface PodiumProps {
   entries: PodiumEntry[];
+  crowned: boolean;
   onSelect?: (id: string) => void;
 }
 
@@ -19,7 +20,7 @@ const HEIGHTS = ["h-28", "h-20", "h-16"];
 const ORDER = ["order-2", "order-1", "order-3"];
 const DELAYS = [400, 200, 0];
 
-export const Podium = ({ entries, onSelect }: PodiumProps) => (
+export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
   <div className="mx-auto mb-4 max-w-2xl pt-2">
     <div className="grid grid-cols-3 items-end gap-2 text-center">
       {entries.slice(0, 3).map((e, i) => {
@@ -37,7 +38,7 @@ export const Podium = ({ entries, onSelect }: PodiumProps) => (
             }
           >
             <div className="podium-name mb-2 flex min-h-12 flex-col items-center justify-end">
-              {i === 0 && (
+              {crowned && i === 0 && (
                 <Trophy
                   aria-hidden
                   className="mb-1 size-5 text-yellow-400 drop-shadow-[0_0_6px_rgb(250_204_21_/_0.6)]"
