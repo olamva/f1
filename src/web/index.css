@@ -62,6 +62,8 @@ textarea {
   transition:
     scale 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     --lift 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    top 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    bottom 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     translate 280ms cubic-bezier(0.22, 1, 0.36, 1),
     width 280ms cubic-bezier(0.22, 1, 0.36, 1),
     background-color 200ms ease,
@@ -99,6 +101,8 @@ textarea {
     inset 0 0 14px rgb(252 165 165 / 0.35);
   transition:
     --lift 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    top 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    bottom 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     background-color 200ms ease,
     box-shadow 200ms ease;
   will-change: translate, scale;
@@ -122,6 +126,11 @@ textarea {
     top: 0.375rem;
     bottom: 0.375rem;
   }
+}
+
+.glass-tabs[data-held="true"] .glass-highlight {
+  top: -0.25rem;
+  bottom: -0.25rem;
 }
 
 .glass-tab {
@@ -168,6 +177,11 @@ textarea {
 
   .glass-tabs-small::-webkit-scrollbar {
     display: none;
+  }
+
+  .glass-tabs-small[data-held="true"] .glass-highlight {
+    top: 0.25rem;
+    bottom: 0.25rem;
   }
 }
 
