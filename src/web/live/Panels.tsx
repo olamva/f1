@@ -320,7 +320,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
       {!current && <p className="text-sm text-zinc-500">No radio yet.</p>}
       {current && (
         <div className="mb-3 overflow-hidden rounded-md bg-zinc-950">
-          <div className="relative flex items-stretch">
+          <div className="relative flex items-stretch hover:bg-zinc-800">
             <span
               className="grid w-16 shrink-0 place-items-center text-3xl font-black text-white italic"
               style={{ background: color }}
@@ -343,7 +343,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
               onClick={() => toggle(current)}
               aria-label={playing ? "Pause radio" : "Play radio"}
               title={playing ? "Pause radio" : "Play radio"}
-              className="grid w-14 shrink-0 place-items-center text-white after:absolute after:inset-0 hover:bg-zinc-800"
+              className="grid w-14 shrink-0 place-items-center text-white after:absolute after:inset-0"
             >
               {playing ? (
                 <Pause aria-hidden="true" className="size-6 fill-current" />
