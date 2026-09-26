@@ -167,7 +167,33 @@ textarea {
   }
 }
 
+@property --spotlight {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 100%;
+}
+
+.spotlight {
+  background: radial-gradient(
+    ellipse calc(var(--spotlight) * 1.5) var(--spotlight) at 50% 0%,
+    rgb(185 28 28 / 0.4),
+    transparent
+  );
+  animation: spotlight 3s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes spotlight {
+  from {
+    --spotlight: 0%;
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .spotlight {
+    animation: none;
+  }
+
   .glass-highlight,
   .glass-tab {
     transition: none;

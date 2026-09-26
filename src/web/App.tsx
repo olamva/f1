@@ -46,7 +46,7 @@ export const App = () => {
     setVisit((v) => v + 1);
   };
   return (
-    <div className="mx-auto max-w-[1600px] space-y-4 p-4">
+    <div className="mx-auto max-w-[1600px] space-y-4 p-4 pt-[max(1rem,env(safe-area-inset-top))]">
       <header className="flex flex-wrap items-center gap-1.5 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
