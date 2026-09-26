@@ -5,6 +5,10 @@ When deployment is necessary, verify that the deployment succeeds for the merged
 If a required step is blocked, report the current status and the blocker. Do not report the task as done.
 
 Use one branch and one worktree for each task.
+Start each task in a new T3 thread and its worktree.
+Import the `Setup Worktree` action from `t3.json` in T3 project settings once.
+Let T3 run the action for new worktrees. It updates the new branch to `origin/main` and installs dependencies.
+If T3 skips setup, run `git fetch origin main`, `git merge --ff-only origin/main`, and `pnpm install --frozen-lockfile` before edits.
 Use the branch that T3 creates for the worktree. Rename it with `git branch -m` when needed. Do not create a second branch.
 Create a new branch from the current `origin/main` only in a detached checkout.
 Keep edits in the task worktree. Do not change another task's branch or worktree.
@@ -27,15 +31,18 @@ Do not force-push, bypass branch protection, or merge with blocked checks.
 
 ## Visual review
 
-Apply a required visual review to each PR that changes the visible UI.
+Require explicit visual approval for changes beyond a minor correction.
+Require approval for noticeable layout, navigation, typography, color, component styling, or responsive changes.
+Treat an isolated correction that preserves the existing design as minor.
+Require approval when the classification is unclear.
 Use T3 preview tools first for web UI review and screenshots when they are available.
 Call `mcp__t3_code__preview_snapshot` with `save: true`.
 Embed each returned `screenshotPath` in the review message.
-Take screenshots of the changed UI in the running app. Include the before and after states.
-Show the screenshots to the user and ask for a review.
-Do not merge the PR before the user approves the visual change.
-Record the approval in the PR description.
-Treat a missing visual approval as a blocker.
+For required review, capture the changed UI in the running app. Include the before and after states.
+Show the screenshots to the user and ask for approval after the change is complete.
+Do not merge before the user approves the reviewed change.
+Record the approval in the PR description. Treat a missing required approval as a blocker.
+Request renewed approval if later changes materially alter the reviewed appearance.
 
 ## Deployment and cleanup
 
@@ -43,8 +50,10 @@ Keep deployment on `main` through the existing workflow.
 Delete the merged remote branch. Preserve thread history.
 Stop every dev server and preview process that you started before the final response.
 Create each temporary checkout, such as a visual review "before" state, with `git worktree add --detach` under `/tmp`.
-Remove it with `pnpm worktree:cleanup <path> --apply` before the final response.
-After the merge, run `pnpm worktree:cleanup . --apply` in the task worktree.
-This prunes remote references, verifies the merge, deletes the local task branch, and removes the worktree.
+Remove a temporary checkout with `git worktree remove <path>` after checking for local files.
+After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` in the task worktree.
+This verifies the merged PR, detaches the checkout, and deletes the local task branch.
+Keep the active T3 worktree and thread. Remove the worktree only after T3 stops.
+Run `pnpm worktree:cleanup <path> <pr-number> --apply` from another checkout to remove an idle worktree.
 Include the cleanup status in the final response.
 Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
