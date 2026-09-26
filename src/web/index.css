@@ -96,8 +96,7 @@ textarea {
   color: white;
 }
 
-.glass-tab:focus-visible,
-.glass-gear:focus-visible {
+.glass-tab:focus-visible {
   outline: 2px solid #f87171;
   outline-offset: 3px;
 }
@@ -118,24 +117,6 @@ textarea {
   50% {
     box-shadow: 0 0 0 0.4rem rgb(248 113 113 / 0);
   }
-}
-
-.glass-gear {
-  border: 1px solid rgb(255 255 255 / 0.14);
-  border-radius: 9999px;
-  color: #d4d4d8;
-  background: rgb(255 255 255 / 0.075);
-}
-
-.glass-gear:hover {
-  color: white;
-  background: rgb(255 255 255 / 0.14);
-}
-
-.glass-gear[data-active="true"] {
-  color: white;
-  border-color: #dc2626;
-  background: #dc2626;
 }
 
 @media (max-width: 639px) {

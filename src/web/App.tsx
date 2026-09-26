@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import { Settings as SettingsIcon } from "lucide-react";
+import {
+  ChartColumn,
+  History,
+  Settings as SettingsIcon,
+  Timer,
+  Trophy,
+} from "lucide-react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { LiveSession, Replays, type LiveInfo } from "./live/CurrentSession.tsx";
@@ -12,7 +18,6 @@ import { UpdateToast } from "./UpdateToast.tsx";
 import f1Logo from "./f1-logo.svg";
 
 const TABS = ["Countdown", "Replays", "Results", "Stats", "Settings"] as const;
-const NAV_TABS = ["Countdown", "Replays", "Results", "Stats"] as const;
 type Tab = (typeof TABS)[number];
 
 const SLUG: Record<Tab, string> = {
@@ -21,6 +26,14 @@ const SLUG: Record<Tab, string> = {
   Results: "results",
   Stats: "stats",
   Settings: "settings",
+};
+
+const ICONS = {
+  Countdown: Timer,
+  Replays: History,
+  Results: Trophy,
+  Stats: ChartColumn,
+  Settings: SettingsIcon,
 };
 
 const fromPath = (): Tab =>
@@ -63,28 +76,14 @@ export const App = () => {
         </button>
         <div className="fixed inset-x-[21px] bottom-[21px] flex justify-center sm:static sm:min-w-0 max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl max-sm:[&>nav>button]:flex-1">
           <Tabs
-            items={NAV_TABS}
-            value={tab === "Settings" ? null : tab}
+            items={TABS}
+            value={tab}
             onChange={go}
+            icons={ICONS}
             labels={info.data?.live ? { Countdown: "Live" } : undefined}
             live={info.data?.live ? "Countdown" : undefined}
           />
         </div>
-        <button
-          onClick={() => go("Settings")}
-          className="glass-gear ml-auto grid size-10 shrink-0 place-items-center justify-self-end sm:size-11"
-          data-active={tab === "Settings"}
-          aria-label="Settings"
-          aria-pressed={tab === "Settings"}
-          title="Settings"
-          type="button"
-        >
-          <SettingsIcon
-            aria-hidden="true"
-            className="size-5"
-            strokeWidth={1.8}
-          />
-        </button>
       </header>
       <main key={`session-${session}`} hidden={tab !== "Countdown"}>
         <LiveSession season={season} info={info} />
