@@ -34,7 +34,7 @@ export async function seasonSessions(year: number): Promise<SessionRef[]> {
       path: s.Path ?? "",
       meeting: m.Name,
       country: m.Country?.Name ?? "",
-      name: s.Name,
+      name: s.Name.replace(/^Practice /, "FP"),
       start: local(s.StartDate, s.GmtOffset),
     })),
   );
