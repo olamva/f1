@@ -1,0 +1,13 @@
+{
+  "id": "14b43bf9",
+  "ts": "2026-09-26T09:34:45+00:00",
+  "text": "git commit cannot write worktree index lock in default sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-luna",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-5831e05e",
+  "branch": "t3code/adjust-to-1-25"
+}
