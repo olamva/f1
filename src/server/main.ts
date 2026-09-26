@@ -23,6 +23,10 @@ const TICK_MS = 250;
 const KEEPALIVE_MS = 20_000;
 
 const app = new Hono();
+app.get(
+  "/:asset{(apple-touch-icon|icon-192|icon-512)\\.png|manifest\\.webmanifest}",
+  serveStatic({ root: DIST }),
+);
 app.use(requireGoogle);
 
 const send = (s: SSEStreamingApi, event: string, data: unknown) =>
