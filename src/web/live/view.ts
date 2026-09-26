@@ -277,12 +277,7 @@ export const qualifyingPart = (state: Obj): string | null =>
     ? `${/Sprint/.test(state.SessionInfo.Name) ? "SQ" : "Q"}${state.TimingData.SessionPart}`
     : null;
 
-export const sectorSplits = (rows: Row[]): number[] => {
-  const laps = rows
-    .map((r) => r.sectors.map((s) => lapSeconds(s.value) ?? 0))
-    .filter((s) => s.length === 3 && s.every(Boolean));
-  const [a, b, c] = [0, 1, 2].map((i) =>
-    laps.reduce((sum, s) => sum + s[i]!, 0),
-  );
-  return laps.length ? [a! / (a! + b! + c!), (a! + b!) / (a! + b! + c!)] : [];
+export const sectorSplits = (bests: SessionBests): number[] => {
+  const [a, b, c] = bests.sectors.map((s) => lapSeconds(s?.value ?? "") ?? 0);
+  return a && b && c ? [a / (a + b + c), (a + b) / (a + b + c)] : [];
 };

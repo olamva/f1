@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Crown, Maximize, Minimize } from "lucide-react";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
-import { sectorSplits, type Row } from "./view.ts";
+import { sectorSplits, type Row, type SessionBests } from "./view.ts";
 
 const SIZE = 1000;
 const PAD = 60;
@@ -11,6 +11,7 @@ interface TrackMapProps {
   outline: Outline | null;
   positions: Record<string, [number, number]> | undefined;
   rows: Row[];
+  bests: SessionBests;
   race: boolean;
   selected: Set<string>;
   onToggle: (number: string) => void;
@@ -51,10 +52,12 @@ const projector = (outline: Outline) => {
   return { project, box };
 };
 
-const indexAt = (time: number[], fraction: number) =>
+const indexAt = (progress: number[], fraction: number) =>
   Math.max(
     0,
-    time.findIndex((t) => t >= time[0]! + fraction * (time.at(-1)! - time[0]!)),
+    progress.findIndex(
+      (t) => t >= progress[0]! + fraction * (progress.at(-1)! - progress[0]!),
+    ),
   );
 
 const markers = (
@@ -62,37 +65,91 @@ const markers = (
   project: (x: number, y: number) => [number, number],
   fractions: number[],
 ) => {
-  const n = outline.x.length;
-  const at = (i: number) =>
-    project(outline.x[(i + n) % n]!, outline.y[(i + n) % n]!);
+  const points = outline.x.map((x, i) => project(x, outline.y[i]!));
+  const n = points.length;
+  const at = (i: number) => points[(i + n) % n]!;
+  const normal = (i: number): [number, number] => {
+    const [ax, ay] = at(i - 3);
+    const [bx, by] = at(i + 3);
+    const length = Math.hypot(bx - ax, by - ay) || 1;
+    return [(ay - by) / length, (bx - ax) / length];
+  };
   const across = (
     i: number,
     offset: number,
   ): [number, number, number, number] => {
-    const [x, y] = at(i);
-    const [ax, ay] = at(i - 3);
-    const [bx, by] = at(i + 3);
-    const length = Math.hypot(bx - ax, by - ay) || 1;
-    return [x, y, ((ay - by) / length) * offset, ((bx - ax) / length) * offset];
+    const [nx, ny] = normal(i);
+    return [...at(i), nx * offset, ny * offset];
   };
-  const bounds = outline.time.length ? [0, ...fractions, 1] : [0, 1];
+  const placed: [number, number, number][] = [];
+  const clearance = (x: number, y: number, width: number) =>
+    Math.min(
+      ...points.map(
+        ([px, py]) =>
+          Math.max(Math.abs(px - x) - width / 2, Math.abs(py - y) - 11) - 9,
+      ),
+      ...placed.map(([px, py, w]) =>
+        Math.max(Math.abs(px - x) - (width + w) / 2, Math.abs(py - y) - 22),
+      ),
+    );
+  const beside = (i: number, width: number, shifts = [0]): [number, number] => {
+    const [x, y] = shifts
+      .flatMap((shift) => {
+        const [x, y] = at(i + shift);
+        const [nx, ny] = normal(i + shift);
+        const d = 16 + (Math.abs(nx) * width) / 2 + Math.abs(ny) * 11;
+        return [d, -d].map((k) => {
+          const p: [number, number] = [x + nx * k, y + ny * k];
+          return { p, score: clearance(...p, width) - Math.abs(shift) / n };
+        });
+      })
+      .reduce((best, c) => (c.score > best.score ? c : best)).p;
+    placed.push([x, y, width]);
+    return [x, y];
+  };
+  let distance = 0;
+  const progress = outline.time.length
+    ? outline.time
+    : points.map(([x, y], i) =>
+        i ? (distance += Math.hypot(x - at(i - 1)[0], y - at(i - 1)[1])) : 0,
+      );
+  const bounds = [0, ...fractions, 1];
   return {
     finish: across(0, 20),
-    splits: bounds
-      .slice(1, -1)
-      .map((f) => across(indexAt(outline.time, f), 16)),
+    splits: fractions.map((f) => across(indexAt(progress, f), 16)),
+    corners: outline.corners.map((c) => {
+      const [cx, cy] = project(c.x, c.y);
+      const i = points.reduce(
+        (best, [x, y], j) =>
+          Math.hypot(x - cx, y - cy) <
+          Math.hypot(points[best]![0] - cx, points[best]![1] - cy)
+            ? j
+            : best,
+        0,
+      );
+      return { number: c.number, at: beside(i, 11 * String(c.number).length) };
+    }),
     labels:
       bounds.length > 2
-        ? bounds
-            .slice(1)
-            .map((f, i) =>
-              across(indexAt(outline.time, (bounds[i]! + f) / 2), 44),
-            )
+        ? bounds.slice(1).map((f, i) =>
+            beside(
+              indexAt(progress, (bounds[i]! + f) / 2),
+              90,
+              [-4, -3, -2, -1, 0, 1, 2, 3, 4].map((k) =>
+                Math.round((k * n) / 60),
+              ),
+            ),
+          )
         : [],
   };
 };
 
-const Markers = ({ finish, splits, labels }: ReturnType<typeof markers>) => (
+const Markers = ({
+  finish,
+  splits,
+  labels,
+  corners,
+}: ReturnType<typeof markers>) => (
   <>
     {splits.map(([x, y, dx, dy], i) => (
       <line
@@ -105,16 +162,28 @@ const Markers = ({ finish, splits, labels }: ReturnType<typeof markers>) => (
         strokeWidth={4}
       />
     ))}
-    {labels.map(([x, y, dx, dy], i) => (
+    {labels.map(([x, y], i) => (
       <text
         key={i}
-        x={x + dx}
-        y={y + dy}
+        x={x}
+        y={y}
         dominantBaseline="middle"
         textAnchor="middle"
         className="fill-zinc-400 text-[20px] font-semibold"
       >
-        S{i + 1}
+        Sector {i + 1}
+      </text>
+    ))}
+    {corners.map(({ number, at: [x, y] }) => (
+      <text
+        key={number}
+        x={x}
+        y={y}
+        dominantBaseline="middle"
+        textAnchor="middle"
+        className="fill-zinc-300 text-[18px] font-semibold"
+      >
+        {number}
       </text>
     ))}
     <line
@@ -132,6 +201,7 @@ export const TrackMap = ({
   outline,
   positions,
   rows,
+  bests,
   race,
   selected,
   onToggle,
@@ -168,7 +238,7 @@ export const TrackMap = ({
         : "",
     [outline, project],
   );
-  const splits = sectorSplits(rows).join();
+  const splits = sectorSplits(bests).join();
   const marks = useMemo(
     () =>
       project &&
@@ -246,20 +316,6 @@ export const TrackMap = ({
           strokeLinecap="round"
         />
         {marks && <Markers {...marks} />}
-        {outline?.corners.map((c) => {
-          const [x, y] = project!(c.x, c.y);
-          return (
-            <text
-              key={c.number}
-              x={x}
-              y={y}
-              className="fill-zinc-500 text-[18px]"
-              textAnchor="middle"
-            >
-              {c.number}
-            </text>
-          );
-        })}
         {project &&
           [...rows].reverse().map((r) => {
             const p = positions?.[r.number];
