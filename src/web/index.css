@@ -262,3 +262,32 @@ textarea {
     linear-gradient(#000 0 0);
   pointer-events: none;
 }
+
+.rain {
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(rgb(56 189 248 / 0.1), transparent);
+}
+
+.rain-drop {
+  position: absolute;
+  top: -25%;
+  width: 1px;
+  background: linear-gradient(transparent, rgb(186 230 253));
+  rotate: 12deg;
+  animation: rain-fall linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rain-fall {
+  to {
+    top: 110%;
+    translate: -1.25rem 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rain-drop {
+    animation: none;
+  }
+}
