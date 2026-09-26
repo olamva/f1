@@ -1,0 +1,13 @@
+{
+  "id": "da784a94",
+  "ts": "2026-09-26T09:53:20+00:00",
+  "text": "git add cannot write the worktree index lock in the sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-9c6f99a3",
+  "branch": "t3code/improve-worktree-workflow"
+}
