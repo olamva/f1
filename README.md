@@ -16,6 +16,13 @@ pnpm test
 
 `pnpm dev` turns off Google sign-in. Set `PORT` and `VITE_PORT` to run more than one dev server, such as `PORT=8788 VITE_PORT=5174 pnpm dev`. Set `NO_LIVE=1` to turn off live timing, so that the app shows replays during a live session.
 
+## T3 worktrees
+
+Import the `Setup Worktree` action from `t3.json` in T3 project settings once.
+Start each task in a new thread and worktree. The action updates the branch and installs dependencies.
+After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` from the task worktree.
+Keep the worktree while its T3 thread is active. Remove it from another checkout after T3 stops.
+
 ## Deploy
 
 1. Copy `infra/terraform.tfvars.example` to `infra/terraform.tfvars` and fill it in.
