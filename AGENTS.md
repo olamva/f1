@@ -1,7 +1,7 @@
 # Parallel work
 
 Treat a task as done only when its changes are in a pull request and merged into `main`.
-When deployment is necessary, verify that the deployment succeeds for the merged commit before reporting completion.
+Do not wait for deployment after the merge. Settle the thread and clean up immediately.
 If a required step is blocked, report the current status and the blocker. Do not report the task as done.
 
 Use one branch and one worktree for each task.
@@ -21,12 +21,12 @@ Explain the change and report validation in the pull request description.
 Run `pnpm format` before each commit. `pnpm test` fails on unformatted files.
 Run relevant local checks before pushing. Use `pnpm test`, `pnpm typecheck`, and `pnpm build` when applicable.
 Review the final diff. Resolve review feedback within the task scope.
-Wait for every expected PR check to pass. Treat missing, pending, skipped, cancelled, or failed checks as blockers.
-Fix failures and push the correction. Check the new head commit again.
-Fetch `origin/main` before merging. Merge it into the task branch if the branch is behind.
-Resolve conflicts and rerun checks for the new head commit.
-Verify the PR head and checks immediately before merging.
-Merge your own PR when checks pass and required reviews finish. Use a merge commit.
+Fetch `origin/main` before you push. Merge it into the task branch if the branch is behind.
+Enable auto-merge on your own PR with `gh pr merge --auto --merge` immediately after you push.
+Let GitHub merge the PR when the required checks pass.
+Run `gh pr checks --watch --fail-fast` to wait. Then run `gh pr view --json state,mergeStateStatus`.
+If a check fails, fix the failure and push the correction. Auto-merge stays enabled for the new head commit.
+If the state is `BEHIND`, merge `origin/main` into the task branch, resolve conflicts, and push.
 Do not force-push, bypass branch protection, or merge with blocked checks.
 
 ## Visual review
@@ -40,14 +40,15 @@ Call `mcp__t3_code__preview_snapshot` with `save: true`.
 Embed each returned `screenshotPath` in the review message.
 For required review, capture the changed UI in the running app. Include the before and after states.
 Show the screenshots to the user and ask for approval after the change is complete.
-Do not merge before the user approves the reviewed change.
+Do not enable auto-merge before the user approves the reviewed change.
 Record the approval in the PR description. Treat a missing required approval as a blocker.
 Request renewed approval if later changes materially alter the reviewed appearance.
 
 ## Deployment and cleanup
 
 Keep deployment on `main` through the existing workflow.
-Delete the merged remote branch. Preserve thread history.
+Do not watch the deployment run. Start cleanup as soon as the PR state is `MERGED`.
+Let GitHub delete the merged remote branch. Preserve thread history.
 Stop every dev server and preview process that you started before the final response.
 Create each temporary checkout, such as a visual review "before" state, with `git worktree add --detach` under `/tmp`.
 Remove a temporary checkout with `git worktree remove <path>` after checking for local files.
