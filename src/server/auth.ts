@@ -1,4 +1,4 @@
-import type { MiddlewareHandler } from "hono";
+import type { Context, MiddlewareHandler } from "hono";
 
 type Claim = { typ?: string; val?: string };
 type Principal = { auth_typ?: string; claims?: Claim[] };
@@ -42,3 +42,8 @@ export const requireGoogle: MiddlewareHandler = async (c, next) => {
   if (!address || !allowed(address)) return c.text("Not your paddock.\n", 403);
   return next();
 };
+
+export const user = (c: Context): string =>
+  process.env.DEV_NO_AUTH === "1"
+    ? "dev"
+    : email(c.req.header("x-ms-client-principal"))!;

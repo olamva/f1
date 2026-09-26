@@ -9,6 +9,10 @@ terraform {
       source  = "Azure/azapi"
       version = "~> 2.0"
     }
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
   }
 }
 
@@ -23,7 +27,8 @@ provider "azapi" {}
 data "azurerm_client_config" "current" {}
 
 locals {
-  digest = substr(sha1(var.subscription_id), 0, 6)
+  digest     = substr(sha1(var.subscription_id), 0, 6)
+  push_store = "${azurerm_storage_account.f1.primary_blob_endpoint}${azurerm_storage_container.push.name}"
 }
 
 resource "azurerm_resource_group" "f1" {
@@ -137,13 +142,21 @@ resource "azurerm_container_app" "f1" {
         value = "${azurerm_storage_account.f1.primary_blob_endpoint}${azurerm_storage_container.transcripts.name}"
       }
       env {
+        name  = "PUSH_STORE"
+        value = local.push_store
+      }
+      env {
+        name  = "VAPID_PUBLIC_KEY"
+        value = tls_private_key.vapid.public_key_pem
+      }
+      env {
         name  = "ALLOWED_EMAILS"
         value = join(",", var.allowed_emails)
       }
     }
   }
 
-  depends_on = [azurerm_role_assignment.app_secrets, azurerm_role_assignment.app_transcripts]
+  depends_on = [azurerm_role_assignment.app_secrets, azurerm_role_assignment.app_transcripts, azurerm_role_assignment.app_push]
 
   lifecycle {
     ignore_changes = [template[0].container[0].image]
@@ -157,6 +170,16 @@ resource "azurerm_container_app_job" "wake" {
   container_app_environment_id = azurerm_container_app_environment.f1.id
   replica_timeout_in_seconds   = 60
   replica_retry_limit          = 1
+
+  identity {
+    type         = "UserAssigned"
+    identity_ids = [azurerm_user_assigned_identity.app.id]
+  }
+
+  secret {
+    name  = "vapid-private-key"
+    value = tls_private_key.vapid.private_key_pem
+  }
 
   schedule_trigger_config {
     cron_expression = "*/5 * * * *"
@@ -173,6 +196,22 @@ resource "azurerm_container_app_job" "wake" {
       env {
         name  = "WAKE_URL"
         value = "https://${azurerm_container_app.f1.ingress[0].fqdn}/"
+      }
+      env {
+        name  = "AZURE_CLIENT_ID"
+        value = azurerm_user_assigned_identity.app.client_id
+      }
+      env {
+        name  = "PUSH_STORE"
+        value = local.push_store
+      }
+      env {
+        name        = "VAPID_PRIVATE_KEY"
+        secret_name = "vapid-private-key"
+      }
+      env {
+        name  = "VAPID_SUBJECT"
+        value = "https://${var.custom_domain == "" ? azurerm_container_app.f1.ingress[0].fqdn : var.custom_domain}"
       }
     }
   }
@@ -345,4 +384,20 @@ resource "azurerm_role_assignment" "app_transcripts" {
   scope                = azurerm_storage_container.transcripts.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
+resource "azurerm_storage_container" "push" {
+  name               = "push"
+  storage_account_id = azurerm_storage_account.f1.id
+}
+
+resource "azurerm_role_assignment" "app_push" {
+  scope                = azurerm_storage_container.push.id
+  role_definition_name = "Storage Blob Data Contributor"
+  principal_id         = azurerm_user_assigned_identity.app.principal_id
+}
+
+resource "tls_private_key" "vapid" {
+  algorithm   = "ECDSA"
+  ecdsa_curve = "P256"
 }

@@ -31,3 +31,7 @@ A calendar change takes effect at the next five-minute check. If the calendar so
 The server uses `F1_ORIGIN` as the base URL for F1 archives and live timing. Terraform sets it from `f1_origin`. The default is `https://livetiming.formula1.com`.
 
 If F1 blocks Azure egress, set `f1_origin` in the ignored `infra/terraform.tfvars` to a reachable proxy origin. Serve both `/static/` and `/signalrcore` through that origin. Run `terraform -chdir=infra apply`, then verify an archive and a live session through the deployed app.
+
+## Notifications
+
+Signed-in users can turn on session reminders in Settings. On iOS, the app must be on the Home Screen. The wake job sends a Web Push notification 15 minutes and 5 minutes before each session. It removes subscriptions that the push service reports as expired. The app stores subscriptions in the `push` blob container. Terraform generates the VAPID key. A new key makes current subscriptions invalid, so users must turn notifications on again.
