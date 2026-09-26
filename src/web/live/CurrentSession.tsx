@@ -188,11 +188,9 @@ const Board = ({
 
 interface LiveProps {
   positions: boolean;
-  onClose: () => void;
-  finished: boolean;
 }
 
-const Live = ({ positions, onClose, finished }: LiveProps) => {
+const Live = ({ positions }: LiveProps) => {
   const [delay, setDelay] = useState(
     () => Number(localStorage.getItem("delay")) || 0,
   );
@@ -208,15 +206,6 @@ const Live = ({ positions, onClose, finished }: LiveProps) => {
   };
   return (
     <div className="space-y-4">
-      {finished && (
-        <button
-          type="button"
-          onClick={onClose}
-          className="text-sm text-zinc-400 hover:text-zinc-100"
-        >
-          Close timing
-        </button>
-      )}
       {feed ? (
         <Board
           feed={feed}
@@ -295,22 +284,12 @@ const Replay = ({ session, onClose }: ReplayProps) => {
 };
 
 export const LiveSession = ({ season, info }: LiveSessionProps) => {
-  const [closed, setClosed] = useState(false);
   const wasLive = useRef(false);
   if (info.data?.live) wasLive.current = true;
-  useEffect(() => {
-    if (info.data?.live) setClosed(false);
-  }, [info.data?.live]);
   if (!info.data || !season.data)
     return <Loading label="Loading…" error={info.error ?? season.error} />;
-  if (info.data.live || (!closed && (info.data.recent || wasLive.current)))
-    return (
-      <Live
-        positions={info.data.positions}
-        finished={!info.data.live}
-        onClose={() => setClosed(true)}
-      />
-    );
+  if (info.data.live || info.data.recent || wasLive.current)
+    return <Live positions={info.data.positions} />;
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (
     <div className="to-surface rounded-xl bg-gradient-to-r from-red-700/40 p-4">
