@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Pause, Play } from "lucide-react";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
+import { Tabs } from "../Tabs.tsx";
 import type { Feed } from "./useFeed.ts";
 
 const SPEEDS = [1, 2, 4, 8, 16, 32];
+const UNITS = ["time", "laps"] as const;
 
 interface ReplayBarProps {
   session: SessionRef;
@@ -36,8 +38,8 @@ export const ReplayBar = ({
 }: ReplayBarProps) => {
   const [drag, setDrag] = useState<number | null>(null);
   const start = feed?.start ?? 0;
-  const [byLap, setByLap] = useState(false);
-  const laps = byLap && starts.length > 1;
+  const [unit, setUnit] = useState<(typeof UNITS)[number]>("time");
+  const laps = unit === "laps" && starts.length > 1;
   const value = drag ?? pending ?? feed?.t ?? 0;
   const lap = Math.max(
     0,
@@ -74,18 +76,7 @@ export const ReplayBar = ({
         ))}
       </select>
       {starts.length > 1 && (
-        <div className="flex rounded-md bg-zinc-800 p-0.5 text-xs font-semibold">
-          {["Time", "Laps"].map((unit) => (
-            <button
-              key={unit}
-              onClick={() => setByLap(unit === "Laps")}
-              aria-pressed={laps === (unit === "Laps")}
-              className={`cursor-pointer rounded px-2 py-1 ${laps === (unit === "Laps") ? "bg-zinc-600" : "text-zinc-400"}`}
-            >
-              {unit}
-            </button>
-          ))}
-        </div>
+        <Tabs items={UNITS} value={unit} onChange={setUnit} small />
       )}
       <input
         type="range"
@@ -109,7 +100,7 @@ export const ReplayBar = ({
           if (drag !== null) onSeek(drag);
           setDrag(null);
         }}
-        className="min-w-32 flex-1 accent-red-500"
+        className="min-w-24 flex-1 accent-red-500"
       />
       <span className="tabular font-mono text-zinc-300">
         {laps ? `Lap ${lap + 1}/${starts.length}` : clock(value - start)}
