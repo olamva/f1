@@ -1,4 +1,10 @@
-import { useLayoutEffect, useRef, useState, type PointerEvent } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+} from "react";
 
 interface TabsProps<T extends string> {
   items: readonly T[];
@@ -19,6 +25,8 @@ export const Tabs = <T extends string>({
 }: TabsProps<T>) => {
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  const blob = useRef<HTMLSpanElement>(null);
+  const motion = useRef({ x: 0, time: 0, speed: 0 });
   const drag = useRef<{
     pointerId: number;
     startX: number;
@@ -28,10 +36,33 @@ export const Tabs = <T extends string>({
   } | null>(null);
   const suppressClick = useRef(false);
   const [dragLeft, setDragLeft] = useState<number | null>(null);
+  const dragging = dragLeft !== null;
   const [highlight, setHighlight] = useState<{
     left: number;
     width: number;
   } | null>(null);
+
+  useEffect(() => {
+    const indicator = blob.current;
+    if (!dragging || !indicator) return;
+    let frame = 0;
+    let stretch = 0;
+    let previous = performance.now();
+    const animate = (now: number) => {
+      const target =
+        Math.min(0.35, motion.current.speed * 0.16) *
+        Math.exp(-(now - motion.current.time) / 80);
+      stretch += (target - stretch) * (1 - Math.exp(-(now - previous) / 45));
+      indicator.style.setProperty("--stretch", String(stretch));
+      previous = now;
+      frame = requestAnimationFrame(animate);
+    };
+    frame = requestAnimationFrame(animate);
+    return () => {
+      cancelAnimationFrame(frame);
+      indicator.style.removeProperty("--stretch");
+    };
+  }, [dragging]);
 
   useLayoutEffect(() => {
     const track = nav.current;
@@ -83,7 +114,18 @@ export const Tabs = <T extends string>({
         if (drag.current?.pointerId !== event.pointerId) return;
         if (Math.abs(event.clientX - drag.current.startX) > 3)
           suppressClick.current = true;
-        if (suppressClick.current) setDragLeft(position(event));
+        if (suppressClick.current) {
+          const left = position(event);
+          const now = performance.now();
+          motion.current = {
+            x: left,
+            time: now,
+            speed:
+              Math.abs(left - motion.current.x) /
+              Math.max(1, now - motion.current.time),
+          };
+          setDragLeft(left);
+        }
       }}
       onPointerUp={(event) => {
         if (drag.current?.pointerId !== event.pointerId) return;
@@ -111,16 +153,17 @@ export const Tabs = <T extends string>({
           cancelDrag();
         }
       }}
-      data-dragging={dragLeft !== null}
+      data-dragging={dragging}
       className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"}`}
     >
       {highlight && (
         <span
+          ref={blob}
           className="glass-highlight"
           data-visible={value !== null}
           style={{
             width: highlight.width,
-            transform: `translateX(${dragLeft ?? highlight.left}px)`,
+            translate: `${dragLeft ?? highlight.left}px`,
           }}
         />
       )}
@@ -141,6 +184,11 @@ export const Tabs = <T extends string>({
               left: button.offsetLeft,
               width: button.offsetWidth,
               scrollLeft: nav.current!.scrollLeft,
+            };
+            motion.current = {
+              x: button.offsetLeft,
+              time: performance.now(),
+              speed: 0,
             };
             button.setPointerCapture(event.pointerId);
           }}
