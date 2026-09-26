@@ -140,6 +140,14 @@ const WEATHER: [key: string, label: string, unit: string, Icon: LucideIcon][] =
     ["WindSpeed", "Wind", "m/s", Wind],
   ];
 
+const DROPS = Array.from({ length: 48 }, () => ({
+  left: `${Math.random() * 115 - 5}%`,
+  height: `${8 + Math.random() * 16}px`,
+  opacity: 0.15 + Math.random() * 0.5,
+  animationDuration: `${0.45 + Math.random() * 0.5}s`,
+  animationDelay: `${-Math.random()}s`,
+}));
+
 export const Weather = ({ weather }: WeatherProps) => (
   <Panel
     title={weather?.Rainfall === "1" ? "Weather · Rain" : "Weather"}
@@ -161,6 +169,10 @@ export const Weather = ({ weather }: WeatherProps) => (
         </div>
       ))}
     </dl>
+    {weather?.Rainfall === "1" &&
+      DROPS.map((style, i) => (
+        <i key={i} className="rain-drop" style={style} />
+      ))}
   </Panel>
 );
 
