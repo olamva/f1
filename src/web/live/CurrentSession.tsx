@@ -187,9 +187,9 @@ const Board = ({
           onToggle={toggle}
         />
         <div
-          className={`grid content-start items-start gap-4 ${race ? "xl:grid-cols-2" : ""}`}
+          className={`grid content-start gap-4 ${race ? "xl:grid-cols-2 xl:content-stretch" : ""}`}
         >
-          <div className="space-y-4">
+          <div className="flex flex-col gap-4">
             <TrackMap
               outline={outline}
               positions={state.Position}
@@ -204,15 +204,15 @@ const Board = ({
               speed={speed}
               banner={banner}
             />
-            <Weather weather={state.WeatherData} />
-          </div>
-          <div className="space-y-4">
-            <TeamRadio radios={radios(state)} rows={rows} />
             <RaceControl
               messages={messages(state)}
               rows={rows}
               start={sessionStart(state)}
             />
+          </div>
+          <div className="flex flex-col gap-4">
+            <TeamRadio radios={radios(state)} rows={rows} />
+            <Weather weather={state.WeatherData} />
           </div>
         </div>
       </div>
