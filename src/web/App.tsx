@@ -47,7 +47,7 @@ export const App = () => {
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4">
-      <header className="flex flex-wrap items-center gap-1.5 sm:gap-6">
+      <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
           className="flex cursor-pointer items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
