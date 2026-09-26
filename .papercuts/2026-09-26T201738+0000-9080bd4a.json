@@ -1,0 +1,14 @@
+{
+  "id": "9080bd4a",
+  "ts": "2026-09-26T20:17:38+00:00",
+  "text": "Markdown images at /tmp paths do not render in T3 chat; copy them to ~/.t3/userdata/attachments",
+  "tags": [
+    "screenshots",
+    "t3"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "5ef559fb",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-c707bf01",
+  "branch": "t3code/liquid-glass-overflow"
+}
