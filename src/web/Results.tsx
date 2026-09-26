@@ -1,3 +1,4 @@
+import { X } from "lucide-react";
 import { useState } from "react";
 import type { DriverProfile, RaceArchive } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
@@ -37,9 +38,11 @@ const Profile = ({ id, onClose }: ProfileProps) => {
         <button
           type="button"
           onClick={onClose}
-          className="cursor-pointer text-sm text-zinc-400 hover:text-white"
+          aria-label="Close"
+          title="Close"
+          className="cursor-pointer text-zinc-400 hover:text-white"
         >
-          Close
+          <X aria-hidden="true" className="size-5" />
         </button>
       </div>
       {!data ? (
