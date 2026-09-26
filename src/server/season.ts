@@ -1,4 +1,4 @@
-import { all, get, total } from "./jolpica.ts";
+import { all, get, json, total } from "./jolpica.ts";
 import type {
   Classified,
   DriverInfo,
@@ -46,24 +46,7 @@ const when = (s: any): string | null =>
   s ? `${s.date}T${s.time ?? "00:00:00Z"}` : null;
 
 const alpha = "https://api.jolpi.ca/f1/alpha";
-const alphaCache = new Map<string, { at: number; body: Promise<any> }>();
-
-function alphaGet(path: string): Promise<any> {
-  const cached = alphaCache.get(path);
-  if (cached && Date.now() - cached.at < 10 * 60_000) return cached.body;
-  const request = fetch(`${alpha}/${path}`, {
-    headers: { "User-Agent": "f1.ola-vassbotn.no" },
-  }).then((res) => {
-    if (!res.ok) throw new Error(`jolpica ${res.status} ${path}`);
-    return res.json();
-  });
-  const entry = { at: Date.now(), body: request };
-  alphaCache.set(path, entry);
-  request.catch(() => {
-    if (alphaCache.get(path) === entry) alphaCache.delete(path);
-  });
-  return request;
-}
+const alphaGet = (path: string): Promise<any> => json(`${alpha}/${path}`);
 
 const alphaDriverName = (r: any): string =>
   `${r.driver.given_name} ${r.driver.family_name}`.toLocaleLowerCase();
