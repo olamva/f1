@@ -1,8 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { schedule, shouldWake, windows } from "../scripts/sessions.ts";
+import {
+  reminders,
+  schedule,
+  shouldWake,
+  windows,
+} from "../scripts/sessions.ts";
 
 const race = (date: string, time = "14:00:00Z") => ({
+  raceName: "Test Grand Prix",
   date,
   time,
   FirstPractice: { date, time: "10:00:00Z" },
@@ -67,4 +73,26 @@ test("a failed next-season request keeps the current schedule", async () => {
 test("past calendar dates do not wake the app in later years", () => {
   const result = windows([race("2026-10-04")]);
   assert.equal(shouldWake(result, at("2027-10-04T14:00:00Z")), false);
+});
+
+test("each session gets one reminder 15 minutes and one 5 minutes before it starts", () => {
+  const result = windows([race("2026-10-04", "14:03:00Z")]);
+  const sent = [];
+  for (
+    let slot = at("2026-10-04T08:00:00Z");
+    slot < at("2026-10-04T15:00:00Z");
+    slot += 5 * 60_000
+  )
+    for (const message of reminders(result, slot + 50_000))
+      sent.push([
+        new Date(slot).toISOString().slice(11, 16),
+        message.title,
+        message.body,
+      ]);
+  assert.deepEqual(sent, [
+    ["09:45", "Test Grand Prix · Practice 1", "Starts in 15 minutes."],
+    ["09:55", "Test Grand Prix · Practice 1", "Starts in 5 minutes."],
+    ["13:50", "Test Grand Prix · Race", "Starts in 15 minutes."],
+    ["14:00", "Test Grand Prix · Race", "Starts in 5 minutes."],
+  ]);
 });

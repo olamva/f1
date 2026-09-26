@@ -15,3 +15,18 @@ registerRoute(
 );
 
 precacheAndRoute(self.__WB_MANIFEST);
+
+self.addEventListener("push", (event) => {
+  const { title, ...options } = event.data.json();
+  event.waitUntil(
+    self.registration.showNotification(title, {
+      icon: "/icon-192.png",
+      ...options,
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  event.waitUntil(self.clients.openWindow("/"));
+});

@@ -2,6 +2,14 @@ import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import type { TokenStatus } from "../shared/token.ts";
 import { getJson } from "./api.ts";
+import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
+
+const SWITCH =
+  "relative h-5 w-9 shrink-0 rounded-full bg-zinc-700 transition-colors peer-checked:bg-red-600 peer-focus-visible:ring-2 peer-focus-visible:ring-red-400 after:absolute after:top-0.5 after:left-0.5 after:size-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4 peer-disabled:opacity-40";
+const PUSH_NOTES: Partial<Record<PushState, string>> = {
+  unsupported: "Add the app to the Home Screen to get notifications.",
+  off: "Notifications are not set up on this server.",
+};
 
 const LOGIN = "https://account.formula1.com/#/en/login";
 
@@ -26,6 +34,16 @@ export const Settings = () => {
     () => localStorage.getItem("autoplay") === "1",
   );
   const [message, setMessage] = useState<string | null>(null);
+  const [push, setPush] = useState<PushState | null>(null);
+  const [pushNote, setPushNote] = useState<string | null>(null);
+  const togglePush = (on: boolean) => {
+    setPush(null);
+    setPushNote(null);
+    (on ? enablePush() : disablePush())
+      .catch((e: Error) => setPushNote(e.message))
+      .then(pushState)
+      .then(setPush, () => setPush("disabled"));
+  };
   const save = (v: string) =>
     post(v).then(
       (s) => {
@@ -37,7 +55,9 @@ export const Settings = () => {
     );
   useEffect(() => {
     getJson<TokenStatus>("/api/token").then(setStatus, () => undefined);
+    pushState().then(setPush, (e: Error) => setPushNote(e.message));
   }, []);
+  const note = pushNote ?? (push && PUSH_NOTES[push]);
   const soon =
     status?.sessionExpiresAt &&
     status.sessionExpiresAt - Date.now() < 3 * 24 * 3600_000;
@@ -55,9 +75,24 @@ export const Settings = () => {
               localStorage.setItem("autoplay", e.target.checked ? "1" : "0");
             }}
           />
-          <span className="relative h-5 w-9 shrink-0 rounded-full bg-zinc-700 transition-colors peer-checked:bg-red-600 peer-focus-visible:ring-2 peer-focus-visible:ring-red-400 after:absolute after:top-0.5 after:left-0.5 after:size-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4" />
+          <span className={SWITCH} />
           Play new radio messages automatically
         </label>
+      </section>
+      <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="text-lg font-semibold">Notifications</h2>
+        <label className="flex cursor-pointer items-center gap-3 text-sm">
+          <input
+            type="checkbox"
+            className="peer sr-only"
+            checked={push === "enabled"}
+            disabled={push !== "enabled" && push !== "disabled"}
+            onChange={(e) => togglePush(e.target.checked)}
+          />
+          <span className={SWITCH} />
+          Notify me 15 minutes and 5 minutes before each session
+        </label>
+        {note && <p className="text-sm text-zinc-400">{note}</p>}
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="text-lg font-semibold">F1TV token</h2>
