@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type PointerEvent } from "react";
 
 interface TabsProps<T extends string> {
   items: readonly T[];
@@ -19,6 +19,15 @@ export const Tabs = <T extends string>({
 }: TabsProps<T>) => {
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
+  const drag = useRef<{
+    pointerId: number;
+    startX: number;
+    left: number;
+    width: number;
+    scrollLeft: number;
+  } | null>(null);
+  const suppressClick = useRef(false);
+  const [dragLeft, setDragLeft] = useState<number | null>(null);
   const [highlight, setHighlight] = useState<{
     left: number;
     width: number;
@@ -44,9 +53,65 @@ export const Tabs = <T extends string>({
     return () => observer.disconnect();
   }, [items, value]);
 
+  const position = (event: PointerEvent<HTMLElement>) => {
+    const track = nav.current!;
+    const current = drag.current!;
+    const first = buttons.current[0]!;
+    const last = buttons.current[items.length - 1]!;
+    return Math.max(
+      first.offsetLeft,
+      Math.min(
+        last.offsetLeft + last.offsetWidth - current.width,
+        current.left +
+          event.clientX -
+          current.startX +
+          track.scrollLeft -
+          current.scrollLeft,
+      ),
+    );
+  };
+
+  const cancelDrag = () => {
+    drag.current = null;
+    setDragLeft(null);
+  };
+
   return (
     <nav
       ref={nav}
+      onPointerMove={(event) => {
+        if (drag.current?.pointerId !== event.pointerId) return;
+        if (Math.abs(event.clientX - drag.current.startX) > 3)
+          suppressClick.current = true;
+        if (suppressClick.current) setDragLeft(position(event));
+      }}
+      onPointerUp={(event) => {
+        if (drag.current?.pointerId !== event.pointerId) return;
+        if (suppressClick.current) {
+          const center = position(event) + drag.current.width / 2;
+          const index = items.reduce((nearest, _, index) => {
+            const button = buttons.current[index]!;
+            const previous = buttons.current[nearest]!;
+            return Math.abs(
+              button.offsetLeft + button.offsetWidth / 2 - center,
+            ) <
+              Math.abs(previous.offsetLeft + previous.offsetWidth / 2 - center)
+              ? index
+              : nearest;
+          }, 0);
+          if (items[index] !== value) onChange(items[index]!);
+        }
+        cancelDrag();
+      }}
+      onPointerCancel={cancelDrag}
+      onLostPointerCapture={cancelDrag}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && drag.current) {
+          suppressClick.current = true;
+          cancelDrag();
+        }
+      }}
+      data-dragging={dragLeft !== null}
       className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"}`}
     >
       {highlight && (
@@ -55,7 +120,7 @@ export const Tabs = <T extends string>({
           data-visible={value !== null}
           style={{
             width: highlight.width,
-            transform: `translateX(${highlight.left}px)`,
+            transform: `translateX(${dragLeft ?? highlight.left}px)`,
           }}
         />
       )}
@@ -65,7 +130,24 @@ export const Tabs = <T extends string>({
           ref={(element) => {
             buttons.current[index] = element;
           }}
-          onClick={() => onChange(i)}
+          onPointerDown={(event) => {
+            if (!event.isPrimary || event.button !== 0) return;
+            suppressClick.current = false;
+            if (value !== i) return;
+            const button = event.currentTarget;
+            drag.current = {
+              pointerId: event.pointerId,
+              startX: event.clientX,
+              left: button.offsetLeft,
+              width: button.offsetWidth,
+              scrollLeft: nav.current!.scrollLeft,
+            };
+            button.setPointerCapture(event.pointerId);
+          }}
+          onClick={(event) => {
+            if (!suppressClick.current || event.detail === 0) onChange(i);
+            suppressClick.current = false;
+          }}
           type="button"
           aria-pressed={value === i}
           data-active={value === i}
