@@ -186,3 +186,11 @@ test("qualifyingPart names the qualifying segment", () => {
     null,
   );
 });
+
+test("a car that stops on track shows as out, like a retired car", () => {
+  const status = (line: Json) =>
+    rows({ TimingData: { Lines: { "1": line } }, DriverList: { "1": {} } })[0]!
+      .status;
+  assert.equal(status({ Stopped: true }), "OUT");
+  assert.equal(status({ Retired: true, InPit: true }), "OUT");
+});
