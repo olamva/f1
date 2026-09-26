@@ -367,6 +367,21 @@ export const TrackMap = ({
                 }}
                 opacity={focus || hovered === r.number ? 1 : 0.35}
               >
+                <path
+                  d="M0 0L-24 -24H-94"
+                  fill="none"
+                  stroke={r.color}
+                  strokeWidth={3}
+                />
+                <rect
+                  x={-94}
+                  y={-56}
+                  width={70}
+                  height={32}
+                  rx={3}
+                  fill="#27272a"
+                  fillOpacity={0.9}
+                />
                 <circle
                   r={14}
                   fill={r.color}
@@ -375,7 +390,9 @@ export const TrackMap = ({
                   className="group-focus-visible:stroke-zinc-100"
                 />
                 <text
-                  y={-22}
+                  x={-59}
+                  y={-40}
+                  dominantBaseline="middle"
                   textAnchor="middle"
                   className="fill-zinc-100 text-[22px] font-semibold"
                 >
@@ -383,8 +400,8 @@ export const TrackMap = ({
                 </text>
                 {r.position === 1 && (race || r.bestLap) ? (
                   <Crown
-                    x={-13}
-                    y={-62}
+                    x={-72}
+                    y={-88}
                     width={26}
                     height={26}
                     className="stroke-yellow-300"
@@ -392,7 +409,8 @@ export const TrackMap = ({
                   />
                 ) : race && r.lapsBehind ? (
                   <text
-                    y={-43}
+                    x={-59}
+                    y={-66}
                     textAnchor="middle"
                     className="fill-zinc-300 text-[21px] font-bold"
                   >
