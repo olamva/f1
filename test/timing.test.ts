@@ -98,6 +98,26 @@ test("timing rows count lapped cars without reading the leader lap counter as a 
   );
 });
 
+test("race rows count the places each car gained or lost from its grid slot", () => {
+  const result = rows({
+    DriverList: { "1": {}, "2": {}, "3": {} },
+    TimingData: {
+      Lines: {
+        "1": { Position: "1" },
+        "2": { Position: "2" },
+        "3": { Position: "3" },
+      },
+    },
+    TimingAppData: {
+      Lines: { "1": { GridPos: "4" }, "2": { GridPos: "1" }, "3": {} },
+    },
+  });
+  assert.deepEqual(
+    result.map(({ gained }) => gained),
+    [3, -1, null],
+  );
+});
+
 test("session best owners use personal records instead of the latest sectors", () => {
   const state = {
     DriverList: {

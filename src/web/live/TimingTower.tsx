@@ -184,6 +184,17 @@ const TowerRow = ({
         )}
       </span>
     </td>
+    {race && (
+      <td
+        className={`px-2 py-1 text-right ${row.gained ? (row.gained > 0 ? "text-emerald-400" : "text-red-500") : "text-zinc-500"}`}
+      >
+        {row.gained === null
+          ? ""
+          : row.gained
+            ? `${row.gained > 0 ? "▲" : "▼"}${Math.abs(row.gained)}`
+            : "–"}
+      </td>
+    )}
     <td className="px-2 py-1 text-right">
       {row.position === 1 && race ? "Leader" : row.gap}
     </td>
@@ -198,28 +209,30 @@ const TowerRow = ({
     >
       {row.bestLap}
     </td>
-    <td className="px-2 py-1">
-      <span className="flex gap-1.5">
-        {row.sectors.map((s, i) => (
-          <span
-            key={i}
-            title={s.value}
-            className={`flex flex-col gap-0.5 ${qualifying ? "min-w-17" : "min-w-5"}`}
-          >
+    {!race && (
+      <td className="px-2 py-1">
+        <span className="flex gap-1.5">
+          {row.sectors.map((s, i) => (
             <span
-              className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}
+              key={i}
+              title={s.value}
+              className={`flex flex-col gap-0.5 ${qualifying ? "min-w-17" : "min-w-5"}`}
             >
-              {qualifying && s.value}
+              <span
+                className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}
+              >
+                {qualifying && s.value}
+              </span>
+              <span className="flex gap-px">
+                {s.segments.map((m, j) => (
+                  <span key={j} className={`h-1 w-1.5 ${BAR[m]}`} />
+                ))}
+              </span>
             </span>
-            <span className="flex gap-px">
-              {s.segments.map((m, j) => (
-                <span key={j} className={`h-1 w-1.5 ${BAR[m]}`} />
-              ))}
-            </span>
-          </span>
-        ))}
-      </span>
-    </td>
+          ))}
+        </span>
+      </td>
+    )}
     <td className="px-2 py-1">
       <Tyre compound={row.tyre} age={row.tyreAge} />
     </td>
@@ -264,11 +277,19 @@ export const TimingTower = ({
           <tr>
             <th className="px-2 py-2 text-right">P</th>
             <th className="px-2 py-2">Driver</th>
+            {race && (
+              <th
+                className="px-2 py-2 text-right"
+                title="Places gained or lost since the start"
+              >
+                +/−
+              </th>
+            )}
             <th className="px-2 py-2 text-right">{race ? "Gap" : "Diff"}</th>
             {race && <th className="px-2 py-2 text-right">Int</th>}
             <th className="px-2 py-2 text-right">Last</th>
             <th className="px-2 py-2 text-right">Best</th>
-            <th className="px-2 py-2">Sectors</th>
+            {!race && <th className="px-2 py-2">Sectors</th>}
             <th className="px-2 py-2">Tyre</th>
             <th className="px-2 py-2 text-right">Pit</th>
             <th className="px-2 py-2" />
