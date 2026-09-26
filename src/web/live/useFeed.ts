@@ -34,20 +34,43 @@ export const applyDelta = (f: Feed, batch: Delta[]): Feed => {
 
 type Update = (f: Feed | null) => Feed | null;
 
+const HISTORY = 600_000;
+
+export const buffer = () => {
+  const queue: [number, Update][] = [];
+  const past: [number, Update, Feed | null][] = [];
+  return {
+    push: (at: number, u: Update) => void queue.push([at, u]),
+    flush: (cut: number) => {
+      const top = past.at(-1);
+      while (past.length > 1 && past.at(-1)![0] > cut) {
+        const [at, u] = past.pop()!;
+        queue.unshift([at, u]);
+      }
+      while (queue.length && queue[0][0] <= cut) {
+        const [at, u] = queue.shift()!;
+        past.push([at, u, u(past.at(-1)?.[2] ?? null)]);
+      }
+      const n = past.findIndex(([at]) => at >= cut - HISTORY);
+      past.splice(0, (n < 0 ? past.length : n) - 1);
+      return past.at(-1) === top ? undefined : (past.at(-1)?.[2] ?? null);
+    },
+  };
+};
+
 export function useFeed(url: string | null, delay = 0): Feed | null {
   const [feed, setFeed] = useState<Feed | null>(null);
   const lag = useRef(delay);
   lag.current = delay;
   useEffect(() => {
     if (!url) return;
-    const queue: [number, Update][] = [];
+    const b = buffer();
     const flush = () => {
-      const n = queue.findIndex(([at]) => at + lag.current > Date.now());
-      const due = queue.splice(0, n < 0 ? queue.length : n).map(([, u]) => u);
-      if (due.length) setFeed((f) => due.reduce((acc, u) => u(acc), f));
+      const f = b.flush(Date.now() - lag.current);
+      if (f !== undefined) setFeed(f);
     };
     const push = (u: Update) => {
-      queue.push([Date.now(), u]);
+      b.push(Date.now(), u);
       flush();
     };
     const timer = setInterval(flush, 200);
