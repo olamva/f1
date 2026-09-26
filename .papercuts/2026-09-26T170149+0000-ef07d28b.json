@@ -1,0 +1,13 @@
+{
+  "id": "ef07d28b",
+  "ts": "2026-09-26T17:01:49+00:00",
+  "text": "t3-code preview_snapshot fails on every call (save true and false) while preview_evaluate works",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b056085c",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/implement-issue-151"
+}

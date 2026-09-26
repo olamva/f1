@@ -1,0 +1,13 @@
+{
+  "id": "60841b7b",
+  "ts": "2026-09-26T17:00:02+00:00",
+  "text": "T3 preview_snapshot fails with 'Preview automation snapshot failed on client' while the tab reports visible:false",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "7fb9f65c",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/implement-issue-154"
+}
