@@ -95,6 +95,73 @@ const Profile = ({ id, onClose }: ProfileProps) => {
   );
 };
 
+interface ResultsTableProps {
+  rows: RaceArchive["races"][number]["results"];
+  onDriver: (id: string) => void;
+}
+
+const ResultsTable = ({ rows, onDriver }: ResultsTableProps) => (
+  <table className="tabular w-full text-sm">
+    <thead className="text-left text-xs text-zinc-500">
+      <tr>
+        <th className="w-8 pb-2">Pos</th>
+        <th className="pb-2 pl-3 sm:pl-0">Driver</th>
+        <th className="hidden pb-2 sm:table-cell">Team</th>
+        <th className="hidden pb-2 text-right sm:table-cell">Grid</th>
+        <th className="hidden pb-2 text-right sm:table-cell">Pts</th>
+        <th className="hidden pb-2 text-right sm:table-cell">Status</th>
+      </tr>
+    </thead>
+    <tbody>
+      {rows.map((result, index) => (
+        <tr
+          key={`${result.driver}:${index}`}
+          className="border-t border-zinc-800"
+        >
+          <td className="py-2 font-semibold">{result.positionText}</td>
+          <td className="py-2 pl-3 sm:pl-0">
+            <button
+              type="button"
+              onClick={() => onDriver(result.driver)}
+              className="cursor-pointer text-left hover:text-red-400"
+            >
+              <span className="block">
+                <span
+                  className="mr-2 inline-block h-4 w-1 rounded-sm align-middle"
+                  style={{ background: teamColor(result.team) }}
+                />
+                <span className="tabular mr-2 text-xs text-zinc-500">
+                  {result.number}
+                </span>
+                {result.name}
+              </span>
+              <span className="mt-1 block text-xs text-zinc-500 sm:hidden">
+                {result.teamName} · Grid {result.grid || "Pit"} ·{" "}
+                {result.points} pts · {result.status}
+              </span>
+            </button>
+          </td>
+          <td className="hidden py-2 pr-3 text-zinc-400 sm:table-cell">
+            {result.teamName}
+          </td>
+          <td className="hidden py-2 text-right text-zinc-400 sm:table-cell">
+            {result.grid || "Pit"}
+          </td>
+          <td className="hidden py-2 text-right font-semibold sm:table-cell">
+            {result.points || "–"}
+          </td>
+          <td
+            className="hidden max-w-40 truncate py-2 pl-3 text-right text-zinc-400 sm:table-cell"
+            title={result.status}
+          >
+            {result.status}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+  </table>
+);
+
 export const Results = () => {
   const initialYear = pathPart("results");
   const [year, setYear] = useState(
@@ -116,29 +183,25 @@ export const Results = () => {
     );
   };
 
+  const seasonSelect = (
+    <label className="flex items-center gap-2 text-sm text-zinc-400">
+      Season
+      <select
+        aria-label="Season"
+        value={year}
+        onChange={(event) => choose(event.target.value)}
+        className="bg-surface rounded-lg border border-zinc-700 px-3 py-2 text-white"
+      >
+        {years.map((value) => (
+          <option key={value}>{value}</option>
+        ))}
+      </select>
+    </label>
+  );
+
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div>
-          <p className="text-xs font-semibold tracking-widest text-red-400 uppercase">
-            Race archive
-          </p>
-          <h1 className="text-2xl font-bold">Results</h1>
-        </div>
-        <label className="flex items-center gap-2 text-sm text-zinc-400">
-          Season
-          <select
-            aria-label="Season"
-            value={year}
-            onChange={(event) => choose(event.target.value)}
-            className="bg-surface rounded-lg border border-zinc-700 px-3 py-2 text-white"
-          >
-            {years.map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
-        </label>
-      </div>
+      {!race && <div className="flex justify-end">{seasonSelect}</div>}
       {archive.data?.year !== Number(year) ? (
         <Loading label="Loading race results…" error={archive.error} />
       ) : !race ? (
@@ -148,9 +211,12 @@ export const Results = () => {
       ) : (
         <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
           <aside className="bg-surface rounded-xl p-3">
-            <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
-              Races
-            </h2>
+            <div className="mb-2 flex items-center justify-between gap-2">
+              <h2 className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+                Races
+              </h2>
+              {seasonSelect}
+            </div>
             <select
               aria-label="Race"
               value={race.round}
@@ -199,73 +265,23 @@ export const Results = () => {
                   {race.name}
                 </h2>
               </div>
-              <table className="tabular w-full text-sm">
-                <thead className="text-left text-xs text-zinc-500">
-                  <tr>
-                    <th className="w-8 pb-2">Pos</th>
-                    <th className="pb-2 pl-3 sm:pl-0">Driver</th>
-                    <th className="hidden pb-2 sm:table-cell">Team</th>
-                    <th className="hidden pb-2 text-right sm:table-cell">
-                      Grid
-                    </th>
-                    <th className="hidden pb-2 text-right sm:table-cell">
-                      Pts
-                    </th>
-                    <th className="hidden pb-2 text-right sm:table-cell">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {race.results.map((result, index) => (
-                    <tr
-                      key={`${result.driver}:${index}`}
-                      className="border-t border-zinc-800"
-                    >
-                      <td className="py-2 font-semibold">
-                        {result.positionText}
-                      </td>
-                      <td className="py-2 pl-3 sm:pl-0">
-                        <button
-                          type="button"
-                          onClick={() => setDriver(result.driver)}
-                          className="cursor-pointer text-left hover:text-red-400"
-                        >
-                          <span className="block">
-                            <span
-                              className="mr-2 inline-block h-4 w-1 rounded-sm align-middle"
-                              style={{ background: teamColor(result.team) }}
-                            />
-                            <span className="tabular mr-2 text-xs text-zinc-500">
-                              {result.number}
-                            </span>
-                            {result.name}
-                          </span>
-                          <span className="mt-1 block text-xs text-zinc-500 sm:hidden">
-                            {result.teamName} · Grid {result.grid || "Pit"} ·{" "}
-                            {result.points} pts · {result.status}
-                          </span>
-                        </button>
-                      </td>
-                      <td className="hidden py-2 pr-3 text-zinc-400 sm:table-cell">
-                        {result.teamName}
-                      </td>
-                      <td className="hidden py-2 text-right text-zinc-400 sm:table-cell">
-                        {result.grid || "Pit"}
-                      </td>
-                      <td className="hidden py-2 text-right font-semibold sm:table-cell">
-                        {result.points || "–"}
-                      </td>
-                      <td
-                        className="hidden max-w-40 truncate py-2 pl-3 text-right text-zinc-400 sm:table-cell"
-                        title={result.status}
-                      >
-                        {result.status}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {(
+                [
+                  ["Race", race.results],
+                  ["Sprint", race.sprint],
+                ] as const
+              )
+                .filter(([, rows]) => rows.length)
+                .map(([label, rows]) => (
+                  <div key={label} className="mt-4 first:mt-0">
+                    {race.sprint.length > 0 && (
+                      <h3 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+                        {label}
+                      </h3>
+                    )}
+                    <ResultsTable rows={rows} onDriver={setDriver} />
+                  </div>
+                ))}
             </section>
           </div>
         </div>
