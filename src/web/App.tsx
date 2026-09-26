@@ -46,7 +46,7 @@ export const App = () => {
     setVisit((v) => v + 1);
   };
   return (
-    <div className="mx-auto max-w-[1600px] space-y-4 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1rem)]">
+    <div className="mx-auto max-w-[1600px] space-y-4 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.25rem)]">
       <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
