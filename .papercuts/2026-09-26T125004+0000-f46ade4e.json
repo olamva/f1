@@ -1,0 +1,14 @@
+{
+  "id": "f46ade4e",
+  "ts": "2026-09-26T12:50:04+00:00",
+  "text": "t3 preview_snapshot fails with 'automation snapshot failed on client' while evaluate/click work; preview reports visible:false",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "0efd406a",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/race-dashboard-space"
+}
