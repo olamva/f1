@@ -141,6 +141,7 @@ export const Tabs = <T extends string>({
               ? index
               : nearest;
           }, 0);
+          buttons.current[index]?.focus({ preventScroll: true });
           if (items[index] !== value) onChange(items[index]!);
         }
         cancelDrag();
@@ -193,7 +194,10 @@ export const Tabs = <T extends string>({
             button.setPointerCapture(event.pointerId);
           }}
           onClick={(event) => {
-            if (!suppressClick.current || event.detail === 0) onChange(i);
+            if (!suppressClick.current || event.detail === 0) {
+              event.currentTarget.focus({ preventScroll: true });
+              onChange(i);
+            }
             suppressClick.current = false;
           }}
           type="button"
