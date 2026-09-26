@@ -1,3 +1,4 @@
+import type { LucideIcon } from "lucide-react";
 import {
   useEffect,
   useLayoutEffect,
@@ -12,6 +13,7 @@ interface TabsProps<T extends string> {
   onChange: (v: T) => void;
   small?: boolean;
   labels?: Partial<Record<T, string>>;
+  icons?: Partial<Record<T, LucideIcon>>;
   live?: T;
 }
 
@@ -21,6 +23,7 @@ export const Tabs = <T extends string>({
   onChange,
   small,
   labels,
+  icons,
   live,
 }: TabsProps<T>) => {
   const nav = useRef<HTMLElement>(null);
@@ -168,47 +171,53 @@ export const Tabs = <T extends string>({
           }}
         />
       )}
-      {items.map((i, index) => (
-        <button
-          key={i}
-          ref={(element) => {
-            buttons.current[index] = element;
-          }}
-          onPointerDown={(event) => {
-            if (!event.isPrimary || event.button !== 0) return;
-            suppressClick.current = false;
-            if (value !== i) return;
-            const button = event.currentTarget;
-            drag.current = {
-              pointerId: event.pointerId,
-              startX: event.clientX,
-              left: button.offsetLeft,
-              width: button.offsetWidth,
-              scrollLeft: nav.current!.scrollLeft,
-            };
-            motion.current = {
-              x: button.offsetLeft,
-              time: performance.now(),
-              speed: 0,
-            };
-            button.setPointerCapture(event.pointerId);
-          }}
-          onClick={(event) => {
-            if (!suppressClick.current || event.detail === 0) {
-              event.currentTarget.focus({ preventScroll: true });
-              onChange(i);
-            }
-            suppressClick.current = false;
-          }}
-          type="button"
-          aria-pressed={value === i}
-          data-active={value === i}
-          className={`glass-tab relative z-10 shrink-0 capitalize ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
-        >
-          {live === i && <span aria-hidden="true" className="live-dot" />}
-          {labels?.[i] ?? i}
-        </button>
-      ))}
+      {items.map((i, index) => {
+        const Icon: LucideIcon | undefined = icons?.[i];
+        return (
+          <button
+            key={i}
+            ref={(element) => {
+              buttons.current[index] = element;
+            }}
+            onPointerDown={(event) => {
+              if (!event.isPrimary || event.button !== 0) return;
+              suppressClick.current = false;
+              if (value !== i) return;
+              const button = event.currentTarget;
+              drag.current = {
+                pointerId: event.pointerId,
+                startX: event.clientX,
+                left: button.offsetLeft,
+                width: button.offsetWidth,
+                scrollLeft: nav.current!.scrollLeft,
+              };
+              motion.current = {
+                x: button.offsetLeft,
+                time: performance.now(),
+                speed: 0,
+              };
+              button.setPointerCapture(event.pointerId);
+            }}
+            onClick={(event) => {
+              if (!suppressClick.current || event.detail === 0) {
+                event.currentTarget.focus({ preventScroll: true });
+                onChange(i);
+              }
+              suppressClick.current = false;
+            }}
+            type="button"
+            aria-pressed={value === i}
+            data-active={value === i}
+            className={`glass-tab relative z-10 flex shrink-0 items-center justify-center capitalize ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
+          >
+            {live === i && <span aria-hidden="true" className="live-dot" />}
+            {Icon && <Icon aria-hidden="true" className="size-5 sm:hidden" />}
+            <span className={Icon ? "max-sm:sr-only" : undefined}>
+              {labels?.[i] ?? i}
+            </span>
+          </button>
+        );
+      })}
     </nav>
   );
 };
