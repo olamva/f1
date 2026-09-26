@@ -29,7 +29,7 @@ test("safety car banner ends after the in this lap message", () => {
       ],
     },
   };
-  assert.equal(trackStatus(state)?.label, "Safety Car ending");
+  assert.equal(trackStatus(state)?.label, "Safety Car Ending");
   state.RaceControlMessages.Messages.push({ Message: "SAFETY CAR DEPLOYED" });
   assert.equal(trackStatus(state)?.label, "Safety Car");
   state.TrackStatus.Status = "1";
