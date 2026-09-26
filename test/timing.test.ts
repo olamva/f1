@@ -3,7 +3,13 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parseStream, Session } from "../src/server/timing.ts";
 import { merge, type Json } from "../src/shared/merge.ts";
-import { qualifyingPart, rows, sessionBests } from "../src/web/live/view.ts";
+import {
+  qualifyingPart,
+  relativeTo,
+  rows,
+  sessionBests,
+  type Row,
+} from "../src/web/live/view.ts";
 
 const fixture = (name: string) =>
   readFileSync(new URL(`fixtures/${name}`, import.meta.url), "utf8");
@@ -213,4 +219,25 @@ test("a car that stops on track shows as out, like a retired car", () => {
       .status;
   assert.equal(status({ Stopped: true }), "OUT");
   assert.equal(status({ Retired: true, InPit: true }), "OUT");
+});
+
+test("relativeTo measures gap and interval toward the selected driver", () => {
+  const line = (number: string, gap: string, interval: string) =>
+    ({ number, gap, interval, lapsBehind: gap === "1L" ? 1 : null }) as Row;
+  const tower = [
+    line("1", "LAP 30", "LAP 30"),
+    line("2", "+1.500", "+1.500"),
+    line("3", "+4.000", "+2.500"),
+    line("4", "1L", "1L"),
+  ];
+  assert.deepEqual(
+    relativeTo(tower, "2").map(({ gap, interval }) => [gap, interval]),
+    [
+      ["-1.500", "-1.500"],
+      ["", ""],
+      ["+2.500", "+2.500"],
+      ["+1 LAP", "1L"],
+    ],
+  );
+  assert.equal(relativeTo(tower, undefined), tower);
 });
