@@ -86,7 +86,7 @@ export const App = () => {
         </button>
       </header>
       <main key={`session-${session}`} hidden={tab !== "Countdown"}>
-        {tab === "Countdown" && <LiveSession season={season} info={info} />}
+        <LiveSession season={season} info={info} />
       </main>
       <main key={visit} hidden={tab === "Countdown"}>
         {tab === "Replays" && <Replays />}

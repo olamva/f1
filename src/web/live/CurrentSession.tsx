@@ -1,3 +1,4 @@
+import { ArrowDownToLine } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
@@ -75,6 +76,39 @@ const DelayInput = ({ delay, onDelay }: DelayInputProps) => (
   </label>
 );
 
+interface StatusProps {
+  ref: React.Ref<HTMLDivElement>;
+  lap?: { CurrentLap: number; TotalLaps: number };
+  part: string | null;
+  banner: React.ReactNode;
+  clock: string;
+  delay: React.ReactNode;
+}
+
+const Status = ({ ref, lap, part, banner, clock, delay }: StatusProps) => (
+  <div ref={ref} className="flex scroll-mt-4 flex-wrap items-center gap-3">
+    {lap && (
+      <span className="tabular text-2xl font-black">
+        <span className="mr-2 text-sm font-semibold tracking-wider text-zinc-400">
+          LAP
+        </span>
+        {lap.CurrentLap}
+        <span className="text-zinc-500">/{lap.TotalLaps}</span>
+      </span>
+    )}
+    {part && (
+      <span className="rounded bg-zinc-700 px-2 py-0.5 text-lg font-bold">
+        {part}
+      </span>
+    )}
+    <div className="grow basis-60">{banner}</div>
+    <div className="ml-auto flex items-center gap-2">
+      {delay}
+      <span className="tabular font-mono text-xl">{clock}</span>
+    </div>
+  </div>
+);
+
 const Board = ({
   feed,
   laps,
@@ -87,6 +121,7 @@ const Board = ({
   onDelay,
 }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const top = useRef<HTMLDivElement>(null);
   const now = useTick(1000);
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => towerRows(state), [state]);
@@ -122,25 +157,27 @@ const Board = ({
           <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
           {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
         </h1>
-        {part && (
-          <span className="rounded bg-zinc-700 px-2 py-0.5 text-sm font-bold">
-            {part}
-          </span>
-        )}
-        {state.LapCount && (
-          <span className="tabular text-zinc-300">
-            Lap {state.LapCount.CurrentLap}/{state.LapCount.TotalLaps}
-          </span>
-        )}
-        <div className="ml-auto flex items-center gap-2">
-          {onDelay && <DelayInput delay={delay / 1000} onDelay={onDelay} />}
-          <span className="tabular font-mono text-lg">
-            {remaining(state, utc)}
-          </span>
-        </div>
+        <button
+          type="button"
+          onClick={() => top.current!.scrollIntoView({ behavior: "smooth" })}
+          title="Scroll the timing to the top of the screen"
+          className="glass-gear ml-auto flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm"
+        >
+          <ArrowDownToLine aria-hidden="true" size={16} />
+          Focus
+        </button>
       </header>
-      {banner}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <Status
+        ref={top}
+        lap={state.LapCount}
+        part={part}
+        banner={banner}
+        clock={remaining(state, utc)}
+        delay={onDelay && <DelayInput delay={delay / 1000} onDelay={onDelay} />}
+      />
+      <div
+        className={`grid gap-4 ${race ? "lg:grid-cols-[auto_minmax(0,1fr)]" : "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]"}`}
+      >
         <TimingTower
           rows={rows}
           race={race}
@@ -149,30 +186,38 @@ const Board = ({
           selected={selected}
           onToggle={toggle}
         />
-        <div className="space-y-4">
-          <TrackMap
-            outline={outline}
-            positions={state.Position}
-            rows={rows}
-            race={race}
-            selected={selected}
-            onToggle={(n) =>
-              setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))
-            }
-            note={positionsNote}
-            positionTrail={feed.positionTrail}
-            speed={speed}
-            banner={banner}
-          />
-          <Weather weather={state.WeatherData} />
+        <div
+          className={`grid content-start gap-4 ${race ? "xl:grid-cols-2 xl:content-stretch" : ""}`}
+        >
+          <div className="flex flex-col gap-4">
+            <TrackMap
+              outline={outline}
+              positions={state.Position}
+              rows={rows}
+              bests={bests}
+              race={race}
+              selected={selected}
+              onToggle={(n) =>
+                setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))
+              }
+              note={positionsNote}
+              positionTrail={feed.positionTrail}
+              speed={speed}
+              banner={banner}
+            />
+            <RaceControl
+              messages={messages(state)}
+              rows={rows}
+              start={sessionStart(state)}
+            />
+          </div>
+          <div className="flex flex-col gap-4">
+            <TeamRadio radios={radios(state)} rows={rows} />
+            <Weather weather={state.WeatherData} />
+          </div>
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
-        <RaceControl
-          messages={messages(state)}
-          rows={rows}
-          start={sessionStart(state)}
-        />
         <LapCharts
           laps={laps}
           rows={rows}
@@ -181,7 +226,6 @@ const Board = ({
           race={race}
         />
       </div>
-      <TeamRadio radios={radios(state)} rows={rows} />
     </div>
   );
 };

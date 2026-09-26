@@ -34,11 +34,12 @@ const FLAG: Record<string, string> = {
 
 interface PanelProps {
   title: string;
+  className?: string;
   children: React.ReactNode;
 }
 
-export const Panel = ({ title, children }: PanelProps) => (
-  <section className="bg-surface rounded-xl p-3">
+export const Panel = ({ title, className = "", children }: PanelProps) => (
+  <section className={`bg-surface rounded-xl p-3 ${className}`}>
     <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
       {title}
     </h2>
@@ -60,9 +61,9 @@ const TONE: Record<Exclude<Tone, "car">, string> = {
 };
 
 export const RaceControl = ({ messages, rows, start }: RaceControlProps) => (
-  <Panel title="Race control">
+  <Panel title="Race control" className="flex grow flex-col">
     <ul
-      className="max-h-72 space-y-2 overflow-y-auto text-sm"
+      className="min-h-72 grow basis-0 space-y-2 overflow-y-auto text-sm"
       aria-live="polite"
     >
       {messages.length === 0 && (
@@ -280,7 +281,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
       toggle(r);
   });
   return (
-    <Panel title="Team radio">
+    <Panel title="Team radio" className="flex grow flex-col">
       <audio
         ref={audio}
         preload="none"
@@ -347,7 +348,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
           </div>
         </div>
       )}
-      <ul className="max-h-60 divide-y divide-zinc-800 overflow-y-auto text-sm">
+      <ul className="min-h-60 grow basis-0 divide-y divide-zinc-800 overflow-y-auto text-sm">
         {radios.slice(0, 30).map((r) => {
           const active = r.url === current?.url;
           const d = by.get(r.number);
