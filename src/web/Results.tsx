@@ -129,7 +129,7 @@ const ResultsTable = ({ rows, onDriver }: ResultsTableProps) => (
       </tr>
     </thead>
     <tbody>
-      {rows.map((result, index) => {
+      {(rows.length >= 3 ? rows.slice(3) : rows).map((result, index) => {
         const status = result.status === "Finished" ? "" : result.status;
         return (
           <tr
