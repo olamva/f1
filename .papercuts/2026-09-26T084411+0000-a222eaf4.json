@@ -1,0 +1,13 @@
+{
+  "id": "a222eaf4",
+  "ts": "2026-09-26T08:44:11+00:00",
+  "text": "preview_recording_start fails with a generic 'recordingStart failed on client' error and no reason",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "6b1160e6",
+  "where": "mcp__t3-code__preview_recording_start",
+  "branch": "t3code/countdown-gradient-transition"
+}

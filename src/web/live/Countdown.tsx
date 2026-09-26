@@ -75,7 +75,7 @@ export const Countdown = ({ rounds }: CountdownProps) => {
   if (!s) return null;
   return (
     <section className="isolate grid place-items-center gap-3 px-4 py-16 text-center">
-      <div className="fixed inset-0 -z-10 bg-gradient-to-b from-red-700/40 to-transparent" />
+      <div className="spotlight fixed inset-0 -z-10" />
       <span className="text-sm tracking-widest text-zinc-300 uppercase">
         Next up
       </span>
