@@ -8,6 +8,7 @@ import { Results } from "./Results.tsx";
 import { Settings } from "./Settings.tsx";
 import { Stats } from "./stats/Stats.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { UpdateToast } from "./UpdateToast.tsx";
 import f1Logo from "./f1-logo.svg";
 
 const TABS = ["Countdown", "Replays", "Results", "Stats", "Settings"] as const;
@@ -99,6 +100,7 @@ export const App = () => {
           ))}
         {tab === "Settings" && <Settings />}
       </main>
+      <UpdateToast />
     </div>
   );
 };
