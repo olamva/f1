@@ -5,6 +5,7 @@ import { useJson } from "./api.ts";
 import { Flag } from "./Flag.tsx";
 import { Loading } from "./Loading.tsx";
 import { pathPart } from "./path.ts";
+import { Podium } from "./Podium.tsx";
 import { Tabs } from "./Tabs.tsx";
 
 const SESSIONS = ["race", "sprint"] as const;
@@ -186,6 +187,7 @@ export const Results = () => {
   const races = archive.data?.year === Number(year) ? archive.data.races : [];
   const race = races.find((entry) => entry.round === round) ?? races[0];
   const shown = race?.results.length ? session : "sprint";
+  const rows = (shown === "sprint" ? race?.sprint : race?.results) ?? [];
   const choose = (nextYear: string, nextRound?: number) => {
     setYear(nextYear);
     setRound(nextRound ?? 0);
@@ -298,10 +300,20 @@ export const Results = () => {
                   </div>
                 )}
               </div>
-              <ResultsTable
-                rows={shown === "sprint" ? race.sprint : race.results}
-                onDriver={setDriver}
-              />
+              {rows.length >= 3 && (
+                <Podium
+                  key={`${race.round}:${shown}`}
+                  entries={rows.map((result) => ({
+                    id: result.driver,
+                    name: result.name,
+                    color: teamColor(result.team),
+                    value: `${result.points} pts`,
+                    detail: result.teamName,
+                  }))}
+                  onSelect={setDriver}
+                />
+              )}
+              <ResultsTable rows={rows} onDriver={setDriver} />
             </section>
           </div>
         </div>
