@@ -158,13 +158,13 @@ const TowerRow = ({
     onClick={onToggle}
     className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
   >
-    <td className="px-2 py-1 text-right text-zinc-400">
+    <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
       <span className="inline-flex items-center gap-1">
         <SwapArrow swap={swap} />
         {row.position}
       </span>
     </td>
-    <td className="px-2 py-1">
+    <td className="px-1 py-1 sm:px-2">
       <span className="flex items-center gap-2">
         <span
           className="h-4 w-1 rounded-sm"
@@ -186,7 +186,7 @@ const TowerRow = ({
     </td>
     {race && (
       <td
-        className={`px-2 py-1 text-right ${row.gained ? (row.gained > 0 ? "text-emerald-400" : "text-red-500") : "text-zinc-500"}`}
+        className={`hidden px-1 py-1 text-right sm:table-cell sm:px-2 ${row.gained ? (row.gained > 0 ? "text-emerald-400" : "text-red-500") : "text-zinc-500"}`}
       >
         {row.gained === null
           ? ""
@@ -195,29 +195,35 @@ const TowerRow = ({
             : "–"}
       </td>
     )}
-    <td className="px-2 py-1 text-right">
+    <td className="px-1 py-1 text-right sm:px-2">
       {row.position === 1 && race && !relative ? "Leader" : row.gap}
     </td>
     {race && (
-      <td className="px-2 py-1 text-right text-zinc-400">{row.interval}</td>
+      <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
+        {row.interval}
+      </td>
     )}
-    <td className={`px-2 py-1 text-right ${MARK[row.lastMark]}`}>
+    <td className={`px-1 py-1 text-right sm:px-2 ${MARK[row.lastMark]}`}>
       {row.lastLap}
     </td>
-    <td className="px-2 py-1 text-right text-zinc-300">{row.bestLap}</td>
+    <td className="hidden px-1 py-1 text-right text-zinc-300 sm:table-cell sm:px-2">
+      {row.bestLap}
+    </td>
     {!race && (
-      <td className="px-2 py-1">
+      <td className="px-1 py-1 sm:px-2">
         <span className="flex gap-1.5">
           {row.sectors.map((s, i) => (
             <span
               key={i}
               title={s.value}
-              className={`flex flex-col gap-0.5 ${qualifying ? "min-w-17" : "min-w-5"}`}
+              className={`flex flex-col gap-0.5 ${qualifying ? "min-w-5 sm:min-w-17" : "min-w-5"}`}
             >
               <span
                 className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}
               >
-                {qualifying && s.value}
+                {qualifying && (
+                  <span className="hidden sm:inline">{s.value}</span>
+                )}
               </span>
               <span className="flex gap-px">
                 {s.segments.map((m, j) => (
@@ -229,11 +235,13 @@ const TowerRow = ({
         </span>
       </td>
     )}
-    <td className="px-2 py-1">
+    <td className="px-1 py-1 sm:px-2">
       <Tyre compound={row.tyre} age={row.tyreAge} />
     </td>
-    <td className="px-2 py-1 text-right text-zinc-400">{row.pits || ""}</td>
-    <td className="px-2 py-1 text-xs text-zinc-400">{row.status}</td>
+    <td className="hidden px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
+      {row.pits || ""}
+    </td>
+    <td className="px-1 py-1 text-xs text-zinc-400 sm:px-2">{row.status}</td>
   </tr>
 );
 
@@ -249,7 +257,7 @@ export const TimingTower = ({
   const relative = relativeTo(rows, [...selected][0]);
   return (
     <div className="bg-surface overflow-x-auto rounded-xl">
-      <div className="flex min-w-max items-center gap-4 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
         <span className="font-sans font-semibold tracking-wide text-zinc-500 uppercase">
           Session best
         </span>
@@ -269,27 +277,33 @@ export const TimingTower = ({
           </span>
         ))}
       </div>
-      <table className="tabular w-full font-mono text-sm">
+      <table className="tabular w-full font-mono text-xs sm:text-sm">
         <thead className="text-left text-xs text-zinc-500">
           <tr>
-            <th className="px-2 py-2 text-right">P</th>
-            <th className="px-2 py-2">Driver</th>
+            <th className="px-1 py-2 text-right sm:px-2">P</th>
+            <th className="px-1 py-2 sm:px-2">Driver</th>
             {race && (
               <th
-                className="px-2 py-2 text-right"
+                className="hidden px-1 py-2 text-right sm:table-cell sm:px-2"
                 title="Places gained or lost since the start"
               >
                 +/−
               </th>
             )}
-            <th className="px-2 py-2 text-right">{race ? "Gap" : "Diff"}</th>
-            {race && <th className="px-2 py-2 text-right">Int</th>}
-            <th className="px-2 py-2 text-right">Last</th>
-            <th className="px-2 py-2 text-right">Best</th>
-            {!race && <th className="px-2 py-2">Sectors</th>}
-            <th className="px-2 py-2">Tyre</th>
-            <th className="px-2 py-2 text-right">Pit</th>
-            <th className="px-2 py-2" />
+            <th className="px-1 py-2 text-right sm:px-2">
+              {race ? "Gap" : "Diff"}
+            </th>
+            {race && <th className="px-1 py-2 text-right sm:px-2">Int</th>}
+            <th className="px-1 py-2 text-right sm:px-2">Last</th>
+            <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
+              Best
+            </th>
+            {!race && <th className="px-1 py-2 sm:px-2">Sectors</th>}
+            <th className="px-1 py-2 sm:px-2">Tyre</th>
+            <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
+              Pit
+            </th>
+            <th className="px-1 py-2 sm:px-2" />
           </tr>
         </thead>
         <tbody>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Pause, Play, X } from "lucide-react";
+import { Pause, Play } from "lucide-react";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 import type { Feed } from "./useFeed.ts";
@@ -8,7 +8,7 @@ const SPEEDS = [1, 2, 4, 8, 16, 32];
 
 interface ReplayBarProps {
   session: SessionRef;
-  onClose: () => void;
+  starts: number[];
   feed: Feed | null;
   pending: number | null;
   playing: boolean;
@@ -25,7 +25,7 @@ const clock = (ms: number) => {
 
 export const ReplayBar = ({
   session,
-  onClose,
+  starts,
   feed,
   pending,
   playing,
@@ -39,17 +39,6 @@ export const ReplayBar = ({
   const value = drag ?? pending ?? feed?.t ?? 0;
   return (
     <div className="bg-surface flex flex-wrap items-center gap-3 rounded-xl p-3 text-sm">
-      <button
-        onClick={onClose}
-        title="Exit replay"
-        className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 font-semibold hover:bg-red-600"
-      >
-        <X aria-hidden="true" className="size-4" />
-        Exit
-      </button>
-      <span className="rounded bg-zinc-700 px-2 py-0.5 text-xs font-semibold">
-        REPLAY
-      </span>
       <span className="font-semibold">
         <Flag country={session.country} />
         {session.meeting} · {session.name}
@@ -77,6 +66,20 @@ export const ReplayBar = ({
           </option>
         ))}
       </select>
+      {starts.length > 1 && (
+        <select
+          aria-label="Seek to lap"
+          value={starts.findLastIndex((s) => s <= value)}
+          onChange={(e) => onSeek(starts[Number(e.target.value)]!)}
+          className="rounded-md bg-zinc-800 px-2 py-1"
+        >
+          {starts.map((_, i) => (
+            <option key={i} value={i}>
+              Lap {i + 1}
+            </option>
+          ))}
+        </select>
+      )}
       <input
         type="range"
         min={start}
@@ -98,7 +101,7 @@ export const ReplayBar = ({
           if (drag !== null) onSeek(drag);
           setDrag(null);
         }}
-        className="min-w-48 flex-1 accent-red-500"
+        className="min-w-32 flex-1 accent-red-500"
       />
       <span className="tabular font-mono text-zinc-300">
         {clock(value - start)}

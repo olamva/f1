@@ -1,4 +1,4 @@
-import { ArrowDownToLine } from "lucide-react";
+import { ArrowDownToLine, ChevronLeft } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
@@ -17,6 +17,7 @@ import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
 import {
   isQualifying,
   messages,
+  lapStarts,
   qualifyingPart,
   radios,
   remaining,
@@ -101,7 +102,11 @@ const Status = ({ ref, lap, part, banner, clock, delay }: StatusProps) => (
         {part}
       </span>
     )}
-    <div className="grow basis-60">{banner}</div>
+    {banner && (
+      <div className="order-last grow basis-full sm:order-none sm:basis-60">
+        {banner}
+      </div>
+    )}
     <div className="ml-auto flex items-center gap-2">
       {delay}
       <span className="tabular font-mono text-xl">{clock}</span>
@@ -284,11 +289,23 @@ const Replay = ({ session, onClose }: ReplayProps) => {
   const feed = useFeed(url);
   const laps = useJson<Record<string, LapRow[]>>(`/api/replay/laps?${q}`);
   const outline = useJson<Outline | null>(`/api/replay/outline?${q}`);
+  const race = Boolean(feed?.state.LapCount);
+  const starts = useMemo(
+    () => (race && feed?.start ? lapStarts(laps.data ?? {}, feed.start) : []),
+    [race, laps.data, feed?.start],
+  );
   return (
     <div className="space-y-4">
+      <button
+        onClick={onClose}
+        className="flex cursor-pointer items-center gap-1 text-sm font-semibold text-zinc-400 hover:text-zinc-100"
+      >
+        <ChevronLeft aria-hidden="true" className="size-4" />
+        All replays
+      </button>
       <ReplayBar
         session={session}
-        onClose={onClose}
+        starts={starts}
         feed={feed}
         pending={feed?.src === url ? null : play.t}
         playing={play.on}

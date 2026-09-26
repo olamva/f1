@@ -1,0 +1,13 @@
+{
+  "id": "cf598f82",
+  "ts": "2026-09-26T17:02:29+00:00",
+  "text": "T3 preview_snapshot fails: no preview automation host, after preview_open/resize/wait_for succeeded",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b434f0e4",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/implement-issue-150"
+}
