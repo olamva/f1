@@ -1,0 +1,13 @@
+{
+  "id": "b50f6474",
+  "ts": "2026-09-26T13:56:02+00:00",
+  "text": "pnpm 11 stalls while fetching project pnpm 12, then rejects the registry signature",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-1c615a28",
+  "branch": "t3code/improve-lap-chart-space"
+}

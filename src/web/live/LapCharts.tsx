@@ -48,8 +48,13 @@ export const LapCharts = ({
   race,
 }: LapChartsProps) => {
   const raw = seriesOf(laps, rows, focus, until, (r) => lapSeconds(r.time));
-  const fastest = Math.min(...raw.flatMap((s) => s.points.map((p) => p[1])));
-  const times = raw.map((s) => ({
+  const latest = Math.max(...raw.flatMap((s) => s.points.map((p) => p[0])));
+  const recent = raw.map((s) => ({
+    ...s,
+    points: s.points.filter(([lap]) => lap > latest - 15),
+  }));
+  const fastest = Math.min(...recent.flatMap((s) => s.points.map((p) => p[1])));
+  const times = recent.map((s) => ({
     ...s,
     points: s.points.filter((p) => p[1] <= fastest * 1.08),
   }));
@@ -57,9 +62,16 @@ export const LapCharts = ({
   const hint = "Click drivers in the timing tower to compare them.";
   return (
     <>
-      <Panel title="Lap times (within 108% of the fastest)">
+      <Panel title="Lap times (last 15, within 108% of the fastest)">
         {Number.isFinite(fastest) ? (
-          <LineChart series={times} xLabel="Lap" yFormat={lapTime} invert />
+          <LineChart
+            series={times}
+            xLabel="Lap"
+            yFormat={lapTime}
+            invert
+            height={400}
+            detailsBelow
+          />
         ) : (
           <p className="text-sm text-zinc-500">{hint}</p>
         )}
@@ -71,6 +83,8 @@ export const LapCharts = ({
             xLabel="Lap"
             yFormat={(v) => v.toFixed(0)}
             invert
+            height={400}
+            detailsBelow
           />
         </Panel>
       )}
