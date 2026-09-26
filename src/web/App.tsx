@@ -47,10 +47,10 @@ export const App = () => {
   };
   return (
     <div className="mx-auto max-w-[1600px] space-y-4 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.25rem)]">
-      <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:gap-6">
+      <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-6">
         <button
           onClick={() => go("Countdown")}
-          className="flex cursor-pointer items-center gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400 sm:gap-3.5"
+          className="flex cursor-pointer items-center gap-3 justify-self-start rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400 sm:gap-3.5"
           aria-label="Go to live session"
           type="button"
         >
@@ -60,7 +60,7 @@ export const App = () => {
             PITWALL
           </span>
         </button>
-        <div className="fixed inset-x-[21px] bottom-[21px] flex justify-center sm:static sm:min-w-0 sm:flex-1 max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl max-sm:[&>nav>button]:flex-1">
+        <div className="fixed inset-x-[21px] bottom-[21px] flex justify-center sm:static sm:min-w-0 max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl max-sm:[&>nav>button]:flex-1">
           <Tabs
             items={NAV_TABS}
             value={tab === "Settings" ? null : tab}
@@ -71,7 +71,7 @@ export const App = () => {
         </div>
         <button
           onClick={() => go("Settings")}
-          className="glass-gear ml-auto grid size-10 shrink-0 place-items-center sm:ml-0 sm:size-11"
+          className="glass-gear ml-auto grid size-10 shrink-0 place-items-center justify-self-end sm:size-11"
           data-active={tab === "Settings"}
           aria-label="Settings"
           aria-pressed={tab === "Settings"}

@@ -1,0 +1,14 @@
+{
+  "id": "02b87438",
+  "ts": "2026-09-26T09:26:32+00:00",
+  "text": "jolpica returns 429 when two local dev servers warm caches at once",
+  "tags": [
+    "api",
+    "dev"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "57362346",
+  "where": "src/server/jolpica.ts",
+  "branch": "t3code/simplify-results-sprint"
+}

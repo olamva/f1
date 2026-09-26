@@ -18,6 +18,10 @@ textarea {
   scrollbar-gutter: stable;
 }
 
+:root:has(.spotlight) {
+  scrollbar-gutter: auto;
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }
