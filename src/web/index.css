@@ -253,3 +253,45 @@ textarea {
     linear-gradient(#000 0 0);
   pointer-events: none;
 }
+
+.rain {
+  position: relative;
+  overflow: hidden;
+  background-image: linear-gradient(rgb(56 189 248 / 0.1), transparent);
+}
+
+.rain::before {
+  content: "";
+  position: absolute;
+  inset: 0 -2rem;
+  background-image:
+    radial-gradient(1px 9px, rgb(186 230 253 / 0.55), transparent),
+    radial-gradient(1px 7px, rgb(186 230 253 / 0.35), transparent),
+    radial-gradient(1px 5px, rgb(186 230 253 / 0.25), transparent);
+  background-size:
+    43px 61px,
+    31px 47px,
+    23px 37px;
+  background-position:
+    0 0,
+    17px 11px,
+    9px 23px;
+  transform: skewX(-12deg);
+  animation: rain 0.5s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rain {
+  to {
+    background-position:
+      0 61px,
+      17px 58px,
+      9px 60px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rain::before {
+    animation: none;
+  }
+}

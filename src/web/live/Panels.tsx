@@ -1,5 +1,13 @@
 import { useEffect, useRef, useState } from "react";
-import { Pause, Play } from "lucide-react";
+import {
+  Droplets,
+  Pause,
+  Play,
+  Thermometer,
+  ThermometerSun,
+  Wind,
+  type LucideIcon,
+} from "lucide-react";
 import { useJson } from "../api.ts";
 import {
   elapsed,
@@ -124,19 +132,26 @@ interface WeatherProps {
   weather: Record<string, string> | undefined;
 }
 
-const WEATHER: [key: string, label: string, unit: string][] = [
-  ["AirTemp", "Air", "°C"],
-  ["TrackTemp", "Track", "°C"],
-  ["Humidity", "Humidity", "%"],
-  ["WindSpeed", "Wind", "m/s"],
-];
+const WEATHER: [key: string, label: string, unit: string, Icon: LucideIcon][] =
+  [
+    ["AirTemp", "Air", "°C", Thermometer],
+    ["TrackTemp", "Track", "°C", ThermometerSun],
+    ["Humidity", "Humidity", "%", Droplets],
+    ["WindSpeed", "Wind", "m/s", Wind],
+  ];
 
 export const Weather = ({ weather }: WeatherProps) => (
-  <Panel title="Weather">
-    <dl className="grid grid-cols-5 gap-2 text-center">
-      {WEATHER.map(([k, label, unit]) => (
+  <Panel
+    title={weather?.Rainfall === "1" ? "Weather · Rain" : "Weather"}
+    className={weather?.Rainfall === "1" ? "rain" : ""}
+  >
+    <dl className="grid grid-cols-4 gap-2 text-center">
+      {WEATHER.map(([k, label, unit, Icon]) => (
         <div key={k}>
-          <dt className="text-xs text-zinc-500">{label}</dt>
+          <dt className="flex items-center justify-center gap-1 text-xs text-zinc-500">
+            <Icon className="size-3.5" />
+            {label}
+          </dt>
           <dd className="tabular text-lg font-semibold">
             {weather?.[k] ?? "—"}
             <span className="text-xs text-zinc-400">
@@ -145,12 +160,6 @@ export const Weather = ({ weather }: WeatherProps) => (
           </dd>
         </div>
       ))}
-      <div>
-        <dt className="text-xs text-zinc-500">Rain</dt>
-        <dd className="text-lg font-semibold">
-          {weather?.Rainfall === "1" ? "Yes" : "No"}
-        </dd>
-      </div>
     </dl>
   </Panel>
 );
