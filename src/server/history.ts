@@ -9,44 +9,53 @@ const NON_START = new Set([
   "Withdrew",
 ]);
 
+type Result = RaceArchive["races"][number]["results"][number];
+
+const result = (row: any): Result => ({
+  driver: row.Driver.driverId,
+  name: `${row.Driver.givenName} ${row.Driver.familyName}`,
+  number: row.number ?? row.Driver.permanentNumber ?? "",
+  team: row.Constructor?.constructorId ?? "",
+  teamName: row.Constructor?.name ?? "",
+  grid: Number(row.grid ?? 0),
+  position: Number(row.position),
+  positionText: row.positionText,
+  points: Number(row.points),
+  status: row.status ?? "",
+});
+
 export async function raceArchive(year: number): Promise<RaceArchive> {
-  const rows = await all<any>(
-    `${year}/results.json`,
-    (data) => data.RaceTable.Races,
-    year === new Date().getUTCFullYear() ? undefined : DAY,
-  );
+  const freshMs = year === new Date().getUTCFullYear() ? undefined : DAY;
+  const [rows, sprintRows] = await Promise.all([
+    all<any>(`${year}/results.json`, (data) => data.RaceTable.Races, freshMs),
+    all<any>(`${year}/sprint.json`, (data) => data.RaceTable.Races, freshMs),
+  ]);
   const races = new Map<number, RaceArchive["races"][number]>();
-  for (const race of rows) {
+  const entry = (race: any) => {
     const round = Number(race.round);
-    const entry = races.get(round) ?? {
-      round,
-      name: race.raceName,
-      date: race.date,
-      country: race.Circuit.Location.country,
-      results: [] as RaceArchive["races"][number]["results"],
-    };
-    entry.results.push(
-      ...race.Results.map((result: any) => ({
-        driver: result.Driver.driverId,
-        name: `${result.Driver.givenName} ${result.Driver.familyName}`,
-        number: result.number ?? result.Driver.permanentNumber ?? "",
-        team: result.Constructor?.constructorId ?? "",
-        teamName: result.Constructor?.name ?? "",
-        grid: Number(result.grid ?? 0),
-        position: Number(result.position),
-        positionText: result.positionText,
-        points: Number(result.points),
-        status: result.status ?? "",
-      })),
-    );
-    races.set(round, entry);
-  }
+    if (!races.has(round))
+      races.set(round, {
+        round,
+        name: race.raceName,
+        date: race.date,
+        country: race.Circuit.Location.country,
+        results: [],
+        sprint: [],
+      });
+    return races.get(round)!;
+  };
+  for (const race of rows)
+    entry(race).results.push(...race.Results.map(result));
+  for (const race of sprintRows)
+    entry(race).sprint.push(...race.SprintResults.map(result));
+  const byPosition = (a: Result, b: Result) => a.position - b.position;
   return {
     year,
     races: [...races.values()]
       .map((race) => ({
         ...race,
-        results: race.results.sort((a, b) => a.position - b.position),
+        results: race.results.sort(byPosition),
+        sprint: race.sprint.sort(byPosition),
       }))
       .sort((a, b) => b.round - a.round),
   };

@@ -87,6 +87,7 @@ export type RaceArchive = {
       points: number;
       status: string;
     }[];
+    sprint: RaceArchive["races"][number]["results"];
   }[];
 };
 
