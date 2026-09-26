@@ -212,7 +212,6 @@ export const TrackMap = ({
 }: TrackMapProps) => {
   const frame = useRef<HTMLDivElement>(null);
   const [full, setFull] = useState(false);
-  const cars = useRef(new Map<string, SVGGElement>());
   const svg = useRef<SVGSVGElement>(null);
   const pointer = useRef("");
   const [hover, setHover] = useState<{
@@ -245,9 +244,31 @@ export const TrackMap = ({
       markers(outline!, project, splits.split(",").filter(Boolean).map(Number)),
     [outline, project, splits],
   );
+  const cars = project
+    ? [...rows].reverse().flatMap((r) => {
+        const p = positions?.[r.number];
+        if (
+          ["PIT", "KO", "OUT"].includes(r.status) ||
+          !p ||
+          (p[0] === 0 && p[1] === 0)
+        )
+          return [];
+        const [x, y] = project(p[0], p[1]);
+        return [
+          { r, x, y, focus: selected.size === 0 || selected.has(r.number) },
+        ];
+      })
+    : [];
+  const place = (x: number, y: number) => ({
+    transform: `translate(${x}px, ${y}px)`,
+    transition: speed > 1 ? "none" : "transform 1000ms linear",
+  });
   useLayoutEffect(() => {
     if (!project || !positionTrail || speed <= 1) return;
-    for (const [number, car] of cars.current) {
+    for (const car of svg.current!.querySelectorAll<SVGGElement>(
+      "g[data-number]",
+    )) {
+      const number = car.dataset.number!;
       const points = [
         positionTrail.from[number],
         ...positionTrail.samples.map((sample) => sample[number]),
@@ -321,105 +342,103 @@ export const TrackMap = ({
           strokeLinecap="round"
         />
         {marks && <Markers {...marks} />}
-        {project &&
-          [...rows].reverse().map((r) => {
-            const p = positions?.[r.number];
-            if (
-              ["PIT", "KO", "OUT"].includes(r.status) ||
-              !p ||
-              (p[0] === 0 && p[1] === 0)
-            )
-              return null;
-            const [x, y] = project(p[0], p[1]);
-            const focus = selected.size === 0 || selected.has(r.number);
-            return (
-              <g
-                key={r.number}
-                ref={(node) => {
-                  if (node) cars.current.set(r.number, node);
-                  else cars.current.delete(r.number);
-                }}
-                data-number={r.number}
-                role="button"
-                tabIndex={0}
-                aria-label={`Select ${r.name}`}
-                aria-pressed={selected.has(r.number)}
-                aria-describedby={
-                  hovered === r.number ? "track-map-card" : undefined
-                }
-                onFocus={() =>
-                  setHover((h) =>
-                    h?.number === r.number ? h : { number: r.number, x, y },
-                  )
-                }
-                onBlur={() => setHover(null)}
-                onClick={() => onToggle(r.number)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onToggle(r.number);
-                  }
-                }}
-                className="group cursor-pointer outline-none"
-                style={{
-                  transform: `translate(${x}px, ${y}px)`,
-                  transition: speed > 1 ? "none" : "transform 1000ms linear",
-                }}
-                opacity={focus || hovered === r.number ? 1 : 0.35}
+        {cars.map(({ r, x, y, focus }) => (
+          <g
+            key={r.number}
+            data-number={r.number}
+            role="button"
+            tabIndex={0}
+            aria-label={`Select ${r.name}`}
+            aria-pressed={selected.has(r.number)}
+            aria-describedby={
+              hovered === r.number ? "track-map-card" : undefined
+            }
+            onFocus={() =>
+              setHover((h) =>
+                h?.number === r.number ? h : { number: r.number, x, y },
+              )
+            }
+            onBlur={() => setHover(null)}
+            onClick={() => onToggle(r.number)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") {
+                event.preventDefault();
+                onToggle(r.number);
+              }
+            }}
+            className="group cursor-pointer outline-none"
+            style={place(x, y)}
+            opacity={focus || hovered === r.number ? 1 : 0.35}
+          >
+            <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
+            <circle
+              r={14}
+              fill={r.color}
+              stroke="#18181b"
+              strokeWidth={4}
+              className="group-focus-visible:stroke-zinc-100"
+            />
+          </g>
+        ))}
+        {cars.map(({ r, x, y, focus }) => {
+          const crown = r.position === 1 && (race || r.bestLap);
+          const laps = !crown && race && r.lapsBehind ? `+${r.lapsBehind}` : "";
+          const extra = crown ? 34 : laps ? 12 * laps.length + 12 : 0;
+          return (
+            <g
+              key={r.number}
+              data-number={r.number}
+              onClick={() => onToggle(r.number)}
+              className="cursor-pointer"
+              style={place(x, y)}
+              opacity={focus || hovered === r.number ? 1 : 0.35}
+            >
+              <rect
+                x={-94 - extra}
+                y={-56}
+                width={70 + extra}
+                height={32}
+                rx={3}
+                fill="#27272a"
+                fillOpacity={0.9}
+              />
+              <path
+                d={`M-24 -24H${-94 - extra}`}
+                stroke={r.color}
+                strokeWidth={3}
+              />
+              <text
+                x={-59 - extra}
+                y={-40}
+                dominantBaseline="middle"
+                textAnchor="middle"
+                className="fill-zinc-100 text-[22px] font-semibold"
               >
-                <path
-                  d="M0 0L-24 -24H-94"
-                  fill="none"
-                  stroke={r.color}
-                  strokeWidth={3}
+                {r.tla}
+              </text>
+              {crown ? (
+                <Crown
+                  x={-58}
+                  y={-51}
+                  width={22}
+                  height={22}
+                  className="stroke-yellow-300"
+                  strokeWidth={2.5}
                 />
-                <rect
-                  x={-94}
-                  y={-56}
-                  width={70}
-                  height={32}
-                  rx={3}
-                  fill="#27272a"
-                  fillOpacity={0.9}
-                />
-                <circle
-                  r={14}
-                  fill={r.color}
-                  stroke="#18181b"
-                  strokeWidth={4}
-                  className="group-focus-visible:stroke-zinc-100"
-                />
+              ) : laps ? (
                 <text
-                  x={-59}
+                  x={-36}
                   y={-40}
                   dominantBaseline="middle"
-                  textAnchor="middle"
-                  className="fill-zinc-100 text-[22px] font-semibold"
+                  textAnchor="end"
+                  className="fill-zinc-300 text-[21px] font-bold"
                 >
-                  {r.tla}
+                  {laps}
                 </text>
-                {r.position === 1 && (race || r.bestLap) ? (
-                  <Crown
-                    x={-72}
-                    y={-88}
-                    width={26}
-                    height={26}
-                    className="stroke-yellow-300"
-                    strokeWidth={2.5}
-                  />
-                ) : race && r.lapsBehind ? (
-                  <text
-                    x={-59}
-                    y={-66}
-                    textAnchor="middle"
-                    className="fill-zinc-300 text-[21px] font-bold"
-                  >
-                    +{r.lapsBehind}
-                  </text>
-                ) : null}
-              </g>
-            );
-          })}
+              ) : null}
+            </g>
+          );
+        })}
         {hover && card && (
           <>
             <circle
