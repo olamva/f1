@@ -1,6 +1,6 @@
 import { ArrowDown, ArrowUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import type { Mark, Row, SessionBests } from "./view.ts";
+import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
   overall: "text-purple",
@@ -136,6 +136,7 @@ interface TowerRowProps {
   qualifying: boolean;
   lapOwner: boolean;
   selected: boolean;
+  relative: boolean;
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
   onToggle: () => void;
@@ -147,6 +148,7 @@ const TowerRow = ({
   qualifying,
   lapOwner,
   selected,
+  relative,
   swap,
   bind,
   onToggle,
@@ -194,7 +196,7 @@ const TowerRow = ({
       </td>
     )}
     <td className="px-2 py-1 text-right">
-      {row.position === 1 && race ? "Leader" : row.gap}
+      {row.position === 1 && race && !relative ? "Leader" : row.gap}
     </td>
     {race && (
       <td className="px-2 py-1 text-right text-zinc-400">{row.interval}</td>
@@ -244,6 +246,7 @@ export const TimingTower = ({
   onToggle,
 }: TimingTowerProps) => {
   const { swaps, bind } = useSwaps(rows);
+  const relative = relativeTo(rows, [...selected][0]);
   return (
     <div className="bg-surface overflow-x-auto rounded-xl">
       <div className="flex min-w-max items-center gap-4 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
@@ -290,7 +293,7 @@ export const TimingTower = ({
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {relative.map((r) => (
             <TowerRow
               key={r.number}
               row={r}
@@ -298,6 +301,7 @@ export const TimingTower = ({
               qualifying={qualifying}
               lapOwner={bests.lap?.number === r.number}
               selected={selected.has(r.number)}
+              relative={relative !== rows}
               swap={swaps[r.number]}
               bind={bind(r.number)}
               onToggle={() => onToggle(r.number)}

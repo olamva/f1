@@ -77,7 +77,7 @@ function tyre(app: Obj | undefined): { tyre: string; tyreAge: number | null } {
 }
 
 const lapGap = (gap: string): number | null => {
-  const laps = /^\+?(\d+) LAPS?$/i.exec(gap)?.[1];
+  const laps = /^\+?(\d+) ?L(?:APS?)?$/i.exec(gap)?.[1];
   return laps ? Number(laps) : null;
 };
 
@@ -251,6 +251,32 @@ export const gapSeconds = (gap: string): number | null =>
     : /L/.test(gap)
       ? null
       : lapSeconds(gap.replace("+", ""));
+
+const signed = (n: number, unit: (a: number) => string) =>
+  `${n < 0 ? "-" : "+"}${unit(Math.abs(n))}`;
+
+const relativeGap = (r: Row, to: Row): string => {
+  const laps = (r.lapsBehind ?? 0) - (to.lapsBehind ?? 0);
+  if (laps) return signed(laps, (a) => `${a} LAP${a > 1 ? "S" : ""}`);
+  const a = gapSeconds(r.gap);
+  const b = gapSeconds(to.gap);
+  return a === null || b === null ? "" : signed(a - b, (d) => d.toFixed(3));
+};
+
+export const relativeTo = (rows: Row[], number: string | undefined): Row[] => {
+  const at = rows.findIndex((r) => r.number === number);
+  if (at < 0) return rows;
+  return rows.map((r, i) => ({
+    ...r,
+    gap: i === at ? "" : relativeGap(r, rows[at]!),
+    interval:
+      i < at
+        ? rows[i + 1]!.interval.replace(/^\+?(?=.)/, "-")
+        : i > at
+          ? r.interval
+          : "",
+  }));
+};
 
 export type Tone = "car" | "bad" | "warn" | "good" | "time";
 

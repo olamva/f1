@@ -40,7 +40,8 @@ export const buffer = () => {
   const queue: [number, Update][] = [];
   const past: [number, Update, Feed | null][] = [];
   return {
-    push: (at: number, u: Update) => void queue.push([at, u]),
+    push: (at: number, u: Update) =>
+      void queue.splice(queue.findLastIndex(([t]) => t <= at) + 1, 0, [at, u]),
     flush: (cut: number) => {
       const top = past.at(-1);
       while (past.length > 1 && past.at(-1)![0] > cut) {
@@ -69,19 +70,23 @@ export function useFeed(url: string | null, delay = 0): Feed | null {
       const f = b.flush(Date.now() - lag.current);
       if (f !== undefined) setFeed(f);
     };
-    const push = (u: Update) => {
-      b.push(Date.now(), u);
-      flush();
-    };
+    let skew: number | null = null;
     const timer = setInterval(flush, 200);
     const source = new EventSource(url);
     source.addEventListener("snapshot", (m) => {
       const snap = JSON.parse(m.data) as Feed;
-      push(() => ({ ...snap, beat: snap.t, src: url }));
+      skew = snap.mode === "live" ? Date.now() - snap.t : null;
+      b.push(Date.now(), () => ({ ...snap, beat: snap.t, src: url }));
+      flush();
     });
     source.addEventListener("delta", (m) => {
       const batch = JSON.parse(m.data) as Delta[];
-      push((f) => (f ? applyDelta(f, batch) : f));
+      if (skew === null)
+        b.push(Date.now(), (f) => (f ? applyDelta(f, batch) : f));
+      else
+        for (const d of batch)
+          b.push(d[2] + skew, (f) => (f ? applyDelta(f, [d]) : f));
+      flush();
     });
     return () => {
       source.close();
