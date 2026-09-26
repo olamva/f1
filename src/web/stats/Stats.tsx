@@ -24,7 +24,7 @@ import { TitleFight } from "./TitleFight.tsx";
 const VIEWS = [
   "Standings",
   "Title fight",
-  "Teammates",
+  "H2H",
   "Season",
   "Race pace",
   "Records",
@@ -90,7 +90,7 @@ export const Stats = ({ season }: StatsProps) => {
           />
         </>
       )}
-      {view === "Teammates" && (
+      {view === "H2H" && (
         <Teammates
           duels={d.duels}
           who={d.who}

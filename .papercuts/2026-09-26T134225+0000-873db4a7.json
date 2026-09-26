@@ -1,0 +1,14 @@
+{
+  "id": "873db4a7",
+  "ts": "2026-09-26T13:42:25+00:00",
+  "text": "pnpm commands refuse version verification after registry fetch failure",
+  "tags": [
+    "pnpm",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-luna",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-10d0cbfb",
+  "branch": "t3code/stats-teammates-to-h2h"
+}

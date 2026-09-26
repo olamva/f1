@@ -1,0 +1,13 @@
+{
+  "id": "5ab5275b",
+  "ts": "2026-09-26T13:41:59+00:00",
+  "text": "ps process inspection returns operation not permitted",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-luna",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-10d0cbfb",
+  "branch": "t3code/stats-teammates-to-h2h"
+}
