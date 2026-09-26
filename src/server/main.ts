@@ -10,11 +10,12 @@ import {
   stateAt,
   type Replay,
 } from "./archive.ts";
-import { requireGoogle } from "./auth.ts";
+import { requireGoogle, user } from "./auth.ts";
 import * as live from "./live.ts";
 import { driverProfile, raceArchive } from "./history.ts";
 import { audio, transcript } from "./radio.ts";
 import { pace, type PaceKind } from "./pace.ts";
+import * as push from "./push.ts";
 import { records, season } from "./season.ts";
 import * as token from "./token.ts";
 
@@ -80,6 +81,31 @@ app.post("/api/token", async (c) => {
   } catch (e) {
     return c.json({ error: (e as Error).message }, 400);
   }
+});
+
+app.get("/api/push", async (c) => {
+  const endpoint = c.req.query("endpoint");
+  return c.json({
+    publicKey: push.publicKey,
+    enabled:
+      !!(push.publicKey && endpoint) &&
+      (await push.subscribed(user(c), endpoint!)),
+  });
+});
+app.put("/api/push", async (c) => {
+  const body = await c.req.json();
+  if (!push.publicKey) return c.json({ error: "Notifications are off." }, 404);
+  if (!push.valid(body)) return c.json({ error: "Invalid subscription." }, 400);
+  await push.subscribe(user(c), body);
+  return c.body(null, 204);
+});
+app.delete("/api/push", async (c) => {
+  const { endpoint } = await c.req.json<{ endpoint?: string }>();
+  if (!push.publicKey) return c.json({ error: "Notifications are off." }, 404);
+  if (typeof endpoint !== "string")
+    return c.json({ error: "Invalid subscription." }, 400);
+  await push.unsubscribe(user(c), endpoint);
+  return c.body(null, 204);
 });
 
 app.get("/api/live", (c) =>
