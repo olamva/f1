@@ -23,9 +23,10 @@ export const StandingsTable = ({
   champ,
 }: StandingsTableProps) => {
   const lead = table[0]?.points ?? 0;
+  const start = table.length >= 3 ? 3 : 0;
   return (
     <section className="bg-surface rounded-xl p-3">
-      <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+      <h2 className="mb-2 hidden text-xs font-semibold tracking-wider text-zinc-400 uppercase xl:block">
         {title}
       </h2>
       {table.length >= 3 && (
@@ -41,8 +42,9 @@ export const StandingsTable = ({
       )}
       <table className="tabular w-full text-sm">
         <tbody>
-          {table.map((s, i) => {
+          {table.slice(start).map((s, index) => {
             const w = who.get(s.id);
+            const i = start + index;
             return (
               <tr key={s.id} className="border-t border-zinc-800">
                 <td className="w-8 py-1 text-right text-zinc-500">

@@ -63,40 +63,48 @@ export const Stats = ({ season }: StatsProps) => {
   return (
     <div className="space-y-4">
       <Tabs items={VIEWS} value={view} onChange={show} small />
-      {view === "Standings" && (
-        <div className="grid gap-4 xl:grid-cols-2">
-          <StandingsTable
-            title="Drivers"
-            table={latest(d.dt)}
-            who={d.who}
-            events={d.events}
-            champ="drivers"
-          />
-          <StandingsTable
-            title="Constructors"
-            table={latest(d.tt)}
-            who={d.teamWho}
-            events={d.events}
-            champ="constructors"
-          />
-        </div>
-      )}
-      {view === "Title fight" && (
-        <>
+      {(view === "Standings" || view === "Title fight") && (
+        <div className={view === "Standings" ? "xl:hidden" : undefined}>
           <Tabs
             items={["drivers", "constructors"] as const}
             value={champ}
             onChange={setChamp}
             small
           />
-          <TitleFight
-            key={champ}
-            champ={champ}
-            table={latest(champ === "drivers" ? d.dt : d.tt)}
-            events={d.events}
-            who={champ === "drivers" ? d.who : d.teamWho}
-          />
-        </>
+        </div>
+      )}
+      {view === "Standings" && (
+        <div className="grid gap-4 xl:grid-cols-2">
+          <div className={champ === "drivers" ? undefined : "max-xl:hidden"}>
+            <StandingsTable
+              title="Drivers"
+              table={latest(d.dt)}
+              who={d.who}
+              events={d.events}
+              champ="drivers"
+            />
+          </div>
+          <div
+            className={champ === "constructors" ? undefined : "max-xl:hidden"}
+          >
+            <StandingsTable
+              title="Constructors"
+              table={latest(d.tt)}
+              who={d.teamWho}
+              events={d.events}
+              champ="constructors"
+            />
+          </div>
+        </div>
+      )}
+      {view === "Title fight" && (
+        <TitleFight
+          key={champ}
+          champ={champ}
+          table={latest(champ === "drivers" ? d.dt : d.tt)}
+          events={d.events}
+          who={champ === "drivers" ? d.who : d.teamWho}
+        />
       )}
       {view === "H2H" && (
         <Teammates

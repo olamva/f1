@@ -1,0 +1,14 @@
+{
+  "id": "e43c3865",
+  "ts": "2026-09-26T18:40:03+00:00",
+  "text": "preview_snapshot fails with 'automation snapshot failed on client' while tab reports visible:false",
+  "tags": [
+    "t3",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "8dcb1aa8",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/separate-standings-tables"
+}
