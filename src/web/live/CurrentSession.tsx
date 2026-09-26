@@ -133,11 +133,7 @@ const Board = ({
   const status = trackStatus(state);
   const part = qualifyingPart(state);
   const toggle = (n: string) =>
-    setSelected((s) => {
-      const next = new Set(s);
-      if (!next.delete(n)) next.add(n);
-      return next;
-    });
+    setSelected((s) => new Set(s.has(n) ? [] : [n]));
   const focus = selected.size
     ? [...selected]
     : rows.slice(0, 5).map((r) => r.number);
@@ -197,9 +193,7 @@ const Board = ({
               bests={bests}
               race={race}
               selected={selected}
-              onToggle={(n) =>
-                setSelected((s) => new Set(s.size === 1 && s.has(n) ? [] : [n]))
-              }
+              onToggle={toggle}
               note={positionsNote}
               positionTrail={feed.positionTrail}
               speed={speed}
