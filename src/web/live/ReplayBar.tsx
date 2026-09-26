@@ -36,7 +36,14 @@ export const ReplayBar = ({
 }: ReplayBarProps) => {
   const [drag, setDrag] = useState<number | null>(null);
   const start = feed?.start ?? 0;
+  const [byLap, setByLap] = useState(false);
+  const laps = byLap && starts.length > 1;
   const value = drag ?? pending ?? feed?.t ?? 0;
+  const lap = Math.max(
+    0,
+    starts.findLastIndex((s) => s <= value),
+  );
+  const toT = (v: number) => (laps ? starts[v]! : v);
   return (
     <div className="bg-surface flex flex-wrap items-center gap-3 rounded-xl p-3 text-sm">
       <span className="font-semibold">
@@ -67,29 +74,30 @@ export const ReplayBar = ({
         ))}
       </select>
       {starts.length > 1 && (
-        <select
-          aria-label="Seek to lap"
-          value={starts.findLastIndex((s) => s <= value)}
-          onChange={(e) => onSeek(starts[Number(e.target.value)]!)}
-          className="rounded-md bg-zinc-800 px-2 py-1"
-        >
-          {starts.map((_, i) => (
-            <option key={i} value={i}>
-              Lap {i + 1}
-            </option>
+        <div className="flex rounded-md bg-zinc-800 p-0.5 text-xs font-semibold">
+          {["Time", "Laps"].map((unit) => (
+            <button
+              key={unit}
+              onClick={() => setByLap(unit === "Laps")}
+              aria-pressed={laps === (unit === "Laps")}
+              className={`cursor-pointer rounded px-2 py-1 ${laps === (unit === "Laps") ? "bg-zinc-600" : "text-zinc-400"}`}
+            >
+              {unit}
+            </button>
           ))}
-        </select>
+        </div>
       )}
       <input
         type="range"
-        min={start}
-        max={feed?.duration ?? 0}
-        step={1000}
-        value={value}
-        onChange={(e) => setDrag(Number(e.target.value))}
+        aria-label={laps ? "Seek to lap" : "Seek to time"}
+        min={laps ? 0 : start}
+        max={laps ? starts.length - 1 : (feed?.duration ?? 0)}
+        step={laps ? 1 : 1000}
+        value={laps ? lap : value}
+        onChange={(e) => setDrag(toT(Number(e.target.value)))}
         onPointerDown={(e) => e.currentTarget.setPointerCapture(e.pointerId)}
         onPointerUp={(e) => {
-          onSeek(Number(e.currentTarget.value));
+          onSeek(toT(Number(e.currentTarget.value)));
           setDrag(null);
         }}
         onPointerCancel={() => setDrag(null)}
@@ -104,7 +112,7 @@ export const ReplayBar = ({
         className="min-w-32 flex-1 accent-red-500"
       />
       <span className="tabular font-mono text-zinc-300">
-        {clock(value - start)}
+        {laps ? `Lap ${lap + 1}/${starts.length}` : clock(value - start)}
       </span>
     </div>
   );
