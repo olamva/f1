@@ -5,6 +5,18 @@ import { useJson } from "./api.ts";
 import { Flag } from "./Flag.tsx";
 import { Loading } from "./Loading.tsx";
 import { pathPart } from "./path.ts";
+import { Tabs } from "./Tabs.tsx";
+
+const SESSIONS = ["race", "sprint"] as const;
+
+const SprintMarker = () => (
+  <span
+    title="Sprint Weekend"
+    className="inline-grid size-4 place-items-center rounded bg-zinc-700/60 align-middle text-[10px] font-bold text-zinc-400"
+  >
+    S
+  </span>
+);
 
 const currentYear = new Date().getUTCFullYear();
 const years = Array.from({ length: currentYear - 1949 }, (_, index) =>
@@ -169,13 +181,16 @@ export const Results = () => {
   );
   const [round, setRound] = useState(Number(location.pathname.split("/")[3]));
   const [driver, setDriver] = useState<string | null>(null);
+  const [session, setSession] = useState<"race" | "sprint">("race");
   const archive = useJson<RaceArchive>(`/api/results/${year}`);
   const races = archive.data?.year === Number(year) ? archive.data.races : [];
   const race = races.find((entry) => entry.round === round) ?? races[0];
+  const shown = race?.results.length ? session : "sprint";
   const choose = (nextYear: string, nextRound?: number) => {
     setYear(nextYear);
     setRound(nextRound ?? 0);
     setDriver(null);
+    setSession("race");
     history.replaceState(
       null,
       "",
@@ -226,6 +241,7 @@ export const Results = () => {
               {races.map((entry) => (
                 <option key={entry.round} value={entry.round}>
                   {entry.round}. {entry.name}
+                  {entry.sprint.length ? " (S)" : ""}
                 </option>
               ))}
             </select>
@@ -236,13 +252,18 @@ export const Results = () => {
                   type="button"
                   onClick={() => choose(year, entry.round)}
                   aria-pressed={race.round === entry.round}
-                  className={`w-full cursor-pointer rounded-lg px-3 py-2 text-left text-sm hover:bg-zinc-800 ${race.round === entry.round ? "bg-red-700/25 text-white" : "text-zinc-400"}`}
+                  className={`flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-zinc-800 ${race.round === entry.round ? "bg-red-700/25 text-white" : "text-zinc-400"}`}
                 >
                   <span className="tabular mr-2 text-xs text-zinc-500">
                     {String(entry.round).padStart(2, "0")}
                   </span>
                   <Flag country={entry.country} />
                   {entry.name}
+                  {entry.sprint.length > 0 && (
+                    <span className="ml-auto pl-2">
+                      <SprintMarker />
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -256,32 +277,31 @@ export const Results = () => {
               />
             )}
             <section className="bg-surface overflow-x-auto rounded-xl p-4">
-              <div className="mb-4">
-                <p className="text-xs text-zinc-400">
-                  Round {race.round} · {race.date}
-                </p>
-                <h2 className="text-xl font-bold">
-                  <Flag country={race.country} />
-                  {race.name}
-                </h2>
-              </div>
-              {(
-                [
-                  ["Race", race.results],
-                  ["Sprint", race.sprint],
-                ] as const
-              )
-                .filter(([, rows]) => rows.length)
-                .map(([label, rows]) => (
-                  <div key={label} className="mt-4 first:mt-0">
-                    {race.sprint.length > 0 && (
-                      <h3 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
-                        {label}
-                      </h3>
-                    )}
-                    <ResultsTable rows={rows} onDriver={setDriver} />
+              <div className="mb-4 flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs text-zinc-400">
+                    Round {race.round} · {race.date}
+                  </p>
+                  <h2 className="text-xl font-bold">
+                    <Flag country={race.country} />
+                    {race.name}
+                  </h2>
+                </div>
+                {race.results.length > 0 && race.sprint.length > 0 && (
+                  <div className="shrink-0">
+                    <Tabs
+                      items={SESSIONS}
+                      value={shown}
+                      onChange={setSession}
+                      small
+                    />
                   </div>
-                ))}
+                )}
+              </div>
+              <ResultsTable
+                rows={shown === "sprint" ? race.sprint : race.results}
+                onDriver={setDriver}
+              />
             </section>
           </div>
         </div>
