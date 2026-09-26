@@ -60,17 +60,15 @@ const values = (x: unknown): Obj[] =>
       : [];
 
 const statusOf = (l: Obj): string =>
-  l.Retired
+  l.Retired || l.Stopped
     ? "OUT"
-    : l.Stopped
-      ? "STOP"
-      : l.KnockedOut
-        ? "KO"
-        : l.InPit
-          ? "PIT"
-          : l.PitOut
-            ? "OUT LAP"
-            : "";
+    : l.KnockedOut
+      ? "KO"
+      : l.InPit
+        ? "PIT"
+        : l.PitOut
+          ? "OUT LAP"
+          : "";
 
 function tyre(app: Obj | undefined): { tyre: string; tyreAge: number | null } {
   const stint = values(app?.Stints).at(-1);

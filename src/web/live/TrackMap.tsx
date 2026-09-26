@@ -264,7 +264,7 @@ export const TrackMap = ({
           [...rows].reverse().map((r) => {
             const p = positions?.[r.number];
             if (
-              ["PIT", "KO"].includes(r.status) ||
+              ["PIT", "KO", "OUT"].includes(r.status) ||
               !p ||
               (p[0] === 0 && p[1] === 0)
             )
