@@ -65,11 +65,19 @@ export const Stats = ({ season }: StatsProps) => {
       <Tabs items={VIEWS} value={view} onChange={show} small />
       {view === "Standings" && (
         <div className="grid gap-4 xl:grid-cols-2">
-          <StandingsTable title="Drivers" table={latest(d.dt)} who={d.who} />
+          <StandingsTable
+            title="Drivers"
+            table={latest(d.dt)}
+            who={d.who}
+            events={d.events}
+            champ="drivers"
+          />
           <StandingsTable
             title="Constructors"
             table={latest(d.tt)}
             who={d.teamWho}
+            events={d.events}
+            champ="constructors"
           />
         </div>
       )}

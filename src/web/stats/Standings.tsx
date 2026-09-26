@@ -1,13 +1,27 @@
-import type { Standing } from "../../shared/clinch.ts";
+import {
+  hasClinched,
+  type Championship,
+  type Standing,
+  type Upcoming,
+} from "../../shared/clinch.ts";
+import { Podium } from "../Podium.tsx";
 import type { Who } from "./derive.ts";
 
 interface StandingsTableProps {
   title: string;
   table: Standing[];
   who: Map<string, Who>;
+  events: Upcoming[];
+  champ: Championship;
 }
 
-export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
+export const StandingsTable = ({
+  title,
+  table,
+  who,
+  events,
+  champ,
+}: StandingsTableProps) => {
   const lead = table[0]?.points ?? 0;
   return (
     <section className="bg-surface rounded-xl p-3">
@@ -15,29 +29,15 @@ export const StandingsTable = ({ title, table, who }: StandingsTableProps) => {
         {title}
       </h2>
       {table.length >= 3 && (
-        <div className="mb-4 grid grid-cols-3 items-end gap-2 pt-2 text-center">
-          {table.slice(0, 3).map((s, i) => (
-            <div
-              key={s.id}
-              className={`min-w-0 ${["order-2", "order-1", "order-3"][i]}`}
-            >
-              <div className="mb-2 flex min-h-10 items-end justify-center text-xs font-medium wrap-break-word">
-                {who.get(s.id)?.name ?? s.id}
-              </div>
-              <div
-                className={`flex flex-col items-center justify-center rounded-t-lg ${["h-24", "h-16", "h-12"][i]}`}
-                style={{
-                  backgroundImage: `linear-gradient(180deg, color-mix(in srgb, ${who.get(s.id)?.color ?? "#888888"} 20%, #27272a), #27272a 25%)`,
-                }}
-              >
-                <span className="text-xl font-bold">{i + 1}</span>
-                <span className="tabular text-xs text-zinc-400">
-                  {s.points} pts
-                </span>
-              </div>
-            </div>
-          ))}
-        </div>
+        <Podium
+          entries={table.map((s) => ({
+            id: s.id,
+            name: who.get(s.id)?.name ?? s.id,
+            color: who.get(s.id)?.color ?? "#888888",
+            value: `${s.points} pts`,
+          }))}
+          crowned={hasClinched(table, events, table[0].id, champ)}
+        />
       )}
       <table className="tabular w-full text-sm">
         <tbody>
