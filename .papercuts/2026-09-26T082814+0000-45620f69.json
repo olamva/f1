@@ -1,0 +1,13 @@
+{
+  "id": "45620f69",
+  "ts": "2026-09-26T08:28:14+00:00",
+  "text": "Headless Chrome --screenshot clips windows smaller than about 500px, so small icon PNGs come out cropped",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "6e516897",
+  "where": "Google Chrome --headless --window-size",
+  "branch": "feat/f1-pitwall-name"
+}
