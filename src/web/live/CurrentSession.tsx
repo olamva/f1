@@ -154,6 +154,7 @@ const Board = ({
             outline={outline}
             positions={state.Position}
             rows={rows}
+            bests={bests}
             race={race}
             selected={selected}
             onToggle={(n) =>
