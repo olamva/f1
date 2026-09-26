@@ -10,7 +10,10 @@ import { Tabs } from "./Tabs.tsx";
 const SESSIONS = ["race", "sprint"] as const;
 
 const SprintMarker = () => (
-  <span className="inline-grid size-4 place-items-center rounded bg-amber-400/20 align-middle text-[10px] font-bold text-amber-300">
+  <span
+    title="Sprint Weekend"
+    className="inline-grid size-4 place-items-center rounded bg-zinc-700/60 align-middle text-[10px] font-bold text-zinc-400 italic"
+  >
     S
   </span>
 );
@@ -229,11 +232,6 @@ export const Results = () => {
               </h2>
               {seasonSelect}
             </div>
-            {races.some((entry) => entry.sprint.length) && (
-              <p className="mb-2 px-3 text-xs text-zinc-500">
-                <SprintMarker /> = Sprint Weekend
-              </p>
-            )}
             <select
               aria-label="Race"
               value={race.round}
