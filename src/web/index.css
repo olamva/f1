@@ -95,6 +95,7 @@ textarea {
 
 .live-dot {
   display: inline-block;
+  vertical-align: middle;
   width: 0.5rem;
   height: 0.5rem;
   margin-right: 0.5rem;
