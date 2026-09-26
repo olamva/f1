@@ -232,7 +232,7 @@ export const trackStatus = (
       messages(state).find((m) => /SAFETY CAR/i.test(m.text))?.text ?? "",
     )
   )
-    return { label: "Safety Car ending", tone: "bg-yellow-300 text-black" };
+    return { label: "Safety Car ending", tone: TRACK_STATUS["4"]!.tone };
   return (
     TRACK_STATUS[code] ?? {
       label: state.TrackStatus?.Message ?? code,
