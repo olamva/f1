@@ -79,7 +79,7 @@ export const Settings = () => {
           Play new radio messages automatically
         </label>
       </section>
-      <section className="bg-surface space-y-2 rounded-xl p-4">
+      <section className="bg-surface space-y-2 rounded-xl p-4 pointer-fine:hidden">
         <h2 className="text-lg font-semibold">Notifications</h2>
         <label className="flex cursor-pointer items-center gap-3 text-sm">
           <input
