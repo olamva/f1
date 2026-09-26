@@ -18,8 +18,8 @@ export default defineConfig({
       includeAssets: ["apple-touch-icon.png"],
       manifest: {
         id: "/",
-        name: "F1 Timing",
-        short_name: "F1",
+        name: "F1 Pitwall",
+        short_name: "F1 Pitwall",
         description: "Live F1 timing, replays, and season statistics",
         start_url: "/",
         scope: "/",

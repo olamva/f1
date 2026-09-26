@@ -50,7 +50,7 @@ export const App = () => {
       <header className="flex flex-wrap items-center gap-1.5 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
-          className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
+          className="flex cursor-pointer items-center gap-2.5 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
           aria-label="Go to live session"
           type="button"
         >
@@ -59,6 +59,9 @@ export const App = () => {
             alt="F1"
             className="w-10 min-[390px]:w-14 sm:w-20"
           />
+          <span className="hidden text-[27px] leading-none font-extrabold tracking-wide text-white italic sm:inline">
+            PITWALL
+          </span>
         </button>
         <div className="flex min-w-0 flex-1 justify-center">
           <Tabs
