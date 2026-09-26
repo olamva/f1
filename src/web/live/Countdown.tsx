@@ -74,19 +74,19 @@ export const Countdown = ({ rounds }: CountdownProps) => {
   const s = next(rounds, now);
   if (!s) return null;
   return (
-    <section className="isolate grid place-items-center gap-3 px-4 py-16 text-center">
+    <section className="fixed inset-0 isolate grid content-center justify-items-center gap-3 px-4 text-center xl:gap-[1vw]">
       <div className="spotlight fixed inset-0 -z-10" />
-      <span className="text-sm tracking-widest text-zinc-300 uppercase">
+      <span className="text-sm tracking-widest text-zinc-300 uppercase xl:text-[1.1vw]">
         Next up
       </span>
-      <h1 className="text-2xl font-bold sm:text-3xl">
+      <h1 className="text-2xl font-bold sm:text-3xl xl:text-[2.6vw]">
         <Flag country={s.round.country} />
         {s.round.name} · {s.label}
       </h1>
-      <span className="tabular font-mono text-6xl font-bold sm:text-8xl">
+      <span className="tabular font-mono text-6xl font-bold sm:text-8xl xl:text-[10vw]">
         {span(s.at - now)}
       </span>
-      <span className="text-zinc-400">
+      <span className="text-zinc-400 xl:text-[1.4vw]">
         {new Date(s.at).toLocaleString([], {
           weekday: "long",
           day: "numeric",
