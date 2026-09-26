@@ -1,0 +1,14 @@
+{
+  "id": "86ad993b",
+  "ts": "2026-09-26T09:16:49+00:00",
+  "text": "pnpm dev leaves node --watch parent alive after killing port listeners; worktree:cleanup then blocks",
+  "tags": [
+    "dev",
+    "scripts"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "d0cae65d",
+  "where": "package.json",
+  "branch": "style/native-tab-bar"
+}
