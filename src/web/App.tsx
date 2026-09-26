@@ -60,7 +60,7 @@ export const App = () => {
             PITWALL
           </span>
         </button>
-        <div className="fixed inset-x-0 bottom-0 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:static sm:min-w-0 sm:flex-1 sm:p-0 max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl">
+        <div className="fixed inset-x-[21px] bottom-[21px] flex justify-center sm:static sm:min-w-0 sm:flex-1 max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl max-sm:[&>nav>button]:flex-1">
           <Tabs
             items={NAV_TABS}
             value={tab === "Settings" ? null : tab}
