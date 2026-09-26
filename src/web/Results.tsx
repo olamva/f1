@@ -12,7 +12,7 @@ const SESSIONS = ["race", "sprint"] as const;
 const SprintMarker = () => (
   <span
     title="Sprint Weekend"
-    className="inline-grid size-4 place-items-center rounded bg-zinc-700/60 align-middle text-[10px] font-bold text-zinc-400 italic"
+    className="inline-grid size-4 place-items-center rounded bg-zinc-700/60 align-middle text-[10px] font-bold text-zinc-400"
   >
     S
   </span>
