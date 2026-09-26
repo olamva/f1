@@ -76,17 +76,17 @@ export const Countdown = ({ rounds }: CountdownProps) => {
   return (
     <section className="isolate grid place-items-center gap-3 px-4 py-16 text-center">
       <div className="spotlight fixed inset-0 -z-10" />
-      <span className="text-sm tracking-widest text-zinc-300 uppercase">
+      <span className="text-sm tracking-widest text-zinc-300 uppercase 2xl:text-lg">
         Next up
       </span>
-      <h1 className="text-2xl font-bold sm:text-3xl">
+      <h1 className="text-2xl font-bold sm:text-3xl 2xl:text-5xl">
         <Flag country={s.round.country} />
         {s.round.name} · {s.label}
       </h1>
-      <span className="tabular font-mono text-6xl font-bold sm:text-8xl">
+      <span className="tabular font-mono text-6xl font-bold sm:text-8xl xl:text-[min(10vw,20vh)]">
         {span(s.at - now)}
       </span>
-      <span className="text-zinc-400">
+      <span className="text-zinc-400 2xl:text-2xl">
         {new Date(s.at).toLocaleString([], {
           weekday: "long",
           day: "numeric",
