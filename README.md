@@ -1,6 +1,6 @@
-# f1
+# F1 Pitwall
 
-A private F1 site: live timing, replays of recent sessions, and season stats with a championship clinch calculator.
+F1 Pitwall is a private F1 site: live timing, replays of recent sessions, and season stats with a championship clinch calculator.
 
 - React + Vite + Tailwind in `src/web`, Hono server in `src/server`, shared logic in `src/shared`.
 - Live timing comes from `livetiming.formula1.com`. Results and standings come from Jolpica-F1.

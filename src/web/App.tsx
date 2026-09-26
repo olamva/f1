@@ -46,21 +46,21 @@ export const App = () => {
     setVisit((v) => v + 1);
   };
   return (
-    <div className="mx-auto max-w-[1600px] space-y-4 p-4 pt-[max(1rem,env(safe-area-inset-top))]">
-      <header className="flex flex-wrap items-center gap-1.5 sm:gap-6">
+    <div className="mx-auto max-w-[1600px] space-y-4 p-4 pt-[max(1rem,env(safe-area-inset-top))] pb-24 sm:pb-4">
+      <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:gap-6">
         <button
           onClick={() => go("Countdown")}
-          className="cursor-pointer rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400"
+          className="flex cursor-pointer items-center gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400 sm:gap-3.5"
           aria-label="Go to live session"
           type="button"
         >
-          <img
-            src={f1Logo}
-            alt="F1"
-            className="w-10 min-[390px]:w-14 sm:w-20"
-          />
+          <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />
+          <span className="h-6 w-px bg-zinc-600 sm:h-7" />
+          <span className="text-[22px] leading-none font-extrabold tracking-wide text-white italic sm:text-[27px]">
+            PITWALL
+          </span>
         </button>
-        <div className="flex min-w-0 flex-1 justify-center">
+        <div className="fixed inset-x-0 bottom-0 flex justify-center px-4 pb-[max(1rem,env(safe-area-inset-bottom))] sm:static sm:min-w-0 sm:flex-1 sm:p-0 max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl">
           <Tabs
             items={NAV_TABS}
             value={tab === "Settings" ? null : tab}
