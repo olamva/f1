@@ -1,6 +1,6 @@
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import type { Mark, Row, SessionBests } from "./view.ts";
+import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
   overall: "text-purple",
@@ -135,8 +135,8 @@ interface TowerRowProps {
   race: boolean;
   qualifying: boolean;
   lapOwner: boolean;
-  fastestLap: boolean;
   selected: boolean;
+  relative: boolean;
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
   onToggle: () => void;
@@ -147,8 +147,8 @@ const TowerRow = ({
   race,
   qualifying,
   lapOwner,
-  fastestLap,
   selected,
+  relative,
   swap,
   bind,
   onToggle,
@@ -175,11 +175,11 @@ const TowerRow = ({
         </span>
         {lapOwner && (
           <span
-            className="text-purple text-[10px]"
+            className="bg-purple flex size-4 items-center justify-center rounded-sm text-white"
             title="Fastest lap owner"
             aria-label="Fastest lap owner"
           >
-            ◆
+            <Timer className="size-3" strokeWidth={2.5} />
           </span>
         )}
       </span>
@@ -196,7 +196,7 @@ const TowerRow = ({
       </td>
     )}
     <td className="px-2 py-1 text-right">
-      {row.position === 1 && race ? "Leader" : row.gap}
+      {row.position === 1 && race && !relative ? "Leader" : row.gap}
     </td>
     {race && (
       <td className="px-2 py-1 text-right text-zinc-400">{row.interval}</td>
@@ -204,11 +204,7 @@ const TowerRow = ({
     <td className={`px-2 py-1 text-right ${MARK[row.lastMark]}`}>
       {row.lastLap}
     </td>
-    <td
-      className={`px-2 py-1 text-right ${fastestLap ? "text-purple" : "text-zinc-300"}`}
-    >
-      {row.bestLap}
-    </td>
+    <td className="px-2 py-1 text-right text-zinc-300">{row.bestLap}</td>
     {!race && (
       <td className="px-2 py-1">
         <span className="flex gap-1.5">
@@ -250,6 +246,7 @@ export const TimingTower = ({
   onToggle,
 }: TimingTowerProps) => {
   const { swaps, bind } = useSwaps(rows);
+  const relative = relativeTo(rows, [...selected][0]);
   return (
     <div className="bg-surface overflow-x-auto rounded-xl">
       <div className="flex min-w-max items-center gap-4 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
@@ -296,17 +293,15 @@ export const TimingTower = ({
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
+          {relative.map((r) => (
             <TowerRow
               key={r.number}
               row={r}
               race={race}
               qualifying={qualifying}
               lapOwner={bests.lap?.number === r.number}
-              fastestLap={
-                bests.lap?.number === r.number && r.bestLap === bests.lap?.value
-              }
               selected={selected.has(r.number)}
+              relative={relative !== rows}
               swap={swaps[r.number]}
               bind={bind(r.number)}
               onToggle={() => onToggle(r.number)}

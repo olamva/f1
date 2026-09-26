@@ -19,3 +19,11 @@ test("a raised delay rewinds to data that a lower delay already showed", () => {
   assert.equal(b.flush(100_000 - 40_000), undefined);
   assert.equal(b.flush(100_000)?.t, 100);
 });
+
+test("an update that arrives late still shows at its own time", () => {
+  const b = buffer();
+  b.push(2_000, () => at(2));
+  b.push(1_000, () => at(1));
+  assert.equal(b.flush(1_500)?.t, 1);
+  assert.equal(b.flush(2_500)?.t, 2);
+});

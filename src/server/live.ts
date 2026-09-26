@@ -16,10 +16,12 @@ const FLUSH_MS = 250;
 const RETRY_MS = 5_000;
 const EDGE_MS = 30 * 60_000;
 const FRESH_MS = 2 * 60_000;
+const MAX_LAG_MS = 60_000;
 
 export let session = new Session();
 let key: unknown = null;
 let pending: Delta[] = [];
+let lag = 0;
 let connection: signalR.HubConnection | null = null;
 const listeners = new Set<(batch: Delta[] | "reset") => void>();
 
@@ -28,10 +30,18 @@ export const subscribe = (fn: (batch: Delta[] | "reset") => void) => {
   return () => listeners.delete(fn);
 };
 
-function events(topic: string, data: Json, t: number): Event[] {
-  if (topic === "Position.z") return positionEvents(t, inflate(data as string));
+function events(topic: string, data: Json, now: number): Event[] {
+  if (topic === "Position.z") {
+    const raw = inflate(data as string);
+    const stamps = (
+      (raw as { Position?: { Timestamp: string }[] }).Position ?? []
+    ).map((s) => Date.parse(s.Timestamp));
+    const fresh = now - stamps.at(-1)!;
+    if (fresh < MAX_LAG_MS) lag = fresh;
+    return positionEvents(now - lag - (stamps.at(-1)! - stamps[0]!), raw);
+  }
   if (topic.endsWith(".z")) return [];
-  return [{ t, topic, data }];
+  return [{ t: now - lag, topic, data }];
 }
 
 function handle(topic: string, data: Json) {
@@ -41,6 +51,7 @@ function handle(topic: string, data: Json) {
     key = infoKey;
     session = new Session();
     pending = [];
+    lag = 0;
     listeners.forEach((fn) => fn("reset"));
   }
   for (const e of events(topic, data, Date.now()))
