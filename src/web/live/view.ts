@@ -1,4 +1,4 @@
-import { lapSeconds } from "../../shared/timing.ts";
+import { lapSeconds, type LapRow } from "../../shared/timing.ts";
 
 type Obj = Record<string, any>;
 
@@ -321,4 +321,14 @@ export const qualifyingPart = (state: Obj): string | null =>
 export const sectorSplits = (bests: SessionBests): number[] => {
   const [a, b, c] = bests.sectors.map((s) => lapSeconds(s?.value ?? "") ?? 0);
   return a && b && c ? [a / (a + b + c), (a + b) / (a + b + c)] : [];
+};
+
+export const lapStarts = (
+  laps: Record<string, LapRow[]>,
+  start: number,
+): number[] => {
+  const ends: number[] = [];
+  for (const r of Object.values(laps).flat())
+    ends[r.lap] = Math.min(ends[r.lap] ?? Infinity, r.t);
+  return [start, ...ends.slice(1, -1)];
 };
