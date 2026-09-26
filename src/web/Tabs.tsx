@@ -32,7 +32,7 @@ export const Tabs = <T extends string>({
     x: number;
   } | null>(null);
   const suppressClick = useRef(false);
-  const [dragging, setDragging] = useState(false);
+  const [held, setHeld] = useState(false);
   const [highlight, setHighlight] = useState<{
     left: number;
     width: number;
@@ -40,7 +40,7 @@ export const Tabs = <T extends string>({
 
   useLayoutEffect(() => {
     const indicator = blob.current;
-    if (!dragging || !indicator) return;
+    if (!held || !indicator) return;
     const ease = (from: number, to: number, elapsed: number, time: number) =>
       from + (to - from) * (1 - Math.exp(-elapsed / time));
     let frame = 0;
@@ -71,7 +71,7 @@ export const Tabs = <T extends string>({
       cancelAnimationFrame(frame);
       indicator.style.removeProperty("--stretch");
     };
-  }, [dragging]);
+  }, [held]);
 
   useLayoutEffect(() => {
     const track = nav.current;
@@ -113,7 +113,7 @@ export const Tabs = <T extends string>({
 
   const cancelDrag = () => {
     drag.current = null;
-    setDragging(false);
+    setHeld(false);
   };
 
   return (
@@ -123,10 +123,7 @@ export const Tabs = <T extends string>({
         if (drag.current?.pointerId !== event.pointerId) return;
         if (Math.abs(event.clientX - drag.current.startX) > 3)
           suppressClick.current = true;
-        if (suppressClick.current) {
-          drag.current.x = position(event);
-          setDragging(true);
-        }
+        if (suppressClick.current) drag.current.x = position(event);
       }}
       onPointerUp={(event) => {
         if (drag.current?.pointerId !== event.pointerId) return;
@@ -155,7 +152,7 @@ export const Tabs = <T extends string>({
           cancelDrag();
         }
       }}
-      data-dragging={dragging}
+      data-held={held}
       className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"}`}
     >
       {highlight && (
@@ -165,7 +162,7 @@ export const Tabs = <T extends string>({
           data-visible={value !== null}
           style={{
             width: highlight.width,
-            translate: dragging ? undefined : `${highlight.left}px`,
+            translate: held ? undefined : `${highlight.left}px`,
           }}
         />
       )}
@@ -191,6 +188,7 @@ export const Tabs = <T extends string>({
                 x: button.offsetLeft,
               };
               button.setPointerCapture(event.pointerId);
+              setHeld(true);
             }}
             onClick={(event) => {
               if (!suppressClick.current || event.detail === 0) {
