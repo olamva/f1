@@ -1,11 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-  type PointerEvent,
-} from "react";
+import { useLayoutEffect, useRef, useState, type PointerEvent } from "react";
 
 interface TabsProps<T extends string> {
   items: readonly T[];
@@ -29,38 +23,43 @@ export const Tabs = <T extends string>({
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const blob = useRef<HTMLSpanElement>(null);
-  const motion = useRef({ x: 0, time: 0, speed: 0 });
   const drag = useRef<{
     pointerId: number;
     startX: number;
     left: number;
     width: number;
     scrollLeft: number;
+    x: number;
   } | null>(null);
   const suppressClick = useRef(false);
-  const [dragLeft, setDragLeft] = useState<number | null>(null);
-  const dragging = dragLeft !== null;
+  const [dragging, setDragging] = useState(false);
   const [highlight, setHighlight] = useState<{
     left: number;
     width: number;
   } | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     const indicator = blob.current;
     if (!dragging || !indicator) return;
+    const ease = (from: number, to: number, elapsed: number, time: number) =>
+      from + (to - from) * (1 - Math.exp(-elapsed / time));
     let frame = 0;
+    let x = drag.current?.x ?? 0;
+    let speed = 0;
     let stretch = 0;
     let previous = performance.now();
     const animate = (now: number) => {
-      const target =
-        Math.min(0.35, motion.current.speed * 0.16) *
-        Math.exp(-(now - motion.current.time) / 80);
-      stretch += (target - stretch) * (1 - Math.exp(-(now - previous) / 45));
-      indicator.style.setProperty("--stretch", String(stretch));
+      const elapsed = Math.max(1, now - previous);
+      const left = drag.current?.x ?? x;
+      speed = ease(speed, Math.abs(left - x) / elapsed, elapsed, 40);
+      stretch = ease(stretch, Math.min(0.35, speed * 0.16), elapsed, 25);
+      indicator.style.translate = `${left}px`;
+      indicator.style.setProperty("--stretch", stretch.toFixed(3));
+      x = left;
       previous = now;
       frame = requestAnimationFrame(animate);
     };
-    frame = requestAnimationFrame(animate);
+    animate(previous);
     return () => {
       cancelAnimationFrame(frame);
       indicator.style.removeProperty("--stretch");
@@ -107,7 +106,7 @@ export const Tabs = <T extends string>({
 
   const cancelDrag = () => {
     drag.current = null;
-    setDragLeft(null);
+    setDragging(false);
   };
 
   return (
@@ -118,16 +117,8 @@ export const Tabs = <T extends string>({
         if (Math.abs(event.clientX - drag.current.startX) > 3)
           suppressClick.current = true;
         if (suppressClick.current) {
-          const left = position(event);
-          const now = performance.now();
-          motion.current = {
-            x: left,
-            time: now,
-            speed:
-              Math.abs(left - motion.current.x) /
-              Math.max(1, now - motion.current.time),
-          };
-          setDragLeft(left);
+          drag.current.x = position(event);
+          setDragging(true);
         }
       }}
       onPointerUp={(event) => {
@@ -167,7 +158,7 @@ export const Tabs = <T extends string>({
           data-visible={value !== null}
           style={{
             width: highlight.width,
-            translate: `${dragLeft ?? highlight.left}px`,
+            translate: dragging ? undefined : `${highlight.left}px`,
           }}
         />
       )}
@@ -190,11 +181,7 @@ export const Tabs = <T extends string>({
                 left: button.offsetLeft,
                 width: button.offsetWidth,
                 scrollLeft: nav.current!.scrollLeft,
-              };
-              motion.current = {
                 x: button.offsetLeft,
-                time: performance.now(),
-                speed: 0,
               };
               button.setPointerCapture(event.pointerId);
             }}
