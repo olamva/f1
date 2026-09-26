@@ -1,5 +1,6 @@
 import { matchPrecache, precacheAndRoute } from "workbox-precaching";
 import { NavigationRoute, registerRoute } from "workbox-routing";
+import { StaleWhileRevalidate } from "workbox-strategies";
 
 registerRoute(
   new NavigationRoute(
@@ -12,6 +13,12 @@ registerRoute(
     },
     { denylist: [/^\/api\//, /^\/\.auth\//] },
   ),
+);
+
+registerRoute(
+  ({ url }) =>
+    /^\/api\/(season|records|results\/|drivers\/|pace\/)/.test(url.pathname),
+  new StaleWhileRevalidate({ cacheName: "api" }),
 );
 
 precacheAndRoute(self.__WB_MANIFEST);
