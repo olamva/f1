@@ -17,6 +17,7 @@
 }
 
 :root {
+  touch-action: pan-x pan-y;
   scrollbar-color: #3f3f46 transparent;
 }
 
