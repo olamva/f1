@@ -1,0 +1,14 @@
+{
+  "id": "4be35289",
+  "ts": "2026-09-27T13:14:10+00:00",
+  "text": "T3 preview_snapshot fails with 'Preview automation snapshot failed' while preview_evaluate works on the same tab",
+  "tags": [
+    "t3",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "bafe4883",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/mobile-subtab-layout"
+}
