@@ -1,0 +1,14 @@
+{
+  "id": "166df2f4",
+  "ts": "2026-09-27T14:21:28+00:00",
+  "text": "T3 preview_snapshot fails on a loaded local app, while preview_evaluate works",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-eb622c89",
+  "branch": "t3code/fix-safety-car-scrollbar"
+}

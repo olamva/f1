@@ -1,0 +1,14 @@
+{
+  "id": "453ae6b6",
+  "ts": "2026-09-27T14:38:13+00:00",
+  "text": "git add cannot create the task worktree index lock inside the sandbox",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-eb622c89",
+  "branch": "t3code/fix-safety-car-scrollbar"
+}
