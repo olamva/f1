@@ -32,7 +32,7 @@ textarea {
   scrollbar-gutter: auto;
 }
 
-:root:has(main:not([hidden]) .spotlight) {
+:root[data-tab="Countdown"]:has(.spotlight) {
   overflow: hidden;
   overscroll-behavior: none;
 }
