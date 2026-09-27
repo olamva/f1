@@ -79,7 +79,14 @@ export const Stats = ({ season }: StatsProps) => {
   }, [season]);
   return (
     <div className="space-y-4">
-      <Tabs items={VIEWS} value={view} onChange={show} icons={ICONS} small />
+      <Tabs
+        items={VIEWS}
+        value={view}
+        onChange={show}
+        icons={ICONS}
+        small
+        stretch
+      />
       {(view === "Standings" || view === "Title fight") && (
         <div className={view === "Standings" ? "xl:hidden" : undefined}>
           <Tabs
@@ -87,6 +94,7 @@ export const Stats = ({ season }: StatsProps) => {
             value={champ}
             onChange={setChamp}
             small
+            stretch
           />
         </div>
       )}
