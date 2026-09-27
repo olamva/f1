@@ -1,0 +1,15 @@
+{
+  "id": "7df959d5",
+  "ts": "2026-09-27T16:11:46+00:00",
+  "text": "Automatic approval review blocks copying public F1 control screenshots into T3 attachments after the user requests Chrome screenshots",
+  "tags": [
+    "approval",
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-07247556",
+  "branch": "t3code/liquid-glass-controls"
+}

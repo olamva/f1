@@ -1,0 +1,14 @@
+{
+  "id": "61d282d9",
+  "ts": "2026-09-27T16:06:28+00:00",
+  "text": "pnpm dlx --package=playwright does not expose playwright to require.resolve in node",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-07247556",
+  "branch": "t3code/liquid-glass-controls"
+}

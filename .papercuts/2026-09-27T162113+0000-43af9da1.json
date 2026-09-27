@@ -1,0 +1,14 @@
+{
+  "id": "43af9da1",
+  "ts": "2026-09-27T16:21:13+00:00",
+  "text": "Sandbox blocks CoreSimulator service access for native control measurement",
+  "tags": [
+    "design",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-07247556",
+  "branch": "t3code/liquid-glass-controls"
+}

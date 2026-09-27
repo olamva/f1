@@ -52,6 +52,39 @@ textarea {
   border-radius: 9999px;
   background: rgb(255 255 255 / 0.075);
   box-shadow: inset 0 1px rgb(255 255 255 / 0.08);
+  backdrop-filter: blur(16px) saturate(1.5);
+  transition:
+    scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 200ms ease;
+}
+
+.glass-tabs::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    110px circle at var(--glass-x, 50%) var(--glass-y, 50%),
+    rgb(255 255 255 / 0.22),
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.glass-tabs[data-held="true"],
+.glass-tabs:has(.glass-tab:active) {
+  scale: 1.025;
+  box-shadow:
+    0 8px 24px rgb(0 0 0 / 0.2),
+    inset 0 1px rgb(255 255 255 / 0.3),
+    inset 0 -1px rgb(255 255 255 / 0.1);
+}
+
+.glass-tabs[data-held="true"]::before,
+.glass-tabs:has(.glass-tab:active)::before {
+  opacity: 1;
 }
 
 @property --lift {
@@ -104,6 +137,7 @@ textarea {
 .glass-tabs[data-glass="true"] .glass-highlight {
   --lift: 1.2;
   background-color: rgb(239 68 68 / 0.38);
+  backdrop-filter: blur(2px) saturate(1.8);
   box-shadow:
     0 8px 24px rgb(220 38 38 / 0.35),
     inset 0 1px 1px rgb(255 255 255 / 0.7),
@@ -171,7 +205,194 @@ textarea {
 }
 
 .glass-tab:focus-visible {
-  outline: none;
+  outline: 2px solid #fca5a5;
+  outline-offset: 3px;
+}
+
+.glass-panel,
+.glass-control,
+.glass-gear {
+  border: 1px solid rgb(255 255 255 / 0.14);
+  background:
+    linear-gradient(145deg, rgb(255 255 255 / 0.06), transparent 55%),
+    rgb(24 24 27 / 0.8);
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 0.08),
+    0 4px 12px rgb(0 0 0 / 0.12);
+  backdrop-filter: blur(16px) saturate(1.5);
+}
+
+.glass-control,
+.glass-gear {
+  border-radius: 9999px;
+  color: #f4f4f5;
+  transition:
+    scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.glass-control option {
+  background: #18181b;
+  color: #f4f4f5;
+}
+
+@media (hover: hover) {
+  .glass-control:enabled:hover,
+  .glass-gear:enabled:hover {
+    background-color: rgb(63 63 70 / 0.8);
+  }
+}
+
+.glass-control:enabled:active,
+.glass-gear:enabled:active {
+  scale: 1.08;
+  background-color: rgb(113 113 122 / 0.45);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.65),
+    inset 0 -1px 1px rgb(255 255 255 / 0.2),
+    inset 0 0 12px rgb(255 255 255 / 0.12),
+    0 6px 20px rgb(0 0 0 / 0.25);
+}
+
+.glass-control:focus-visible,
+.glass-gear:focus-visible,
+.glass-seek:has(:focus-visible),
+.peer:focus-visible + .glass-switch {
+  outline: 2px solid #fca5a5;
+  outline-offset: 4px;
+}
+
+.glass-seek {
+  height: 44px;
+  border-radius: 9999px;
+}
+
+.glass-seek-track {
+  position: absolute;
+  inset: 19px 14px;
+  border-radius: inherit;
+  background: linear-gradient(
+    to right,
+    #ef4444 calc(var(--progress) * 100%),
+    rgb(255 255 255 / 0.16) 0
+  );
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
+}
+
+.glass-seek-thumb {
+  position: absolute;
+  top: 12px;
+  left: calc(14px + (100% - 28px) * var(--progress));
+  width: 28px;
+  height: 20px;
+  translate: -50% 0;
+  border-radius: 9999px;
+  background: #f4f4f5;
+  box-shadow:
+    inset 0 1px 1px white,
+    0 2px 6px rgb(0 0 0 / 0.3);
+  pointer-events: none;
+  transition:
+    scale 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.glass-seek[data-held="true"] .glass-seek-thumb,
+.glass-seek:has(:focus-visible) .glass-seek-thumb {
+  scale: 1.65 1.5;
+  background: rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(1px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.9),
+    inset 0 -1px 1px rgb(255 255 255 / 0.3),
+    inset 2px 0 3px rgb(255 255 255 / 0.35),
+    inset -2px 0 3px rgb(147 197 253 / 0.25),
+    0 5px 12px rgb(0 0 0 / 0.35);
+}
+
+.glass-seek-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  appearance: none;
+  opacity: 0;
+  cursor: grab;
+  touch-action: none;
+}
+
+.glass-seek-input::-webkit-slider-thumb {
+  appearance: none;
+  width: 28px;
+  height: 44px;
+}
+
+.glass-seek-input::-moz-range-thumb {
+  width: 28px;
+  height: 44px;
+  border: 0;
+}
+
+.glass-seek-input:active {
+  cursor: grabbing;
+}
+
+.glass-seek[data-disabled="true"],
+.peer:disabled + .glass-switch {
+  opacity: 0.4;
+}
+
+.glass-seek-input:disabled {
+  cursor: default;
+}
+
+.glass-switch {
+  position: relative;
+  height: 28px;
+  width: 64px;
+  flex-shrink: 0;
+  border-radius: 9999px;
+  background: #3f3f46;
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
+  transition: background-color 180ms ease;
+}
+
+.glass-switch::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 38px;
+  height: 24px;
+  border-radius: inherit;
+  background: #f4f4f5;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  transition:
+    translate 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.peer:checked + .glass-switch {
+  background: #dc2626;
+}
+
+.peer:checked + .glass-switch::after {
+  translate: 22px;
+}
+
+label:active > .peer:enabled + .glass-switch::after {
+  scale: calc(58 / 38) calc(38 / 24);
+  background: rgb(255 255 255 / 0.22);
+  backdrop-filter: blur(1px) saturate(1.8);
+  box-shadow:
+    inset 0 1px 1px rgb(255 255 255 / 0.9),
+    inset 0 -1px 1px rgb(255 255 255 / 0.35),
+    0 3px 8px rgb(0 0 0 / 0.3);
 }
 
 .live-dot {
@@ -263,17 +484,33 @@ textarea {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .glass-tabs,
+  .glass-control,
+  .glass-gear,
+  .glass-seek-thumb,
+  .glass-switch::after {
+    scale: none !important;
+  }
+
+  .glass-tabs,
+  .glass-tabs::before,
+  .glass-highlight,
+  .glass-highlight::before,
+  .glass-tab,
+  .glass-control,
+  .glass-gear,
+  .glass-seek-thumb,
+  .glass-switch,
+  .glass-switch::after {
+    transition: none !important;
+  }
+
   .glass-highlight {
     scale: none;
   }
 
   .spotlight {
     animation: none;
-  }
-
-  .glass-highlight,
-  .glass-tab {
-    transition: none;
   }
 
   .flag-banner {

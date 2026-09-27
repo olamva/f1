@@ -1,0 +1,14 @@
+{
+  "id": "b449fd67",
+  "ts": "2026-09-27T15:59:11+00:00",
+  "text": "Sandbox pnpm dev produces no output and does not open its port; retry requires escalation",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-07247556",
+  "branch": "t3code/liquid-glass-controls"
+}
