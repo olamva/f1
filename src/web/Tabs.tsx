@@ -68,6 +68,7 @@ export const Tabs = <T extends string>({
       );
       indicator.style.translate = `${left}px`;
       indicator.style.setProperty("--stretch", stretch.toFixed(3));
+      clip();
       x = left;
       previous = now;
       if (!drag.current && Math.abs(rest.current - left) < 4) {
@@ -98,6 +99,48 @@ export const Tabs = <T extends string>({
     return () => observer.disconnect();
   }, [items, value]);
 
+  const clip = () => {
+    const indicator = blob.current;
+    if (!indicator || !nav.current) return;
+    const inner = indicator.getBoundingClientRect();
+    for (const layer of nav.current.querySelectorAll<HTMLElement>(
+      ".glass-lens",
+    )) {
+      const outer = layer.getBoundingClientRect();
+      layer.style.clipPath = `inset(${[
+        inner.top - outer.top,
+        outer.right - inner.right,
+        outer.bottom - inner.bottom,
+        inner.left - outer.left,
+      ]
+        .map((edge) => `${Math.max(0, edge)}px`)
+        .join(" ")} round 9999px)`;
+    }
+  };
+
+  useLayoutEffect(() => {
+    const indicator = blob.current;
+    if (!indicator) return;
+    let frame = 0;
+    const follow = () => {
+      clip();
+      frame =
+        active || indicator.getAnimations().length
+          ? requestAnimationFrame(follow)
+          : 0;
+    };
+    const start = () => {
+      cancelAnimationFrame(frame);
+      follow();
+    };
+    start();
+    indicator.addEventListener("transitionrun", start);
+    return () => {
+      cancelAnimationFrame(frame);
+      indicator.removeEventListener("transitionrun", start);
+    };
+  }, [active, highlight, size]);
+
   const position = (event: PointerEvent<HTMLElement>) => {
     const current = drag.current!;
     const first = buttons.current[0]!;
@@ -108,6 +151,19 @@ export const Tabs = <T extends string>({
         last.offsetLeft + last.offsetWidth - current.width,
         current.left + event.clientX - current.startX,
       ),
+    );
+  };
+
+  const content = (i: T) => {
+    const Icon: LucideIcon | undefined = icons?.[i];
+    return (
+      <>
+        {live === i && <span aria-hidden="true" className="live-dot" />}
+        {Icon && <Icon aria-hidden="true" className="size-5 sm:hidden" />}
+        <span className={Icon ? "max-sm:sr-only" : undefined}>
+          {labels?.[i] ?? i}
+        </span>
+      </>
     );
   };
 
@@ -157,6 +213,7 @@ export const Tabs = <T extends string>({
       }}
       data-held={held}
       data-glass={active}
+      data-visible={value !== null}
       className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"}`}
     >
       {highlight && (
@@ -171,7 +228,6 @@ export const Tabs = <T extends string>({
         />
       )}
       {items.map((i, index) => {
-        const Icon: LucideIcon | undefined = icons?.[i];
         return (
           <button
             key={i}
@@ -207,13 +263,14 @@ export const Tabs = <T extends string>({
             }}
             type="button"
             aria-pressed={value === i}
-            data-active={value === i}
             className={`glass-tab relative z-10 flex shrink-0 items-center justify-center capitalize ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
           >
-            {live === i && <span aria-hidden="true" className="live-dot" />}
-            {Icon && <Icon aria-hidden="true" className="size-5 sm:hidden" />}
-            <span className={Icon ? "max-sm:sr-only" : undefined}>
-              {labels?.[i] ?? i}
+            {content(i)}
+            <span
+              aria-hidden="true"
+              className="glass-lens pointer-events-none absolute inset-0 flex items-center justify-center"
+            >
+              {content(i)}
             </span>
           </button>
         );

@@ -142,9 +142,19 @@ textarea {
   transition: color 180ms ease;
 }
 
-.glass-tab:hover,
-.glass-tab[data-active="true"] {
+.glass-lens {
   color: white;
+  transition: opacity 150ms ease;
+}
+
+@media (hover: hover) {
+  .glass-tabs:not([data-held="true"]) .glass-tab:hover {
+    color: white;
+  }
+}
+
+.glass-tabs[data-visible="false"] .glass-lens {
+  opacity: 0;
 }
 
 .glass-tab:focus-visible {

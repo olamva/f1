@@ -1,0 +1,14 @@
+{
+  "id": "d7317c89",
+  "ts": "2026-09-27T11:51:47+00:00",
+  "text": "preview_snapshot still fails with 'Preview automation snapshot failed' even after preview_open with open=true",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "e30b0d82",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/highlight-icons-through-blob"
+}
