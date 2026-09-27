@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Crown } from "lucide-react";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline } from "../../shared/timing.ts";
@@ -22,8 +22,8 @@ interface TrackMapProps {
   banner?: React.ReactNode;
 }
 
-const projector = (outline: Outline) => {
-  const a = (outline.rotation * Math.PI) / 180;
+const projector = (outline: Outline, extra = 0) => {
+  const a = ((outline.rotation + extra) * Math.PI) / 180;
   const turn = (x: number, y: number): [number, number] => [
     x * Math.cos(a) - y * Math.sin(a),
     x * Math.sin(a) + y * Math.cos(a),
@@ -51,6 +51,13 @@ const projector = (outline: Outline) => {
     return [offX + (u - minX) * scale, SIZE - (offY + (v - minY) * scale)];
   };
   return { project, box };
+};
+
+const fitted = (outline: Outline, [width, height]: [number, number]) => {
+  const [upright, turned] = [0, 90].map((extra) => projector(outline, extra));
+  const scale = ({ box }: typeof upright) =>
+    Math.min(width / box[2], height / box[3]);
+  return scale(turned!) > scale(upright!) * 1.01 ? turned! : upright!;
 };
 
 const indexAt = (progress: number[], fraction: number) =>
@@ -220,12 +227,20 @@ export const TrackMap = ({
   } | null>(null);
   const hovered = hover?.number ?? null;
   const card = rows.find((r) => r.number === hovered);
+  const [size, setSize] = useState<[number, number]>([1, 1]);
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) =>
+      setSize([entry!.contentRect.width, entry!.contentRect.height]),
+    );
+    observer.observe(svg.current!);
+    return () => observer.disconnect();
+  }, []);
   const { project, box } = useMemo(
     () =>
       outline
-        ? projector(outline)
+        ? fitted(outline, size)
         : { project: null, box: [0, 0, SIZE, SIZE] as const },
-    [outline],
+    [outline, size],
   );
   const path = useMemo(
     () =>
