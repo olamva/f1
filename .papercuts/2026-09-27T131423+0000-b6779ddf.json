@@ -1,0 +1,14 @@
+{
+  "id": "b6779ddf",
+  "ts": "2026-09-27T13:14:23+00:00",
+  "text": "/api/replay/sessions returns start offsets like '2026-05-01T12:30:00-04:0' (Miami) that new Date() rejects",
+  "tags": [
+    "api",
+    "data"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "6d9a5f8d",
+  "where": "src/server/archive.ts",
+  "branch": "t3code/replay-selection-design-refresh"
+}
