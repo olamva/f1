@@ -1,0 +1,14 @@
+{
+  "id": "b8263882",
+  "ts": "2026-09-27T16:16:31+00:00",
+  "text": "Apple toggles documentation returns only a JavaScript requirement through web extraction",
+  "tags": [
+    "docs",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-07247556",
+  "branch": "t3code/liquid-glass-controls"
+}
