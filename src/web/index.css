@@ -386,9 +386,12 @@ textarea {
   translate: 22px;
 }
 
-.glass-switch[data-dragging="true"]::after {
+.peer + .glass-switch[data-dragging="true"]::after {
   translate: calc(var(--switch-progress) * 22px);
-  transition: none;
+  transition:
+    scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    background-color 180ms ease,
+    box-shadow 180ms ease;
 }
 
 label:active > .peer:enabled + .glass-switch::after {
