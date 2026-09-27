@@ -115,6 +115,7 @@ textarea {
 
 .glass-tab[aria-pressed="true"] {
   cursor: grab;
+  touch-action: none;
 }
 
 .glass-tabs[data-held="true"] .glass-tab {
