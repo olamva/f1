@@ -1,0 +1,13 @@
+{
+  "id": "256292dc",
+  "ts": "2026-09-27T11:59:50+00:00",
+  "text": "T3 preview_snapshot and preview_click fail on client while preview_evaluate works",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "56a6b1a4",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/fix-mobile-table-fit"
+}

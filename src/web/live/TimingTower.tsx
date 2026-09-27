@@ -211,12 +211,12 @@ const TowerRow = ({
     </td>
     {!race && (
       <td className="px-1 py-1 sm:px-2">
-        <span className="flex gap-1.5">
+        <span className="flex gap-1 sm:gap-1.5">
           {row.sectors.map((s, i) => (
             <span
               key={i}
               title={s.value}
-              className={`flex flex-col gap-0.5 ${qualifying ? "min-w-5 sm:min-w-17" : "min-w-5"}`}
+              className={`flex w-5 min-w-5 flex-col gap-0.5 sm:w-auto ${qualifying ? "sm:min-w-17" : ""}`}
             >
               <span
                 className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}
@@ -225,9 +225,12 @@ const TowerRow = ({
                   <span className="hidden sm:inline">{s.value}</span>
                 )}
               </span>
-              <span className="flex gap-px">
+              <span className="flex sm:gap-px">
                 {s.segments.map((m, j) => (
-                  <span key={j} className={`h-1 w-1.5 ${BAR[m]}`} />
+                  <span
+                    key={j}
+                    className={`h-1 min-w-0 flex-1 sm:w-1.5 sm:flex-none ${BAR[m]}`}
+                  />
                 ))}
               </span>
             </span>
@@ -235,7 +238,7 @@ const TowerRow = ({
         </span>
       </td>
     )}
-    <td className="px-1 py-1 sm:px-2">
+    <td className={`px-1 py-1 sm:table-cell sm:px-2 ${race ? "" : "hidden"}`}>
       <Tyre compound={row.tyre} age={row.tyreAge} />
     </td>
     <td className="hidden px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
@@ -299,7 +302,11 @@ export const TimingTower = ({
               Best
             </th>
             {!race && <th className="px-1 py-2 sm:px-2">Sectors</th>}
-            <th className="px-1 py-2 sm:px-2">Tyre</th>
+            <th
+              className={`px-1 py-2 sm:table-cell sm:px-2 ${race ? "" : "hidden"}`}
+            >
+              Tyre
+            </th>
             <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
               Pit
             </th>
