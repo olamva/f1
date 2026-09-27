@@ -114,7 +114,6 @@ textarea {
 }
 
 .glass-tab[aria-pressed="true"] {
-  touch-action: pan-y;
   cursor: grab;
 }
 
@@ -135,6 +134,7 @@ textarea {
 }
 
 .glass-tab {
+  touch-action: pan-y;
   user-select: none;
   border-radius: 9999px;
   color: #a1a1aa;
