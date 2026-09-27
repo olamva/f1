@@ -351,8 +351,8 @@ textarea {
 
 .glass-switch {
   position: relative;
-  height: 26px;
-  width: 56px;
+  height: 28px;
+  width: 64px;
   flex-shrink: 0;
   border-radius: 9999px;
   background: #3f3f46;
@@ -365,8 +365,8 @@ textarea {
   position: absolute;
   top: 2px;
   left: 2px;
-  width: 34px;
-  height: 22px;
+  width: 38px;
+  height: 24px;
   border-radius: inherit;
   background: #f4f4f5;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
@@ -382,11 +382,11 @@ textarea {
 }
 
 .peer:checked + .glass-switch::after {
-  translate: 18px;
+  translate: 22px;
 }
 
 label:active > .peer:enabled + .glass-switch::after {
-  scale: 1.12 1.25;
+  scale: calc(58 / 38) calc(38 / 24);
   background: rgb(255 255 255 / 0.22);
   backdrop-filter: blur(1px) saturate(1.8);
   box-shadow:

@@ -1,0 +1,14 @@
+{
+  "id": "03985013",
+  "ts": "2026-09-27T21:03:38+00:00",
+  "text": "Automatic approval review cannot run because its usage quota is exhausted; inspection resumes after the user says continue",
+  "tags": [
+    "approval",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-07247556",
+  "branch": "t3code/liquid-glass-controls"
+}
