@@ -201,12 +201,11 @@ export const Tabs = <T extends string>({
             onClick={(event) => {
               if (!suppressClick.current || event.detail === 0) {
                 event.currentTarget.focus({ preventScroll: true });
-                if (
-                  value !== i &&
-                  !matchMedia("(prefers-reduced-motion: reduce)").matches
-                )
-                  setMoving(true);
-                onChange(i);
+                if (i !== value) {
+                  if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
+                    setMoving(true);
+                  onChange(i);
+                }
               }
               suppressClick.current = false;
             }}

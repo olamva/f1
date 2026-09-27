@@ -1,0 +1,13 @@
+{
+  "id": "4e47f9b6",
+  "ts": "2026-09-27T11:12:49+00:00",
+  "text": "Sandbox blocks Git worktree index.lock during commit",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-06f72443",
+  "branch": "t3code/prevent-active-tab-refresh"
+}
