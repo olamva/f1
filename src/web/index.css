@@ -32,6 +32,12 @@ textarea {
   scrollbar-gutter: auto;
 }
 
+:root:has(.map-fullscreen) {
+  overflow: hidden;
+  overscroll-behavior: none;
+  scrollbar-gutter: auto;
+}
+
 :root[data-tab="Countdown"]:has(.spotlight) {
   overflow: hidden;
   overscroll-behavior: none;
