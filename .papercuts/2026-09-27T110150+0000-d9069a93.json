@@ -1,0 +1,14 @@
+{
+  "id": "d9069a93",
+  "ts": "2026-09-27T11:01:50+00:00",
+  "text": "t3 preview_snapshot fails with 'automation snapshot failed on client' after preview_open; tab reports visible:false",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "98229609",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/blob-nav-tab-morph"
+}
