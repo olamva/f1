@@ -1,0 +1,13 @@
+{
+  "id": "9ead3744",
+  "ts": "2026-09-27T13:16:58+00:00",
+  "text": "ps and pgrep cannot inspect processes in the sandbox",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-luna",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-669441d6",
+  "branch": "t3code/adjust-top-padding"
+}
