@@ -1,0 +1,14 @@
+{
+  "id": "9c081571",
+  "ts": "2026-09-27T21:50:48+00:00",
+  "text": "The sandbox blocks local TCP listen, so dev-server tests and UI preview fail with EPERM",
+  "tags": [
+    "sandbox",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-253d99cd",
+  "branch": "t3code/fix-draggable-liquid-glass-switches"
+}

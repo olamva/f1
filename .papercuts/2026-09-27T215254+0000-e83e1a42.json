@@ -1,0 +1,14 @@
+{
+  "id": "e83e1a42",
+  "ts": "2026-09-27T21:52:54+00:00",
+  "text": "T3 preview_snapshot fails on the running app, although preview_evaluate and preview_click work",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-253d99cd",
+  "branch": "t3code/fix-draggable-liquid-glass-switches"
+}
