@@ -25,7 +25,7 @@ export const MapFrame = ({
       className={`bg-surface ${full ? "map-fullscreen fixed inset-0 z-50" : "relative rounded-xl"}`}
     >
       <div
-        className={`p-2 ${full ? "flex flex-col gap-2 pt-[calc(env(safe-area-inset-top)+0.5rem)]" : ""} ${turned ? "absolute top-0 left-full h-[100dvw] w-[100dvh] origin-top-left rotate-90" : `relative ${full ? "h-full" : ""}`}`}
+        className={`p-2 ${full ? "flex flex-col gap-2" : ""} ${turned ? "absolute top-0 left-full h-[100dvw] w-[100dvh] origin-top-left rotate-90 pl-[calc(env(safe-area-inset-top)+0.5rem)]" : `relative ${full ? "h-full pt-[calc(env(safe-area-inset-top)+0.5rem)]" : ""}`}`}
       >
         {full && banner}
         {full && (
