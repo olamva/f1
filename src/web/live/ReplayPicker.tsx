@@ -66,34 +66,39 @@ const SessionButton = ({ session, onStart }: SessionButtonProps) =>
     </span>
   );
 
+const weekday = (s: SessionRef, weekday: "long" | "short") =>
+  day(s).toLocaleDateString([], { weekday, timeZone: "UTC" });
+
 const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
   <article className="bg-surface h-full space-y-3 rounded-xl p-4">
     <header className="flex items-baseline justify-between gap-2">
-      <h3 className={`truncate font-semibold ${featured ? "text-lg" : ""}`}>
+      <h2 className={`truncate font-semibold ${featured ? "sm:text-lg" : ""}`}>
         <Flag country={sessions[0].country} />
         {sessions[0].meeting}
-      </h3>
+      </h2>
       <span className="shrink-0 text-xs text-zinc-500">{dates(sessions)}</span>
     </header>
     <div
-      className={
-        featured ? "grid gap-3 sm:auto-cols-fr sm:grid-flow-col" : "space-y-2"
-      }
+      className={`space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
     >
       {Object.values(Object.groupBy(sessions, (s) => s.start.slice(0, 10))).map(
         (group) => (
           <div
             key={group![0].start}
-            className={featured ? "space-y-1.5" : "flex items-center gap-2"}
+            className={`flex items-center gap-2 ${featured ? "sm:block sm:space-y-1.5" : ""}`}
           >
-            <h4
-              className={`shrink-0 text-xs text-zinc-500 ${featured ? "" : "w-8"}`}
+            <h3
+              className={`w-8 shrink-0 text-xs text-zinc-500 ${featured ? "sm:w-auto" : ""}`}
             >
-              {day(group![0]).toLocaleDateString([], {
-                weekday: featured ? "long" : "short",
-                timeZone: "UTC",
-              })}
-            </h4>
+              {featured && (
+                <span className="max-sm:hidden">
+                  {weekday(group![0], "long")}
+                </span>
+              )}
+              <span className={featured ? "sm:hidden" : ""}>
+                {weekday(group![0], "short")}
+              </span>
+            </h3>
             <div className="flex flex-wrap gap-1.5">
               {group!.map((s) => (
                 <SessionButton key={s.start} session={s} onStart={onStart} />
@@ -106,32 +111,12 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
   </article>
 );
 
-export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) => {
-  const [latest, ...earlier] = weekends(sessions);
-  return (
-    latest && (
-      <div className="space-y-6 text-sm">
-        <section className="space-y-2">
-          <h2 className="px-1 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
-            Latest weekend
-          </h2>
-          <Weekend sessions={latest} onStart={onStart} featured />
-        </section>
-        {earlier.length > 0 && (
-          <section className="space-y-2">
-            <h2 className="px-1 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
-              Earlier this season
-            </h2>
-            <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {earlier.map((w) => (
-                <li key={w[0].start}>
-                  <Weekend sessions={w} onStart={onStart} />
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
-      </div>
-    )
-  );
-};
+export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) => (
+  <ul className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+    {weekends(sessions).map((w, i) => (
+      <li key={w[0].start} className={i === 0 ? "sm:col-span-full" : ""}>
+        <Weekend sessions={w} onStart={onStart} featured={i === 0} />
+      </li>
+    ))}
+  </ul>
+);
