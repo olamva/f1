@@ -6,6 +6,7 @@ interface TabsProps<T extends string> {
   value: T | null;
   onChange: (v: T) => void;
   small?: boolean;
+  stretch?: boolean;
   labels?: Partial<Record<T, string>>;
   icons?: Partial<Record<T, LucideIcon>>;
   live?: T;
@@ -16,6 +17,7 @@ export const Tabs = <T extends string>({
   value,
   onChange,
   small,
+  stretch,
   labels,
   icons,
   live,
@@ -214,7 +216,7 @@ export const Tabs = <T extends string>({
       data-held={held}
       data-glass={active}
       data-visible={value !== null}
-      className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"}`}
+      className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"} ${stretch ? "max-sm:w-full" : ""}`}
     >
       {highlight && (
         <span
@@ -263,7 +265,7 @@ export const Tabs = <T extends string>({
             }}
             type="button"
             aria-pressed={value === i}
-            className={`glass-tab relative z-10 flex shrink-0 items-center justify-center capitalize ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
+            className={`glass-tab relative z-10 flex shrink-0 items-center justify-center capitalize ${stretch ? "max-sm:flex-1" : ""} ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
           >
             {content(i)}
             <span
