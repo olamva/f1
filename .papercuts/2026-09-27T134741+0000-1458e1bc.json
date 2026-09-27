@@ -1,0 +1,13 @@
+{
+  "id": "1458e1bc",
+  "ts": "2026-09-27T13:47:41+00:00",
+  "text": "pnpm 11 hangs while fetching packageManager pnpm 12 under the sandbox; --pm-on-fail=ignore works",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-669bc4fb",
+  "branch": "t3code/fix-player-logo"
+}
