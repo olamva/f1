@@ -32,6 +32,11 @@ textarea {
   scrollbar-gutter: auto;
 }
 
+:root:has(main:not([hidden]) .spotlight) {
+  overflow: hidden;
+  overscroll-behavior: none;
+}
+
 .tabular {
   font-variant-numeric: tabular-nums;
 }
