@@ -75,7 +75,7 @@ export const ReplayBar = ({
           </option>
         ))}
       </select>
-      {starts.length > 1 && (
+      {/^(Race|Sprint)$/.test(session.name) && (
         <Tabs items={UNITS} value={unit} onChange={setUnit} small />
       )}
       <input
