@@ -55,11 +55,14 @@ export const Tabs = <T extends string>({
     let trend = 0;
     let stretch = 0;
     let previous = performance.now();
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const animate = (now: number) => {
       const elapsed = Math.max(1, now - previous);
       const left =
         drag.current?.x ??
-        ease(x, drag.current?.left ?? rest.current, elapsed, 60);
+        (reduced
+          ? (drag.current?.left ?? rest.current)
+          : ease(x, drag.current?.left ?? rest.current, elapsed, 60));
       speed = ease(speed, Math.abs(left - x) / elapsed, elapsed, 40);
       trend = ease(trend, speed, elapsed, 150);
       stretch = ease(
@@ -69,7 +72,10 @@ export const Tabs = <T extends string>({
         25,
       );
       indicator.style.translate = `${left}px`;
-      indicator.style.setProperty("--stretch", stretch.toFixed(3));
+      indicator.style.setProperty(
+        "--stretch",
+        reduced ? "0" : stretch.toFixed(3),
+      );
       clip();
       x = left;
       previous = now;
@@ -109,13 +115,14 @@ export const Tabs = <T extends string>({
       ".glass-lens",
     )) {
       const outer = layer.getBoundingClientRect();
+      const scale = outer.width / layer.offsetWidth;
       layer.style.clipPath = `inset(${[
         inner.top - outer.top,
         outer.right - inner.right,
         outer.bottom - inner.bottom,
         inner.left - outer.left,
       ]
-        .map((edge) => `${Math.max(0, edge)}px`)
+        .map((edge) => `${Math.max(0, edge / scale)}px`)
         .join(" ")} round 9999px)`;
     }
   };
@@ -156,6 +163,20 @@ export const Tabs = <T extends string>({
     );
   };
 
+  const shine = (event: PointerEvent<HTMLElement>) => {
+    const track = nav.current!;
+    const bounds = track.getBoundingClientRect();
+    const scale = bounds.width / track.offsetWidth;
+    track.style.setProperty(
+      "--glass-x",
+      `${(event.clientX - bounds.left) / scale}px`,
+    );
+    track.style.setProperty(
+      "--glass-y",
+      `${(event.clientY - bounds.top) / scale}px`,
+    );
+  };
+
   const content = (i: T) => {
     const Icon: LucideIcon | undefined = icons?.[i];
     return (
@@ -181,6 +202,7 @@ export const Tabs = <T extends string>({
     <nav
       ref={nav}
       onPointerMove={(event) => {
+        shine(event);
         if (drag.current?.pointerId !== event.pointerId) return;
         if (Math.abs(event.clientX - drag.current.startX) > 3)
           suppressClick.current = true;
@@ -238,6 +260,7 @@ export const Tabs = <T extends string>({
             }}
             onPointerDown={(event) => {
               if (!event.isPrimary || event.button !== 0) return;
+              shine(event);
               suppressClick.current = false;
               const button = event.currentTarget;
               drag.current = {

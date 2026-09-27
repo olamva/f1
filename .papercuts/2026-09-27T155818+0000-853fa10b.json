@@ -1,0 +1,14 @@
+{
+  "id": "853fa10b",
+  "ts": "2026-09-27T15:58:18+00:00",
+  "text": "Sandbox blocks FETCH_HEAD writes in the provided task worktree",
+  "tags": [
+    "git",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-astra",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-07247556",
+  "branch": "t3code/liquid-glass-controls"
+}

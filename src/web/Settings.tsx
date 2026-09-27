@@ -4,8 +4,6 @@ import type { TokenStatus } from "../shared/token.ts";
 import { getJson } from "./api.ts";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
 
-const SWITCH =
-  "relative h-5 w-9 shrink-0 rounded-full bg-zinc-700 transition-colors peer-checked:bg-red-600 peer-focus-visible:ring-2 peer-focus-visible:ring-red-400 after:absolute after:top-0.5 after:left-0.5 after:size-4 after:rounded-full after:bg-white after:transition-transform peer-checked:after:translate-x-4 peer-disabled:opacity-40";
 const PUSH_NOTES: Partial<Record<PushState, string>> = {
   unsupported: "Add the app to the Home Screen to get notifications.",
   off: "Notifications are not set up on this server.",
@@ -75,7 +73,7 @@ export const Settings = () => {
               localStorage.setItem("autoplay", e.target.checked ? "1" : "0");
             }}
           />
-          <span className={SWITCH} />
+          <span className="glass-switch" />
           Play new radio messages automatically
         </label>
       </section>
@@ -89,7 +87,7 @@ export const Settings = () => {
             disabled={push !== "enabled" && push !== "disabled"}
             onChange={(e) => togglePush(e.target.checked)}
           />
-          <span className={SWITCH} />
+          <span className="glass-switch" />
           Notify me 15 minutes and 5 minutes before each session
         </label>
         {note && <p className="text-sm text-zinc-400">{note}</p>}
