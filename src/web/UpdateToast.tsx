@@ -1,9 +1,18 @@
 import { useRegisterSW } from "virtual:pwa-register/react";
 
+const reload = () => location.reload();
+
+const update = async () => {
+  const waiting = (await navigator.serviceWorker.getRegistration())?.waiting;
+  if (!waiting) return reload();
+  navigator.serviceWorker.addEventListener("controllerchange", reload);
+  setTimeout(reload, 3000);
+  waiting.postMessage({ type: "SKIP_WAITING" });
+};
+
 export const UpdateToast = () => {
   const {
     needRefresh: [needRefresh],
-    updateServiceWorker,
   } = useRegisterSW({
     onRegisteredSW: (_, registration) => {
       if (!registration) return;
@@ -21,7 +30,7 @@ export const UpdateToast = () => {
     >
       <span>A new version is available.</span>
       <button
-        onClick={() => updateServiceWorker()}
+        onClick={update}
         className="cursor-pointer rounded-full bg-amber-500 px-4 py-1.5 font-semibold text-zinc-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
         type="button"
       >
