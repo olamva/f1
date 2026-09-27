@@ -1,0 +1,13 @@
+{
+  "id": "c2619a89",
+  "ts": "2026-09-27T22:13:20+00:00",
+  "text": "T3 preview_snapshot fails for a loaded local page, including text-only mode",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-8c4ec05d",
+  "branch": "t3code/refine-liquid-glass-switch"
+}

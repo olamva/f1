@@ -18,6 +18,7 @@ export const GlassSwitch = ({
     pointerId: number;
     startX: number;
     start: number;
+    moved: boolean;
   } | null>(null);
   const suppressClick = useRef(false);
   const position = (clientX: number) =>
@@ -52,17 +53,20 @@ export const GlassSwitch = ({
             pointerId: event.pointerId,
             startX: event.clientX,
             start: Number(checked),
+            moved: false,
           };
-          setProgress(Number(checked));
           event.currentTarget.setPointerCapture(event.pointerId);
         }}
         onPointerMove={(event) => {
           if (drag.current?.pointerId !== event.pointerId) return;
+          if (Math.abs(event.clientX - drag.current.startX) > 3)
+            drag.current.moved = true;
+          if (!drag.current.moved) return;
           setProgress(position(event.clientX));
         }}
         onPointerUp={(event) => {
           if (drag.current?.pointerId !== event.pointerId) return;
-          const moved = Math.abs(event.clientX - drag.current.startX) > 3;
+          const moved = drag.current.moved;
           const next = position(event.clientX) >= 0.5;
           drag.current = null;
           setProgress(null);

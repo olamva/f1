@@ -394,7 +394,7 @@ textarea {
     box-shadow 180ms ease;
 }
 
-label:active > .peer:enabled + .glass-switch::after {
+.peer:enabled + .glass-switch:active::after {
   scale: calc(58 / 38) calc(38 / 24);
   background: rgb(255 255 255 / 0.22);
   backdrop-filter: blur(1px) saturate(1.8);
