@@ -4,7 +4,7 @@ F1 Pitwall is a private F1 site: live timing, replays of recent sessions, and se
 
 - React + Vite + Tailwind in `src/web`, Hono server in `src/server`, shared logic in `src/shared`.
 - Live timing comes from `livetiming.formula1.com`. Results and standings come from Jolpica-F1.
-- It runs on Azure Container Apps. It scales to zero after 60 minutes without requests. A scheduled Container Apps job checks the calendar and wakes it for sessions.
+- It runs on Azure Container Apps. It scales to zero after 20 minutes without requests. A scheduled Container Apps job checks the calendar and wakes it for sessions.
 
 ## Run it
 
