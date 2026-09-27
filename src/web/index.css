@@ -89,7 +89,7 @@ textarea {
   opacity: 0;
 }
 
-.glass-tabs[data-held="true"] .glass-highlight {
+.glass-tabs[data-glass="true"] .glass-highlight {
   --lift: 1.2;
   background-color: rgb(239 68 68 / 0.38);
   box-shadow:
@@ -103,12 +103,13 @@ textarea {
     --lift 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     top 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     bottom 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
+    width 280ms cubic-bezier(0.22, 1, 0.36, 1),
     background-color 200ms ease,
     box-shadow 200ms ease;
   will-change: translate, scale;
 }
 
-.glass-tabs[data-held="true"] .glass-highlight::before {
+.glass-tabs[data-glass="true"] .glass-highlight::before {
   opacity: 1;
 }
 
@@ -128,7 +129,7 @@ textarea {
   }
 }
 
-.glass-tabs[data-held="true"] .glass-highlight {
+.glass-tabs[data-glass="true"] .glass-highlight {
   top: -0.25rem;
   bottom: -0.25rem;
 }
@@ -179,7 +180,7 @@ textarea {
     display: none;
   }
 
-  .glass-tabs-small[data-held="true"] .glass-highlight {
+  .glass-tabs-small[data-glass="true"] .glass-highlight {
     top: 0.25rem;
     bottom: 0.25rem;
   }

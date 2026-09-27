@@ -32,7 +32,9 @@ export const Tabs = <T extends string>({
     x: number;
   } | null>(null);
   const suppressClick = useRef(false);
+  const rest = useRef(0);
   const [held, setHeld] = useState(false);
+  const [moving, setMoving] = useState(false);
   const [highlight, setHighlight] = useState<{
     left: number;
     width: number;
@@ -40,18 +42,18 @@ export const Tabs = <T extends string>({
 
   useLayoutEffect(() => {
     const indicator = blob.current;
-    if (!held || !indicator) return;
+    if (!(held || moving) || !indicator) return;
     const ease = (from: number, to: number, elapsed: number, time: number) =>
       from + (to - from) * (1 - Math.exp(-elapsed / time));
     let frame = 0;
-    let x = drag.current?.x ?? 0;
+    let x = drag.current?.x ?? rest.current;
     let speed = 0;
     let trend = 0;
     let stretch = 0;
     let previous = performance.now();
     const animate = (now: number) => {
       const elapsed = Math.max(1, now - previous);
-      const left = drag.current?.x ?? x;
+      const left = drag.current?.x ?? ease(x, rest.current, elapsed, 60);
       speed = ease(speed, Math.abs(left - x) / elapsed, elapsed, 40);
       trend = ease(trend, speed, elapsed, 150);
       stretch = ease(
@@ -64,21 +66,25 @@ export const Tabs = <T extends string>({
       indicator.style.setProperty("--stretch", stretch.toFixed(3));
       x = left;
       previous = now;
+      if (!drag.current && Math.abs(rest.current - left) < 4)
+        return setMoving(false);
       frame = requestAnimationFrame(animate);
     };
-    animate(previous);
+    frame = requestAnimationFrame(animate);
     return () => {
       cancelAnimationFrame(frame);
       indicator.style.removeProperty("--stretch");
     };
-  }, [held]);
+  }, [held, moving]);
 
   useLayoutEffect(() => {
     const track = nav.current;
     const button = buttons.current[items.findIndex((item) => item === value)];
     if (!track || !button) return;
-    const measure = () =>
-      setHighlight({ left: button.offsetLeft, width: button.offsetWidth });
+    const measure = () => {
+      rest.current = button.offsetLeft;
+      setHighlight({ left: rest.current, width: button.offsetWidth });
+    };
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(track);
@@ -153,6 +159,7 @@ export const Tabs = <T extends string>({
         }
       }}
       data-held={held}
+      data-glass={held || moving}
       className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"}`}
     >
       {highlight && (
@@ -162,7 +169,7 @@ export const Tabs = <T extends string>({
           data-visible={value !== null}
           style={{
             width: highlight.width,
-            translate: held ? undefined : `${highlight.left}px`,
+            translate: held || moving ? undefined : `${highlight.left}px`,
           }}
         />
       )}
@@ -189,10 +196,16 @@ export const Tabs = <T extends string>({
               };
               button.setPointerCapture(event.pointerId);
               setHeld(true);
+              setMoving(false);
             }}
             onClick={(event) => {
               if (!suppressClick.current || event.detail === 0) {
                 event.currentTarget.focus({ preventScroll: true });
+                if (
+                  value !== i &&
+                  !matchMedia("(prefers-reduced-motion: reduce)").matches
+                )
+                  setMoving(true);
                 onChange(i);
               }
               suppressClick.current = false;
