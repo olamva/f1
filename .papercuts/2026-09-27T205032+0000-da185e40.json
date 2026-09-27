@@ -1,0 +1,13 @@
+{
+  "id": "da185e40",
+  "ts": "2026-09-27T20:50:32+00:00",
+  "text": "Local docker build fails: .dockerignore excludes infra but Dockerfile copies infra/sessions.json; CI only works via git context",
+  "tags": [
+    "docker"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "d13805e8",
+  "where": ".dockerignore",
+  "branch": "t3code/3d880a65"
+}
