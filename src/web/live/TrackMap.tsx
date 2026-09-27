@@ -1,5 +1,6 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Crown, Maximize, Minimize } from "lucide-react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { Crown } from "lucide-react";
+import { MapFrame } from "./MapFrame.tsx";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import { sectorSplits, type Row, type SessionBests } from "./view.ts";
@@ -210,8 +211,6 @@ export const TrackMap = ({
   speed = 1,
   banner,
 }: TrackMapProps) => {
-  const frame = useRef<HTMLDivElement>(null);
-  const [full, setFull] = useState(false);
   const svg = useRef<SVGSVGElement>(null);
   const pointer = useRef("");
   const [hover, setHover] = useState<{
@@ -286,202 +285,191 @@ export const TrackMap = ({
       );
     }
   }, [positionTrail, project, speed]);
-  useEffect(() => {
-    const sync = () => setFull(document.fullscreenElement === frame.current);
-    document.addEventListener("fullscreenchange", sync);
-    return () => document.removeEventListener("fullscreenchange", sync);
-  }, []);
   return (
-    <div
-      ref={frame}
-      className={`bg-surface relative p-2 ${full ? "flex flex-col gap-2" : "rounded-xl"}`}
-    >
-      {full && banner}
-      <button
-        type="button"
-        aria-label={full ? "Exit full screen" : "Show the map in full screen"}
-        onClick={() =>
-          full ? document.exitFullscreen() : frame.current!.requestFullscreen()
-        }
-        className="glass-gear absolute right-3 bottom-3 z-10 cursor-pointer p-2"
-      >
-        {full ? <Minimize size={18} /> : <Maximize size={18} />}
-      </button>
-      <svg
-        ref={svg}
-        viewBox={box.join(" ")}
-        className={full ? "min-h-0 w-full flex-1" : "aspect-square w-full"}
-        onPointerMove={(event) => {
-          const at = `${event.clientX},${event.clientY}`;
-          if (at === pointer.current) return;
-          pointer.current = at;
-          const target = (event.target as Element).closest("[data-number]");
-          const number = target?.getAttribute("data-number");
-          const p = new DOMPoint(event.clientX, event.clientY).matrixTransform(
-            svg.current!.getScreenCTM()!.inverse(),
-          );
-          setHover((h) =>
-            !number
-              ? null
-              : target!.tagName === "g" || h?.number !== number
-                ? { number, x: p.x, y: p.y }
-                : h,
-          );
-        }}
-        onPointerLeave={() => {
-          pointer.current = "";
-          setHover(null);
-        }}
-      >
-        <polyline
-          points={path}
-          fill="none"
-          stroke="#3f3f46"
-          strokeWidth={18}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-        {marks && <Markers {...marks} />}
-        {cars.map(({ r, x, y, focus }) => (
-          <g
-            key={r.number}
-            data-number={r.number}
-            role="button"
-            tabIndex={0}
-            aria-label={`Select ${r.name}`}
-            aria-pressed={selected.has(r.number)}
-            aria-describedby={
-              hovered === r.number ? "track-map-card" : undefined
-            }
-            onFocus={() =>
+    <MapFrame banner={banner}>
+      {(full) => (
+        <>
+          <svg
+            ref={svg}
+            viewBox={box.join(" ")}
+            className={full ? "min-h-0 w-full flex-1" : "aspect-square w-full"}
+            onPointerMove={(event) => {
+              const at = `${event.clientX},${event.clientY}`;
+              if (at === pointer.current) return;
+              pointer.current = at;
+              const target = (event.target as Element).closest("[data-number]");
+              const number = target?.getAttribute("data-number");
+              const p = new DOMPoint(
+                event.clientX,
+                event.clientY,
+              ).matrixTransform(svg.current!.getScreenCTM()!.inverse());
               setHover((h) =>
-                h?.number === r.number ? h : { number: r.number, x, y },
-              )
-            }
-            onBlur={() => setHover(null)}
-            onClick={() => onToggle(r.number)}
-            onKeyDown={(event) => {
-              if (event.key === "Enter" || event.key === " ") {
-                event.preventDefault();
-                onToggle(r.number);
-              }
+                !number
+                  ? null
+                  : target!.tagName === "g" || h?.number !== number
+                    ? { number, x: p.x, y: p.y }
+                    : h,
+              );
             }}
-            className="group cursor-pointer outline-none"
-            style={place(x, y)}
-            opacity={focus || hovered === r.number ? 1 : 0.35}
+            onPointerLeave={() => {
+              pointer.current = "";
+              setHover(null);
+            }}
           >
-            <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
-            <circle
-              r={14}
-              fill={r.color}
-              stroke="#18181b"
-              strokeWidth={4}
-              className="group-focus-visible:stroke-zinc-100"
+            <polyline
+              points={path}
+              fill="none"
+              stroke="#3f3f46"
+              strokeWidth={18}
+              strokeLinejoin="round"
+              strokeLinecap="round"
             />
-          </g>
-        ))}
-        {cars.map(({ r, x, y, focus }) => {
-          const crown = r.position === 1 && (race || r.bestLap);
-          const laps = !crown && race && r.lapsBehind ? `+${r.lapsBehind}` : "";
-          const extra = crown ? 34 : laps ? 12 * laps.length + 12 : 0;
-          return (
-            <g
-              key={r.number}
-              data-number={r.number}
-              onClick={() => onToggle(r.number)}
-              className="cursor-pointer"
-              style={place(x, y)}
-              opacity={focus || hovered === r.number ? 1 : 0.35}
-            >
-              <rect
-                x={-94 - extra}
-                y={-56}
-                width={70 + extra}
-                height={32}
-                rx={3}
-                fill="#27272a"
-                fillOpacity={0.9}
-              />
-              <path
-                d={`M-24 -24H${-94 - extra}`}
-                stroke={r.color}
-                strokeWidth={3}
-              />
-              <text
-                x={-59 - extra}
-                y={-40}
-                dominantBaseline="middle"
-                textAnchor="middle"
-                className="fill-zinc-100 text-[22px] font-semibold"
+            {marks && <Markers {...marks} />}
+            {cars.map(({ r, x, y, focus }) => (
+              <g
+                key={r.number}
+                data-number={r.number}
+                role="button"
+                tabIndex={0}
+                aria-label={`Select ${r.name}`}
+                aria-pressed={selected.has(r.number)}
+                aria-describedby={
+                  hovered === r.number ? "track-map-card" : undefined
+                }
+                onFocus={() =>
+                  setHover((h) =>
+                    h?.number === r.number ? h : { number: r.number, x, y },
+                  )
+                }
+                onBlur={() => setHover(null)}
+                onClick={() => onToggle(r.number)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    onToggle(r.number);
+                  }
+                }}
+                className="group cursor-pointer outline-none"
+                style={place(x, y)}
+                opacity={focus || hovered === r.number ? 1 : 0.35}
               >
-                {r.tla}
-              </text>
-              {crown ? (
-                <Crown
-                  x={-58}
-                  y={-51}
-                  width={22}
-                  height={22}
-                  className="stroke-yellow-300"
-                  strokeWidth={2.5}
+                <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
+                <circle
+                  r={14}
+                  fill={r.color}
+                  stroke="#18181b"
+                  strokeWidth={4}
+                  className="group-focus-visible:stroke-zinc-100"
                 />
-              ) : laps ? (
-                <text
-                  x={-36}
-                  y={-40}
-                  dominantBaseline="middle"
-                  textAnchor="end"
-                  className="fill-zinc-300 text-[21px] font-bold"
+              </g>
+            ))}
+            {cars.map(({ r, x, y, focus }) => {
+              const crown = r.position === 1 && (race || r.bestLap);
+              const laps =
+                !crown && race && r.lapsBehind ? `+${r.lapsBehind}` : "";
+              const extra = crown ? 34 : laps ? 12 * laps.length + 12 : 0;
+              return (
+                <g
+                  key={r.number}
+                  data-number={r.number}
+                  onClick={() => onToggle(r.number)}
+                  className="cursor-pointer"
+                  style={place(x, y)}
+                  opacity={focus || hovered === r.number ? 1 : 0.35}
                 >
-                  {laps}
-                </text>
-              ) : null}
-            </g>
-          );
-        })}
-        {hover && card && (
-          <>
-            <circle
-              data-number={card.number}
-              cx={hover.x}
-              cy={hover.y}
-              r={6}
-              fill="transparent"
-              className="cursor-pointer"
-              onMouseDown={(event) => event.preventDefault()}
-              onClick={() => onToggle(card.number)}
-            />
-            <foreignObject
-              x={hover.x > box[0] + box[2] / 2 ? hover.x - 340 : hover.x + 20}
-              y={hover.y - 45}
-              width={320}
-              height={90}
-              className="pointer-events-none overflow-visible"
-            >
-              <div
-                id="track-map-card"
-                className="rounded-lg bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg"
-              >
-                <p className="text-[26px] font-semibold text-zinc-100">
-                  {card.name}
-                </p>
-                <p className="flex items-center gap-2 text-[20px] text-zinc-400">
-                  <span
-                    className="size-3 rounded-full"
-                    style={{ backgroundColor: card.color }}
+                  <rect
+                    x={-94 - extra}
+                    y={-56}
+                    width={70 + extra}
+                    height={32}
+                    rx={3}
+                    fill="#27272a"
+                    fillOpacity={0.9}
                   />
-                  {card.team}
-                </p>
-              </div>
-            </foreignObject>
-          </>
-        )}
-      </svg>
-      {(note || !outline) && (
-        <p className="absolute inset-x-0 bottom-3 text-center text-sm text-zinc-400">
-          {note ?? "The track outline shows after a few laps."}
-        </p>
+                  <path
+                    d={`M-24 -24H${-94 - extra}`}
+                    stroke={r.color}
+                    strokeWidth={3}
+                  />
+                  <text
+                    x={-59 - extra}
+                    y={-40}
+                    dominantBaseline="middle"
+                    textAnchor="middle"
+                    className="fill-zinc-100 text-[22px] font-semibold"
+                  >
+                    {r.tla}
+                  </text>
+                  {crown ? (
+                    <Crown
+                      x={-58}
+                      y={-51}
+                      width={22}
+                      height={22}
+                      className="stroke-yellow-300"
+                      strokeWidth={2.5}
+                    />
+                  ) : laps ? (
+                    <text
+                      x={-36}
+                      y={-40}
+                      dominantBaseline="middle"
+                      textAnchor="end"
+                      className="fill-zinc-300 text-[21px] font-bold"
+                    >
+                      {laps}
+                    </text>
+                  ) : null}
+                </g>
+              );
+            })}
+            {hover && card && (
+              <>
+                <circle
+                  data-number={card.number}
+                  cx={hover.x}
+                  cy={hover.y}
+                  r={6}
+                  fill="transparent"
+                  className="cursor-pointer"
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => onToggle(card.number)}
+                />
+                <foreignObject
+                  x={
+                    hover.x > box[0] + box[2] / 2 ? hover.x - 340 : hover.x + 20
+                  }
+                  y={hover.y - 45}
+                  width={320}
+                  height={90}
+                  className="pointer-events-none overflow-visible"
+                >
+                  <div
+                    id="track-map-card"
+                    className="rounded-lg bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg"
+                  >
+                    <p className="text-[26px] font-semibold text-zinc-100">
+                      {card.name}
+                    </p>
+                    <p className="flex items-center gap-2 text-[20px] text-zinc-400">
+                      <span
+                        className="size-3 rounded-full"
+                        style={{ backgroundColor: card.color }}
+                      />
+                      {card.team}
+                    </p>
+                  </div>
+                </foreignObject>
+              </>
+            )}
+          </svg>
+          {(note || !outline) && (
+            <p className="absolute inset-x-0 bottom-3 text-center text-sm text-zinc-400">
+              {note ?? "The track outline shows after a few laps."}
+            </p>
+          )}
+        </>
       )}
-    </div>
+    </MapFrame>
   );
 };
