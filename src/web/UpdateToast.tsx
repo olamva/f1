@@ -1,3 +1,5 @@
+import { LoaderCircle } from "lucide-react";
+import { useState } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
 const reload = () => location.reload();
@@ -5,12 +7,14 @@ const reload = () => location.reload();
 const update = async () => {
   const waiting = (await navigator.serviceWorker.getRegistration())?.waiting;
   if (!waiting) return reload();
-  navigator.serviceWorker.addEventListener("controllerchange", reload);
-  setTimeout(reload, 3000);
+  waiting.addEventListener("statechange", () => {
+    if (["activated", "redundant"].includes(waiting.state)) reload();
+  });
   waiting.postMessage({ type: "SKIP_WAITING" });
 };
 
 export const UpdateToast = () => {
+  const [updating, setUpdating] = useState(false);
   const {
     needRefresh: [needRefresh],
   } = useRegisterSW({
@@ -30,10 +34,15 @@ export const UpdateToast = () => {
     >
       <span>A new version is available.</span>
       <button
-        onClick={update}
-        className="cursor-pointer rounded-full bg-amber-500 px-4 py-1.5 font-semibold text-zinc-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300"
+        onClick={() => {
+          setUpdating(true);
+          update();
+        }}
+        disabled={updating}
+        className="flex cursor-pointer items-center gap-2 rounded-full bg-amber-500 px-4 py-1.5 font-semibold text-zinc-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:cursor-default disabled:opacity-70 disabled:hover:bg-amber-500"
         type="button"
       >
+        {updating && <LoaderCircle className="size-4 animate-spin" />}
         Update
       </button>
     </div>
