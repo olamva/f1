@@ -28,20 +28,23 @@ export const Tabs = <T extends string>({
     startX: number;
     left: number;
     width: number;
-    x: number;
+    x: number | null;
   } | null>(null);
   const suppressClick = useRef(false);
   const rest = useRef(0);
   const [held, setHeld] = useState(false);
   const [moving, setMoving] = useState(false);
+  const [size, setSize] = useState<number | null>(null);
   const [highlight, setHighlight] = useState<{
     left: number;
     width: number;
   } | null>(null);
 
+  const active = held || moving;
+
   useLayoutEffect(() => {
     const indicator = blob.current;
-    if (!(held || moving) || !indicator) return;
+    if (!active || !indicator) return;
     const ease = (from: number, to: number, elapsed: number, time: number) =>
       from + (to - from) * (1 - Math.exp(-elapsed / time));
     let frame = 0;
@@ -52,7 +55,9 @@ export const Tabs = <T extends string>({
     let previous = performance.now();
     const animate = (now: number) => {
       const elapsed = Math.max(1, now - previous);
-      const left = drag.current?.x ?? ease(x, rest.current, elapsed, 60);
+      const left =
+        drag.current?.x ??
+        ease(x, drag.current?.left ?? rest.current, elapsed, 60);
       speed = ease(speed, Math.abs(left - x) / elapsed, elapsed, 40);
       trend = ease(trend, speed, elapsed, 150);
       stretch = ease(
@@ -65,8 +70,10 @@ export const Tabs = <T extends string>({
       indicator.style.setProperty("--stretch", stretch.toFixed(3));
       x = left;
       previous = now;
-      if (!drag.current && Math.abs(rest.current - left) < 4)
+      if (!drag.current && Math.abs(rest.current - left) < 4) {
+        setSize(null);
         return setMoving(false);
+      }
       frame = requestAnimationFrame(animate);
     };
     frame = requestAnimationFrame(animate);
@@ -74,7 +81,7 @@ export const Tabs = <T extends string>({
       cancelAnimationFrame(frame);
       indicator.style.removeProperty("--stretch");
     };
-  }, [held, moving]);
+  }, [active]);
 
   useLayoutEffect(() => {
     const track = nav.current;
@@ -105,8 +112,11 @@ export const Tabs = <T extends string>({
   };
 
   const cancelDrag = () => {
+    if (!drag.current) return;
     drag.current = null;
     setHeld(false);
+    setMoving(true);
+    setSize(null);
   };
 
   return (
@@ -120,22 +130,22 @@ export const Tabs = <T extends string>({
       }}
       onPointerUp={(event) => {
         if (drag.current?.pointerId !== event.pointerId) return;
-        if (suppressClick.current) {
-          const center = position(event) + drag.current.width / 2;
-          const index = items.reduce((nearest, _, index) => {
-            const button = buttons.current[index]!;
-            const previous = buttons.current[nearest]!;
-            return Math.abs(
-              button.offsetLeft + button.offsetWidth / 2 - center,
-            ) <
-              Math.abs(previous.offsetLeft + previous.offsetWidth / 2 - center)
-              ? index
-              : nearest;
-          }, 0);
-          buttons.current[index]?.focus({ preventScroll: true });
-          if (items[index] !== value) onChange(items[index]!);
-        }
+        const center = position(event) + drag.current.width / 2;
+        const index = items.reduce((nearest, _, index) => {
+          const button = buttons.current[index]!;
+          const previous = buttons.current[nearest]!;
+          return Math.abs(button.offsetLeft + button.offsetWidth / 2 - center) <
+            Math.abs(previous.offsetLeft + previous.offsetWidth / 2 - center)
+            ? index
+            : nearest;
+        }, 0);
+        const button = buttons.current[index]!;
+        button.focus({ preventScroll: true });
+        rest.current = button.offsetLeft;
+        suppressClick.current = true;
         cancelDrag();
+        setSize(button.offsetWidth);
+        if (items[index] !== value) onChange(items[index]!);
       }}
       onPointerCancel={cancelDrag}
       onLostPointerCapture={cancelDrag}
@@ -146,7 +156,7 @@ export const Tabs = <T extends string>({
         }
       }}
       data-held={held}
-      data-glass={held || moving}
+      data-glass={active}
       className={`glass-tabs relative flex w-fit max-w-full gap-1 p-1 sm:gap-1.5 ${small ? "glass-tabs-small" : "sm:p-1.5"}`}
     >
       {highlight && (
@@ -155,8 +165,8 @@ export const Tabs = <T extends string>({
           className="glass-highlight"
           data-visible={value !== null}
           style={{
-            width: highlight.width,
-            translate: held || moving ? undefined : `${highlight.left}px`,
+            width: size ?? highlight.width,
+            translate: active ? undefined : `${highlight.left}px`,
           }}
         />
       )}
@@ -171,18 +181,18 @@ export const Tabs = <T extends string>({
             onPointerDown={(event) => {
               if (!event.isPrimary || event.button !== 0) return;
               suppressClick.current = false;
-              if (value !== i) return;
               const button = event.currentTarget;
               drag.current = {
                 pointerId: event.pointerId,
                 startX: event.clientX,
                 left: button.offsetLeft,
                 width: button.offsetWidth,
-                x: button.offsetLeft,
+                x: null,
               };
               button.setPointerCapture(event.pointerId);
               setHeld(true);
               setMoving(false);
+              setSize(button.offsetWidth);
             }}
             onClick={(event) => {
               if (!suppressClick.current || event.detail === 0) {
