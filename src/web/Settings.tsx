@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Save } from "lucide-react";
 import type { TokenStatus } from "../shared/token.ts";
 import { getJson } from "./api.ts";
+import { GlassSwitch } from "./GlassSwitch.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
 
 const PUSH_NOTES: Partial<Record<PushState, string>> = {
@@ -63,33 +64,25 @@ export const Settings = () => {
     <div className="max-w-2xl space-y-4">
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="text-lg font-semibold">Team radio</h2>
-        <label className="flex cursor-pointer items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            className="peer sr-only"
-            checked={autoplay}
-            onChange={(e) => {
-              setAutoplay(e.target.checked);
-              localStorage.setItem("autoplay", e.target.checked ? "1" : "0");
-            }}
-          />
-          <span className="glass-switch" />
+        <GlassSwitch
+          checked={autoplay}
+          onChange={(checked) => {
+            setAutoplay(checked);
+            localStorage.setItem("autoplay", checked ? "1" : "0");
+          }}
+        >
           Play new radio messages automatically
-        </label>
+        </GlassSwitch>
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4 pointer-fine:hidden">
         <h2 className="text-lg font-semibold">Notifications</h2>
-        <label className="flex cursor-pointer items-center gap-3 text-sm">
-          <input
-            type="checkbox"
-            className="peer sr-only"
-            checked={push === "enabled"}
-            disabled={push !== "enabled" && push !== "disabled"}
-            onChange={(e) => togglePush(e.target.checked)}
-          />
-          <span className="glass-switch" />
+        <GlassSwitch
+          checked={push === "enabled"}
+          disabled={push !== "enabled" && push !== "disabled"}
+          onChange={togglePush}
+        >
           Notify me 15 minutes and 5 minutes before each session
-        </label>
+        </GlassSwitch>
         {note && <p className="text-sm text-zinc-400">{note}</p>}
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">

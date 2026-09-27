@@ -358,6 +358,7 @@ textarea {
   background: #3f3f46;
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
   transition: background-color 180ms ease;
+  touch-action: none;
 }
 
 .glass-switch::after {
@@ -383,6 +384,11 @@ textarea {
 
 .peer:checked + .glass-switch::after {
   translate: 22px;
+}
+
+.glass-switch[data-dragging="true"]::after {
+  translate: calc(var(--switch-progress) * 22px);
+  transition: none;
 }
 
 label:active > .peer:enabled + .glass-switch::after {

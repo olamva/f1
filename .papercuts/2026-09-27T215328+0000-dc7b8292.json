@@ -1,0 +1,14 @@
+{
+  "id": "dc7b8292",
+  "ts": "2026-09-27T21:53:28+00:00",
+  "text": "git add cannot create the worktree index.lock inside the shared git directory without escalation",
+  "tags": [
+    "sandbox",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-253d99cd",
+  "branch": "t3code/fix-draggable-liquid-glass-switches"
+}
