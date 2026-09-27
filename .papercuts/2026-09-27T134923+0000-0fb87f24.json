@@ -1,0 +1,13 @@
+{
+  "id": "0fb87f24",
+  "ts": "2026-09-27T13:49:23+00:00",
+  "text": "T3 preview_snapshot fails on a loaded local preview, even for a direct PNG asset",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-669bc4fb",
+  "branch": "t3code/fix-player-logo"
+}
