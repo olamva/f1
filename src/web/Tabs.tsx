@@ -28,7 +28,6 @@ export const Tabs = <T extends string>({
     startX: number;
     left: number;
     width: number;
-    scrollLeft: number;
     x: number;
   } | null>(null);
   const suppressClick = useRef(false);
@@ -89,18 +88,10 @@ export const Tabs = <T extends string>({
     const observer = new ResizeObserver(measure);
     observer.observe(track);
     observer.observe(button);
-    if (track.scrollWidth > track.clientWidth) {
-      track.scrollTo({
-        left:
-          button.offsetLeft - track.clientWidth / 2 + button.offsetWidth / 2,
-        behavior: "smooth",
-      });
-    }
     return () => observer.disconnect();
   }, [items, value]);
 
   const position = (event: PointerEvent<HTMLElement>) => {
-    const track = nav.current!;
     const current = drag.current!;
     const first = buttons.current[0]!;
     const last = buttons.current[items.length - 1]!;
@@ -108,11 +99,7 @@ export const Tabs = <T extends string>({
       first.offsetLeft,
       Math.min(
         last.offsetLeft + last.offsetWidth - current.width,
-        current.left +
-          event.clientX -
-          current.startX +
-          track.scrollLeft -
-          current.scrollLeft,
+        current.left + event.clientX - current.startX,
       ),
     );
   };
@@ -191,7 +178,6 @@ export const Tabs = <T extends string>({
                 startX: event.clientX,
                 left: button.offsetLeft,
                 width: button.offsetWidth,
-                scrollLeft: nav.current!.scrollLeft,
                 x: button.offsetLeft,
               };
               button.setPointerCapture(event.pointerId);
