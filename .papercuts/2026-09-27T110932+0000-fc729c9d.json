@@ -1,0 +1,13 @@
+{
+  "id": "fc729c9d",
+  "ts": "2026-09-27T11:09:32+00:00",
+  "text": "pnpm@12.6.0 signature verification blocks local scripts when registry fetch fails",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-06f72443",
+  "branch": "t3code/prevent-active-tab-refresh"
+}
