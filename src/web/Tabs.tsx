@@ -193,7 +193,7 @@ export const Tabs = <T extends string>({
             onClick={(event) => {
               if (!suppressClick.current || event.detail === 0) {
                 event.currentTarget.focus({ preventScroll: true });
-                onChange(i);
+                if (i !== value) onChange(i);
               }
               suppressClick.current = false;
             }}

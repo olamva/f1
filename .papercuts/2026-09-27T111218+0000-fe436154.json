@@ -1,0 +1,13 @@
+{
+  "id": "fe436154",
+  "ts": "2026-09-27T11:12:18+00:00",
+  "text": "T3 preview snapshot fails on an otherwise working page",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-sol",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-06f72443",
+  "branch": "t3code/prevent-active-tab-refresh"
+}
