@@ -53,6 +53,9 @@ export const App = () => {
     addEventListener("popstate", on);
     return () => removeEventListener("popstate", on);
   }, []);
+  useEffect(() => {
+    document.documentElement.dataset.tab = tab;
+  }, [tab]);
   const go = (t: Tab) => {
     history.pushState(null, "", t === "Countdown" ? "/" : `/${SLUG[t]}`);
     if (t === "Countdown" && tab === "Countdown") setSession((s) => s + 1);
