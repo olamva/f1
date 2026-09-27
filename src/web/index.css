@@ -170,22 +170,6 @@ textarea {
   }
 }
 
-@media (max-width: 639px) {
-  .glass-tabs-small {
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-
-  .glass-tabs-small::-webkit-scrollbar {
-    display: none;
-  }
-
-  .glass-tabs-small[data-glass="true"] .glass-highlight {
-    top: 0.25rem;
-    bottom: 0.25rem;
-  }
-}
-
 @media (max-width: 389px) {
   .glass-tabs:not(.glass-tabs-small) .glass-tab {
     padding-inline: 0.375rem;

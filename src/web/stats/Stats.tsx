@@ -1,3 +1,11 @@
+import {
+  ChartLine,
+  Gauge,
+  ListOrdered,
+  Medal,
+  Swords,
+  Users,
+} from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Championship } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
@@ -31,6 +39,15 @@ const VIEWS = [
 ] as const;
 type View = (typeof VIEWS)[number];
 
+const ICONS = {
+  Standings: ListOrdered,
+  "Title fight": Swords,
+  H2H: Users,
+  Season: ChartLine,
+  "Race pace": Gauge,
+  Records: Medal,
+};
+
 const slug = (v: View) => v.toLowerCase().replace(" ", "-");
 
 interface StatsProps {
@@ -62,7 +79,7 @@ export const Stats = ({ season }: StatsProps) => {
   }, [season]);
   return (
     <div className="space-y-4">
-      <Tabs items={VIEWS} value={view} onChange={show} small />
+      <Tabs items={VIEWS} value={view} onChange={show} icons={ICONS} small />
       {(view === "Standings" || view === "Title fight") && (
         <div className={view === "Standings" ? "xl:hidden" : undefined}>
           <Tabs
