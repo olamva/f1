@@ -1,4 +1,4 @@
-import { ChevronRight, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 
@@ -7,73 +7,116 @@ interface ReplayPickerProps {
   onStart: (session: SessionRef) => void;
 }
 
+interface SessionButtonProps {
+  session: SessionRef;
+  onStart: (session: SessionRef) => void;
+}
+
+interface WeekendProps extends ReplayPickerProps {
+  featured?: boolean;
+}
+
+const day = (s: SessionRef) => new Date(s.start.slice(0, 10));
+
 const weekends = (sessions: SessionRef[]) =>
   sessions
     .reduce<SessionRef[][]>((all, s) => {
-      if (all.at(-1)?.[0].meeting === s.meeting) all.at(-1)!.push(s);
+      const last = all.at(-1)?.at(-1);
+      if (last?.meeting === s.meeting && +day(s) - +day(last) < 4 * 864e5)
+        all.at(-1)!.push(s);
       else all.push([s]);
       return all;
     }, [])
     .reverse();
 
-const Weekend = ({ sessions, onStart }: ReplayPickerProps) => (
-  <div className="flex flex-wrap gap-2">
-    {sessions.map((s) =>
-      s.path ? (
-        <button
-          key={s.path}
-          onClick={() => onStart(s)}
-          aria-label={`Start replay: ${s.meeting} · ${s.name}`}
-          className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-3 py-1.5 hover:bg-red-600"
-        >
-          <Play aria-hidden="true" className="size-3.5" />
-          {s.name}
-        </button>
-      ) : (
-        <span key={s.name} className="group/pending relative">
-          <button
-            aria-disabled="true"
-            aria-describedby={`pending-${s.start}`}
-            className="striped-border flex cursor-not-allowed items-center gap-1.5 rounded-md px-3 py-1.5 text-zinc-500"
+const dates = (sessions: SessionRef[]) =>
+  new Intl.DateTimeFormat([], {
+    day: "numeric",
+    month: "short",
+    timeZone: "UTC",
+  }).formatRange(day(sessions[0]), day(sessions.at(-1)!));
+
+const SessionButton = ({ session, onStart }: SessionButtonProps) =>
+  session.path ? (
+    <button
+      onClick={() => onStart(session)}
+      aria-label={`Start replay: ${session.meeting} · ${session.name}`}
+      className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1 hover:bg-red-600"
+    >
+      <Play aria-hidden="true" className="size-3.5 shrink-0" />
+      {session.name}
+    </button>
+  ) : (
+    <span className="group/pending relative flex">
+      <button
+        aria-disabled="true"
+        aria-describedby={`pending-${session.start}`}
+        className="striped-border flex grow cursor-not-allowed items-center gap-1.5 rounded-md px-2.5 py-1 text-zinc-500"
+      >
+        <Play aria-hidden="true" className="size-3.5 shrink-0" />
+        {session.name}
+      </button>
+      <span
+        id={`pending-${session.start}`}
+        role="tooltip"
+        className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-md bg-zinc-800 px-3 py-2 text-xs text-zinc-300 opacity-0 shadow-lg group-focus-within/pending:opacity-100 group-hover/pending:opacity-100"
+      >
+        Session replay is not available yet.
+      </span>
+    </span>
+  );
+
+const weekday = (s: SessionRef, weekday: "long" | "short") =>
+  day(s).toLocaleDateString([], { weekday, timeZone: "UTC" });
+
+const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
+  <article className="bg-surface h-full space-y-3 rounded-xl p-4">
+    <header className="flex items-baseline justify-between gap-2">
+      <h2 className={`truncate font-semibold ${featured ? "sm:text-lg" : ""}`}>
+        <Flag country={sessions[0].country} />
+        {sessions[0].meeting}
+      </h2>
+      <span className="shrink-0 text-xs text-zinc-500">{dates(sessions)}</span>
+    </header>
+    <div
+      className={`space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
+    >
+      {Object.values(Object.groupBy(sessions, (s) => s.start.slice(0, 10))).map(
+        (group) => (
+          <div
+            key={group![0].start}
+            className={`flex items-center gap-2 ${featured ? "sm:block sm:space-y-1.5" : ""}`}
           >
-            <Play aria-hidden="true" className="size-3.5" />
-            {s.name}
-          </button>
-          <span
-            id={`pending-${s.start}`}
-            role="tooltip"
-            className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-2 w-max -translate-x-1/2 rounded-md bg-zinc-800 px-3 py-2 text-xs text-zinc-300 opacity-0 shadow-lg group-focus-within/pending:opacity-100 group-hover/pending:opacity-100"
-          >
-            Session replay is not available yet.
-          </span>
-        </span>
-      ),
-    )}
-  </div>
+            <h3
+              className={`w-8 shrink-0 text-xs text-zinc-500 ${featured ? "sm:w-auto" : ""}`}
+            >
+              {featured && (
+                <span className="max-sm:hidden">
+                  {weekday(group![0], "long")}
+                </span>
+              )}
+              <span className={featured ? "sm:hidden" : ""}>
+                {weekday(group![0], "short")}
+              </span>
+            </h3>
+            <div className="flex flex-wrap gap-1.5">
+              {group!.map((s) => (
+                <SessionButton key={s.start} session={s} onStart={onStart} />
+              ))}
+            </div>
+          </div>
+        ),
+      )}
+    </div>
+  </article>
 );
 
-export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) =>
-  sessions.length > 0 && (
-    <section className="bg-surface space-y-3 rounded-xl p-4 text-sm">
-      <h2 className="font-semibold text-zinc-300">Watch a replay</h2>
-      <ul className="space-y-1">
-        {weekends(sessions).map((w, i) => (
-          <li key={w[0].start}>
-            <details open={i === 0} className="group/weekend">
-              <summary className="flex cursor-pointer list-none items-center gap-1 py-1 text-zinc-400 hover:text-zinc-100">
-                <ChevronRight
-                  aria-hidden="true"
-                  className="size-4 group-open/weekend:rotate-90"
-                />
-                <Flag country={w[0].country} />
-                {w[0].meeting}
-              </summary>
-              <div className="py-2 pl-5">
-                <Weekend sessions={w} onStart={onStart} />
-              </div>
-            </details>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
+export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) => (
+  <ul className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+    {weekends(sessions).map((w, i) => (
+      <li key={w[0].start} className={i === 0 ? "sm:col-span-full" : ""}>
+        <Weekend sessions={w} onStart={onStart} featured={i === 0} />
+      </li>
+    ))}
+  </ul>
+);
