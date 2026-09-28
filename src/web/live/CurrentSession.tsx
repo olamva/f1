@@ -146,7 +146,7 @@ const Board = ({
   const banner = status && (
     <div
       role="alert"
-      className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? "paused" : ""}`}
+      className={`flag-banner rounded-md px-4 py-0.5 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? "paused" : ""}`}
     >
       {status.label}
     </div>
