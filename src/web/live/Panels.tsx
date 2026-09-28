@@ -275,6 +275,9 @@ const Bars = ({
   );
 };
 
+const slug = (last = "") =>
+  last.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
 export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
   const by = new Map(rows.map((r) => [r.number, r]));
   const audio = useRef<HTMLAudioElement>(null);
@@ -327,10 +330,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
               style={{ background: color }}
             >
               <TeamNumber
-                id={(driver?.last ?? "")
-                  .normalize("NFD")
-                  .replace(/\p{M}/gu, "")
-                  .toLowerCase()}
+                id={slug(driver?.last)}
                 number={current.number}
                 color="white"
                 className="flex h-9 items-center text-3xl"
@@ -387,11 +387,13 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
                 aria-current={active}
                 className={`flex w-full items-center gap-3 px-2 py-1.5 text-left hover:bg-zinc-800 ${active ? "bg-zinc-800" : ""}`}
               >
-                <span
-                  className="font-f1 w-7 text-center font-black italic"
-                  style={{ color: d?.color }}
-                >
-                  {r.number}
+                <span className="flex w-7 justify-center">
+                  <TeamNumber
+                    id={slug(d?.last)}
+                    number={r.number}
+                    color={d?.color ?? "white"}
+                    className="flex h-4 items-center"
+                  />
                 </span>
                 <span className="font-f1 font-bold uppercase">
                   {d?.last ?? r.number}
