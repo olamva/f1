@@ -45,9 +45,6 @@ export const InstallSheet = () => {
             </li>
           ))}
         </ol>
-        <p className="mt-4 text-sm text-zinc-400">
-          Then open Settings in the app and turn on notifications.
-        </p>
       </dialog>
     </>
   );
