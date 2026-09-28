@@ -41,10 +41,8 @@ const ICONS = {
 };
 
 const fromPath = (): Tab =>
-  /^\/(session\/|replay)/.test(location.pathname)
-    ? "Calendar"
-    : (TABS.find((t) => location.pathname.slice(1).startsWith(SLUG[t])) ??
-      "Countdown");
+  TABS.find((t) => location.pathname.slice(1).startsWith(SLUG[t])) ??
+  "Countdown";
 
 export const App = () => {
   const [tab, setTab] = useState<Tab>(fromPath);
