@@ -62,6 +62,7 @@ export const App = () => {
     document.documentElement.dataset.tab = tab;
   }, [tab]);
   const go = (t: Tab) => {
+    if (tab === "Calendar" && t !== "Calendar") scrollTo(0, 0);
     history.pushState(null, "", t === "Countdown" ? "/" : `/${SLUG[t]}`);
     if (t === "Countdown" && tab === "Countdown") setSession((s) => s + 1);
     setTab(t);
