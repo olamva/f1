@@ -7,6 +7,7 @@ import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { Standings } from "./Standings.tsx";
+import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
 
 const SESSIONS = ["sprint", "race"] as const;
@@ -58,12 +59,10 @@ const ResultsTable = ({ rows }: ResultsTableProps) => (
                 onClick={() => openDriver(result.driver)}
                 className="cursor-pointer text-left after:absolute after:inset-0"
               >
-                <span
-                  className="tabular mr-1.5 font-semibold sm:mr-2 sm:text-xs"
-                  style={{ color: teamColor(result.team) }}
-                >
-                  {result.number}
-                </span>
+                <TeamLogo
+                  team={result.team}
+                  className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
+                />
                 {result.name}
               </button>
             </td>

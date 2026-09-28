@@ -4,6 +4,14 @@ const IMAGES = import.meta.glob<string>("../numbers/*.webp", {
   import: "default",
 });
 
+export const slug = (last = "") =>
+  last.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
+
+export const numberSrc = (id: string) =>
+  Object.entries(IMAGES).find(([k]) =>
+    new RegExp(`[/_]${id}\\.webp$`).test(k),
+  )?.[1];
+
 interface TeamNumberProps {
   id: string;
   number: string;
@@ -17,9 +25,7 @@ export const TeamNumber = ({
   color,
   className,
 }: TeamNumberProps) => {
-  const src = Object.entries(IMAGES).find(([k]) =>
-    new RegExp(`[/_]${id}\\.webp$`).test(k),
-  )?.[1];
+  const src = numberSrc(id);
   return src ? (
     <span
       aria-hidden

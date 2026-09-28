@@ -3,6 +3,8 @@ import { Crown } from "lucide-react";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
+import { logoSrc } from "../TeamLogo.tsx";
+import { numberSrc, slug } from "../stats/TeamNumber.tsx";
 import { sectorSplits, type Row, type SessionBests } from "./view.ts";
 
 const SIZE = 1000;
@@ -242,6 +244,9 @@ export const TrackMap = ({
         : { project: null, box: [0, 0, SIZE, SIZE] as const },
     [outline, size],
   );
+  const cardX =
+    hover && (hover.x > box[0] + box[2] / 2 ? hover.x - 260 : hover.x + 20);
+  const cardNumber = card && numberSrc(slug(card.last));
   const path = useMemo(
     () =>
       outline && project
@@ -450,31 +455,90 @@ export const TrackMap = ({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => onToggle(card.number)}
                 />
-                <foreignObject
-                  x={
-                    hover.x > box[0] + box[2] / 2 ? hover.x - 340 : hover.x + 20
-                  }
-                  y={hover.y - 45}
-                  width={320}
-                  height={90}
-                  className="pointer-events-none overflow-visible"
-                >
-                  <div
-                    id="track-map-card"
-                    className="rounded-lg bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg"
+                <g id="track-map-card" className="pointer-events-none">
+                  <clipPath id="card-clip">
+                    <rect
+                      x={cardX!}
+                      y={hover.y - 65}
+                      width={240}
+                      height={130}
+                      rx={8}
+                    />
+                  </clipPath>
+                  <linearGradient id="card-tint" x1="0" y1="0" x2="1" y2="1">
+                    <stop
+                      offset="0"
+                      stopColor={card.color}
+                      stopOpacity={0.25}
+                    />
+                    <stop offset="1" stopColor={card.color} stopOpacity={0} />
+                  </linearGradient>
+                  <filter id="card-number-tint">
+                    <feFlood floodColor={card.color} />
+                    <feComposite in2="SourceAlpha" operator="in" />
+                  </filter>
+                  <rect
+                    x={cardX!}
+                    y={hover.y - 65}
+                    width={240}
+                    height={130}
+                    rx={8}
+                    className="fill-zinc-800 drop-shadow-lg"
+                  />
+                  <rect
+                    x={cardX!}
+                    y={hover.y - 65}
+                    width={240}
+                    height={130}
+                    rx={8}
+                    fill="url(#card-tint)"
+                  />
+                  {logoSrc(card.team) && (
+                    <image
+                      href={logoSrc(card.team)}
+                      x={cardX! + 110}
+                      y={hover.y - 85}
+                      width={170}
+                      height={170}
+                      opacity={0.15}
+                      clipPath="url(#card-clip)"
+                    />
+                  )}
+                  {cardNumber ? (
+                    <image
+                      href={cardNumber}
+                      x={cardX! + 20}
+                      y={hover.y - 53}
+                      width={120}
+                      height={40}
+                      preserveAspectRatio="xMinYMid meet"
+                      filter="url(#card-number-tint)"
+                    />
+                  ) : (
+                    <text
+                      x={cardX! + 20}
+                      y={hover.y - 20}
+                      fill={card.color}
+                      className="font-f1 text-[36px] font-black italic"
+                    >
+                      {card.number}
+                    </text>
+                  )}
+                  <text
+                    x={cardX! + 20}
+                    y={hover.y + 18}
+                    className="fill-zinc-400 text-[18px]"
                   >
-                    <p className="text-[26px] font-semibold text-zinc-100">
-                      {card.name}
-                    </p>
-                    <p className="flex items-center gap-2 text-[20px] text-zinc-400">
-                      <span
-                        className="size-3 rounded-full"
-                        style={{ backgroundColor: card.color }}
-                      />
-                      {card.team}
-                    </p>
-                  </div>
-                </foreignObject>
+                    {card.name.slice(0, -card.last.length).trim()}
+                  </text>
+                  <text
+                    x={cardX! + 20}
+                    y={hover.y + 50}
+                    className="font-f1 fill-zinc-100 text-[26px] font-black uppercase"
+                  >
+                    {card.last}
+                  </text>
+                </g>
               </>
             )}
           </svg>

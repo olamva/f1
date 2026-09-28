@@ -7,6 +7,7 @@ import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { clinched } from "./stats/derive.ts";
+import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
 
 interface StandingsTableProps {
@@ -47,10 +48,7 @@ const StandingsTable = ({
             const i = start + index;
             const name = (
               <span className="flex items-center gap-2">
-                <span
-                  className="h-4 w-1 rounded-sm"
-                  style={{ background: teamColor(row.team) }}
-                />
+                <TeamLogo team={row.team} className="h-4 w-6" />
                 {row.name}
               </span>
             );
