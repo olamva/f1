@@ -40,7 +40,7 @@ export const ScheduleWeekend = ({ round, featured }: WeekendProps) => (
           {featured ? "Next race weekend" : `Round ${round.round}`}
         </p>
         <h2
-          className={`font-f1 truncate ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
+          className={`font-f1 line-clamp-2 ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
         >
           <Flag country={round.country} />
           {round.name}
