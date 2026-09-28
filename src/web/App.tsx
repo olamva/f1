@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import {
+  CalendarDays,
   ChartColumn,
-  History,
   Settings as SettingsIcon,
   Timer,
   Trophy,
 } from "lucide-react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
-import { LiveSession, Replays, type LiveInfo } from "./live/CurrentSession.tsx";
+import {
+  Calendar,
+  LiveSession,
+  type LiveInfo,
+} from "./live/CurrentSession.tsx";
 import { Loading } from "./Loading.tsx";
 import { Results } from "./Results.tsx";
 import { Settings } from "./Settings.tsx";
@@ -17,12 +21,12 @@ import { Tabs } from "./Tabs.tsx";
 import { UpdateToast } from "./UpdateToast.tsx";
 import f1Logo from "./f1-logo.svg";
 
-const TABS = ["Countdown", "Replays", "Results", "Stats", "Settings"] as const;
+const TABS = ["Countdown", "Calendar", "Results", "Stats", "Settings"] as const;
 type Tab = (typeof TABS)[number];
 
 const SLUG: Record<Tab, string> = {
   Countdown: "session",
-  Replays: "replay",
+  Calendar: "calendar",
   Results: "results",
   Stats: "stats",
   Settings: "settings",
@@ -30,7 +34,7 @@ const SLUG: Record<Tab, string> = {
 
 const ICONS = {
   Countdown: Timer,
-  Replays: History,
+  Calendar: CalendarDays,
   Results: Trophy,
   Stats: ChartColumn,
   Settings: SettingsIcon,
@@ -47,7 +51,10 @@ export const App = () => {
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
   useEffect(() => {
-    const on = () => setTab(fromPath());
+    const on = () => {
+      setTab(fromPath());
+      setVisit((v) => v + 1);
+    };
     addEventListener("popstate", on);
     return () => removeEventListener("popstate", on);
   }, []);
@@ -71,7 +78,7 @@ export const App = () => {
         >
           <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />
           <span className="h-6 w-px bg-zinc-600 sm:h-7" />
-          <span className="text-[22px] leading-none font-extrabold tracking-wide text-white italic sm:text-[27px]">
+          <span className="font-f1 text-[22px] leading-none font-black tracking-wide text-white italic sm:text-[27px]">
             PITWALL
           </span>
         </button>
@@ -90,8 +97,8 @@ export const App = () => {
         <LiveSession season={season} info={info} />
       </main>
       <main key={visit} hidden={tab === "Countdown"}>
-        {tab === "Replays" && <Replays />}
-        {tab === "Results" && <Results />}
+        {tab === "Calendar" && <Calendar season={season} />}
+        {tab === "Results" && <Results season={season.data} />}
         {tab === "Stats" &&
           (season.data ? (
             <Stats season={season.data} />

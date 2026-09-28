@@ -64,7 +64,7 @@ export const Settings = () => {
   return (
     <div className="max-w-2xl space-y-4">
       <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="text-lg font-semibold">Team radio</h2>
+        <h2 className="font-f1 text-lg font-bold">Team radio</h2>
         <GlassSwitch
           checked={autoplay}
           onChange={(checked) => {
@@ -76,7 +76,7 @@ export const Settings = () => {
         </GlassSwitch>
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4 pointer-fine:hidden">
-        <h2 className="text-lg font-semibold">Notifications</h2>
+        <h2 className="font-f1 text-lg font-bold">Notifications</h2>
         <GlassSwitch
           checked={push === "enabled"}
           disabled={push !== "enabled" && push !== "disabled"}
@@ -88,7 +88,7 @@ export const Settings = () => {
         {push === "unsupported" && <InstallSheet />}
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
-        <h2 className="text-lg font-semibold">F1TV token</h2>
+        <h2 className="font-f1 text-lg font-bold">F1TV token</h2>
         <p className="text-sm text-zinc-400">
           The car positions on the track map need an F1TV subscription token.
           The app renews the token every few days until the F1TV login expires,
@@ -111,7 +111,7 @@ export const Settings = () => {
         )}
       </section>
       <section className="bg-surface space-y-3 rounded-xl p-4 text-sm">
-        <h3 className="font-semibold">Set the token</h3>
+        <h3 className="font-f1 font-bold">Set the token</h3>
         <ol className="list-decimal space-y-1 pl-5 text-zinc-300">
           <li>
             <a

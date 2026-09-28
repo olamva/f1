@@ -192,7 +192,7 @@ export const TitleFight = ({ champ, table, events, who }: TitleFightProps) => {
   return (
     <div className="space-y-4">
       <section className="bg-surface rounded-xl p-3">
-        <h2 className="mb-1 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        <h2 className="font-f1 mb-1 text-xs tracking-wider text-zinc-400 uppercase">
           Who can still win
         </h2>
         <p className="mb-2 text-sm text-zinc-500">
@@ -239,7 +239,7 @@ export const TitleFight = ({ champ, table, events, who }: TitleFightProps) => {
       </section>
       {alive.length > 1 && (
         <section className="bg-surface space-y-3 rounded-xl p-3">
-          <h2 className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+          <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
             What it takes at {events[0]!.name}
           </h2>
           <div className="flex flex-wrap gap-4">
