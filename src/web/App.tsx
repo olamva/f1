@@ -73,7 +73,7 @@ export const App = () => {
         >
           <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />
           <span className="h-6 w-px bg-zinc-600 sm:h-7" />
-          <span className="text-[22px] leading-none font-extrabold tracking-wide text-white italic sm:text-[27px]">
+          <span className="font-f1 text-[22px] leading-none font-black tracking-wide text-white italic sm:text-[27px]">
             PITWALL
           </span>
         </button>

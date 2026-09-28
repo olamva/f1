@@ -89,16 +89,14 @@ interface StatusProps {
 const Status = ({ ref, lap, part, banner, clock, delay }: StatusProps) => (
   <div ref={ref} className="flex scroll-mt-4 flex-wrap items-center gap-3">
     {lap && (
-      <span className="tabular text-2xl font-black">
-        <span className="mr-2 text-sm font-semibold tracking-wider text-zinc-400">
-          LAP
-        </span>
+      <span className="tabular font-f1 text-2xl font-black">
+        <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
         {lap.CurrentLap}
         <span className="text-zinc-500">/{lap.TotalLaps}</span>
       </span>
     )}
     {part && (
-      <span className="rounded bg-zinc-700 px-2 py-0.5 text-lg font-bold">
+      <span className="font-f1 rounded bg-zinc-700 px-2 py-0.5 text-lg font-bold">
         {part}
       </span>
     )}
@@ -146,7 +144,7 @@ const Board = ({
   const banner = status && (
     <div
       role="alert"
-      className={`flag-banner rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? "paused" : ""}`}
+      className={`flag-banner font-f1 rounded-md px-4 py-2 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? "paused" : ""}`}
     >
       {status.label}
     </div>
@@ -154,7 +152,7 @@ const Board = ({
   return (
     <div className="space-y-4">
       <header className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-bold">
+        <h1 className="font-f1 text-xl font-bold">
           <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
           {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
         </h1>
@@ -348,7 +346,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (
     <div className="to-surface rounded-xl bg-gradient-to-r from-red-700/40 p-4">
-      <h1 className="text-lg font-bold">
+      <h1 className="font-f1 text-lg font-bold">
         <Flag country={scheduled.round.country} />
         {scheduled.round.name} · {scheduled.label}
       </h1>

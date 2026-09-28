@@ -62,7 +62,7 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
             <div
               className={`podium-block relative flex flex-col items-center justify-center rounded-t-lg ${HEIGHTS[i]}`}
             >
-              <span className="podium-metal text-3xl leading-none font-black">
+              <span className="podium-metal font-f1 text-3xl leading-none font-black">
                 {i + 1}
               </span>
               <span className="tabular mt-1 text-xs text-zinc-300">
