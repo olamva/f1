@@ -93,4 +93,27 @@ export type DriverProfile = {
   wins: number;
   podiums: number;
   poles: number | null;
+  seasons: {
+    year: number;
+    team: string;
+    teamName: string;
+    starts: number;
+    wins: number;
+    podiums: number;
+    points: number;
+  }[];
+};
+
+export type StandingRow = {
+  id: string;
+  name: string;
+  team: string;
+  points: number;
+  wins: number;
+};
+
+export type SeasonStandings = {
+  year: number;
+  drivers: StandingRow[];
+  constructors: StandingRow[];
 };

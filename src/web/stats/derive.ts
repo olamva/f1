@@ -1,6 +1,8 @@
 import {
   addResult,
   beatsOnCountback,
+  hasClinched,
+  type Championship,
   type Standing,
   type Upcoming,
 } from "../../shared/clinch.ts";
@@ -121,6 +123,13 @@ export function remaining(s: Season): Upcoming[] {
       },
     ]);
 }
+
+export const clinched = (s: Season, champ: Championship): boolean => {
+  const table = latest(champ === "drivers" ? driverTables(s) : teamTables(s));
+  return (
+    table.length > 0 && hasClinched(table, remaining(s), table[0]!.id, champ)
+  );
+};
 
 export function gains(
   s: Season,

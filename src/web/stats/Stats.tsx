@@ -1,8 +1,8 @@
-import { ChartLine, Gauge, ListOrdered, Swords, Users } from "lucide-react";
+import { ChartLine, Gauge, IdCard, Swords, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Championship } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
-import { pathPart, setPathPart } from "../path.ts";
+import { pathPart, pathSegment, setPathPart } from "../path.ts";
 import { Tabs } from "../Tabs.tsx";
 import {
   driverTables,
@@ -14,23 +14,18 @@ import {
   teamTables,
   teams,
 } from "./derive.ts";
+import { DriverProfile } from "./DriverProfile.tsx";
+import { Drivers } from "./Drivers.tsx";
 import { RacePace } from "./RacePace.tsx";
 import { SeasonCharts } from "./SeasonCharts.tsx";
-import { StandingsTable } from "./Standings.tsx";
 import { Teammates } from "./Teammates.tsx";
 import { TitleFight } from "./TitleFight.tsx";
 
-const VIEWS = [
-  "Standings",
-  "Title fight",
-  "H2H",
-  "Season",
-  "Race pace",
-] as const;
+const VIEWS = ["Drivers", "Title fight", "H2H", "Season", "Race pace"] as const;
 type View = (typeof VIEWS)[number];
 
 const ICONS = {
-  Standings: ListOrdered,
+  Drivers: IdCard,
   "Title fight": Swords,
   H2H: Users,
   Season: ChartLine,
@@ -45,11 +40,15 @@ interface StatsProps {
 
 export const Stats = ({ season }: StatsProps) => {
   const [view, setView] = useState<View>(
-    () => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Standings",
+    () => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Drivers",
+  );
+  const [driver, setDriver] = useState(() =>
+    view === "Drivers" ? pathSegment(3) : null,
   );
   const show = (v: View) => {
     setPathPart("stats", slug(v));
     setView(v);
+    setDriver(null);
   };
   const [champ, setChamp] = useState<Championship>("drivers");
   const d = useMemo(() => {
@@ -75,41 +74,25 @@ export const Stats = ({ season }: StatsProps) => {
         small
         stretch
       />
-      {(view === "Standings" || view === "Title fight") && (
-        <div className={view === "Standings" ? "xl:hidden" : undefined}>
-          <Tabs
-            items={["drivers", "constructors"] as const}
-            value={champ}
-            onChange={setChamp}
-            small
-            stretch
+      {view === "Title fight" && (
+        <Tabs
+          items={["drivers", "constructors"] as const}
+          value={champ}
+          onChange={setChamp}
+          small
+          stretch
+        />
+      )}
+      {view === "Drivers" &&
+        (driver ? (
+          <DriverProfile
+            key={driver}
+            id={driver}
+            onBack={() => show("Drivers")}
           />
-        </div>
-      )}
-      {view === "Standings" && (
-        <div className="grid gap-4 xl:grid-cols-2">
-          <div className={champ === "drivers" ? undefined : "max-xl:hidden"}>
-            <StandingsTable
-              title="Drivers"
-              table={latest(d.dt)}
-              who={d.who}
-              events={d.events}
-              champ="drivers"
-            />
-          </div>
-          <div
-            className={champ === "constructors" ? undefined : "max-xl:hidden"}
-          >
-            <StandingsTable
-              title="Constructors"
-              table={latest(d.tt)}
-              who={d.teamWho}
-              events={d.events}
-              champ="constructors"
-            />
-          </div>
-        </div>
-      )}
+        ) : (
+          <Drivers season={season} who={d.who} table={latest(d.dt)} />
+        ))}
       {view === "Title fight" && (
         <TitleFight
           key={champ}

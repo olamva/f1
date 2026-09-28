@@ -16,7 +16,10 @@ registerRoute(
 );
 
 registerRoute(
-  ({ url }) => /^\/api\/(season|results\/|drivers\/|pace\/)/.test(url.pathname),
+  ({ url }) =>
+    /^\/api\/(season|results\/|standings\/|drivers\/|pace\/)/.test(
+      url.pathname,
+    ),
   new StaleWhileRevalidate({ cacheName: "api" }),
 );
 
