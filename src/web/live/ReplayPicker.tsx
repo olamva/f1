@@ -10,6 +10,7 @@ interface ReplayPickerProps {
 interface SessionButtonProps {
   session: SessionRef;
   onStart: (session: SessionRef) => void;
+  featured?: boolean;
 }
 
 interface WeekendProps extends ReplayPickerProps {
@@ -29,6 +30,10 @@ const weekends = (sessions: SessionRef[]) =>
     }, [])
     .reverse();
 
+const ongoing = (sessions: SessionRef[]) =>
+  !sessions.some((s) => s.name === "Race") &&
+  Date.now() - +day(sessions[0]) < 4 * 864e5;
+
 const dates = (sessions: SessionRef[]) =>
   new Intl.DateTimeFormat([], {
     day: "numeric",
@@ -36,12 +41,12 @@ const dates = (sessions: SessionRef[]) =>
     timeZone: "UTC",
   }).formatRange(day(sessions[0]), day(sessions.at(-1)!));
 
-const SessionButton = ({ session, onStart }: SessionButtonProps) =>
+const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
   session.path ? (
     <button
       onClick={() => onStart(session)}
       aria-label={`Start replay: ${session.meeting} · ${session.name}`}
-      className="flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-2.5 py-1 hover:bg-red-600"
+      className={`flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 hover:bg-red-600 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
     >
       <Play aria-hidden="true" className="size-3.5 shrink-0" />
       {session.name}
@@ -51,7 +56,7 @@ const SessionButton = ({ session, onStart }: SessionButtonProps) =>
       <button
         aria-disabled="true"
         aria-describedby={`pending-${session.start}`}
-        className="striped-border flex grow cursor-not-allowed items-center gap-1.5 rounded-md px-2.5 py-1 text-zinc-500"
+        className={`striped-border flex grow cursor-not-allowed items-center gap-1.5 rounded-md text-zinc-500 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
       >
         <Play aria-hidden="true" className="size-3.5 shrink-0" />
         {session.name}
@@ -70,13 +75,28 @@ const weekday = (s: SessionRef, weekday: "long" | "short") =>
   day(s).toLocaleDateString([], { weekday, timeZone: "UTC" });
 
 const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
-  <article className="bg-surface h-full space-y-3 rounded-xl p-4">
+  <article
+    className={`h-full space-y-3 rounded-xl ${featured ? "to-surface bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+  >
     <header className="flex items-baseline justify-between gap-2">
-      <h2 className={`truncate font-semibold ${featured ? "sm:text-lg" : ""}`}>
-        <Flag country={sessions[0].country} />
-        {sessions[0].meeting}
-      </h2>
-      <span className="shrink-0 text-xs text-zinc-500">{dates(sessions)}</span>
+      <div className="min-w-0">
+        {featured && (
+          <p className="text-xs font-semibold tracking-wider text-red-400 uppercase">
+            {ongoing(sessions) ? "Current" : "Latest"} race weekend
+          </p>
+        )}
+        <h2
+          className={`truncate font-semibold ${featured ? "text-lg font-bold sm:text-2xl" : ""}`}
+        >
+          <Flag country={sessions[0].country} />
+          {sessions[0].meeting}
+        </h2>
+      </div>
+      <span
+        className={`shrink-0 text-xs ${featured ? "text-zinc-300" : "text-zinc-500"}`}
+      >
+        {dates(sessions)}
+      </span>
     </header>
     <div
       className={`space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
@@ -88,7 +108,7 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
             className={`flex items-center gap-2 ${featured ? "sm:block sm:space-y-1.5" : ""}`}
           >
             <h3
-              className={`w-8 shrink-0 text-xs text-zinc-500 ${featured ? "sm:w-auto" : ""}`}
+              className={`w-8 shrink-0 text-xs ${featured ? "text-zinc-300 sm:w-auto" : "text-zinc-500"}`}
             >
               {featured && (
                 <span className="max-sm:hidden">
@@ -101,7 +121,12 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
             </h3>
             <div className="flex flex-wrap gap-1.5">
               {group!.map((s) => (
-                <SessionButton key={s.start} session={s} onStart={onStart} />
+                <SessionButton
+                  key={s.start}
+                  session={s}
+                  onStart={onStart}
+                  featured={featured}
+                />
               ))}
             </div>
           </div>
