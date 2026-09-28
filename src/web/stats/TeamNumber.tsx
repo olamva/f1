@@ -17,7 +17,9 @@ export const TeamNumber = ({
   color,
   className,
 }: TeamNumberProps) => {
-  const src = IMAGES[`../numbers/${id}.webp`];
+  const src = Object.entries(IMAGES).find(([k]) =>
+    new RegExp(`[/_]${id}\\.webp$`).test(k),
+  )?.[1];
   return src ? (
     <span
       aria-hidden
