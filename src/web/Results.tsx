@@ -35,7 +35,7 @@ const Profile = ({ id, onClose }: ProfileProps) => {
   return (
     <section className="bg-surface rounded-xl p-4">
       <div className="flex items-center justify-between gap-4">
-        <h3 className="text-lg font-semibold">Driver profile</h3>
+        <h3 className="font-f1 text-lg font-bold">Driver profile</h3>
         <button
           type="button"
           onClick={onClose}
@@ -52,7 +52,7 @@ const Profile = ({ id, onClose }: ProfileProps) => {
         <div className="mt-4 space-y-4">
           <div className="flex flex-wrap items-end gap-x-6 gap-y-1">
             <div>
-              <p className="text-2xl font-bold">{data.name}</p>
+              <p className="font-f1 text-2xl font-bold">{data.name}</p>
               <p className="text-sm text-zinc-400">
                 {[
                   data.nationality,
@@ -93,7 +93,9 @@ const Profile = ({ id, onClose }: ProfileProps) => {
                 className="rounded-lg bg-zinc-800/70 p-3"
               >
                 <p className="text-xs text-zinc-400">{label}</p>
-                <p className="tabular text-xl font-bold">{value ?? "—"}</p>
+                <p className="tabular font-f1 text-xl font-bold">
+                  {value ?? "—"}
+                </p>
               </div>
             ))}
           </div>
@@ -226,7 +228,7 @@ export const Results = () => {
         <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
           <aside className="bg-surface rounded-xl p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <h2 className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+              <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
                 Races
               </h2>
               {seasonSelect}
@@ -281,7 +283,7 @@ export const Results = () => {
                   <p className="text-xs text-zinc-400">
                     Round {race.round} · {race.date}
                   </p>
-                  <h2 className="text-xl font-bold">
+                  <h2 className="font-f1 text-xl font-bold">
                     <Flag country={race.country} />
                     {race.name}
                   </h2>

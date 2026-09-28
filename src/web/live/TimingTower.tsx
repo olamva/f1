@@ -261,7 +261,7 @@ export const TimingTower = ({
   return (
     <div className="bg-surface overflow-x-auto rounded-xl">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
-        <span className="font-sans font-semibold tracking-wide text-zinc-500 uppercase">
+        <span className="font-f1 tracking-wider text-zinc-500 uppercase">
           Session best
         </span>
         {[...bests.sectors, bests.lap].map((best, i) => (

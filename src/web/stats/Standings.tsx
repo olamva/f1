@@ -26,7 +26,7 @@ export const StandingsTable = ({
   const start = table.length >= 3 ? 3 : 0;
   return (
     <section className="bg-surface rounded-xl p-3">
-      <h2 className="mb-2 hidden text-xs font-semibold tracking-wider text-zinc-400 uppercase xl:block">
+      <h2 className="font-f1 mb-2 hidden text-xs tracking-wider text-zinc-400 uppercase xl:block">
         {title}
       </h2>
       {table.length >= 3 && (

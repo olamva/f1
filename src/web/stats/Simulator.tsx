@@ -122,7 +122,7 @@ export const Simulator = ({
   return (
     <section className="bg-surface space-y-3 rounded-xl p-3">
       <div className="flex items-center gap-3">
-        <h2 className="text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+        <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
           Simulator
         </h2>
         <button
