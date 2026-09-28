@@ -160,7 +160,7 @@ const Races = ({ year, round, onRound }: RacesProps) => {
             <p className="text-xs text-zinc-400">
               Round {race.round} · {race.date}
             </p>
-            <h2 className="text-xl font-bold">
+            <h2 className="font-f1 text-xl font-bold">
               <Flag country={race.country} />
               {race.name}
             </h2>
