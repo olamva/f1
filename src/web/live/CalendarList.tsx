@@ -163,7 +163,7 @@ export const CalendarList = ({
       key === anchor ? "sm:col-span-full" : key === future[0]?.name ? lead : "",
   });
   return (
-    <ul className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
       {future.map((r) => (
         <li key={r.name} {...item(r.name)}>
           <ScheduleWeekend round={r} featured={r.name === anchor} />
