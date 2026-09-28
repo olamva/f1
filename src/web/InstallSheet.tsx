@@ -1,8 +1,8 @@
 import { useRef } from "react";
-import { Ellipsis, Share, Smartphone, SquarePlus, X } from "lucide-react";
+import { Menu, Share, Smartphone, SquarePlus, X } from "lucide-react";
 
 const STEPS = [
-  [Ellipsis, "In Safari, tap the ⋯ button next to the address bar."],
+  [Menu, "In Safari, tap the menu button in the address bar."],
   [Share, "Tap Share."],
   [SquarePlus, "Tap Add to Home Screen. You may need to tap View More."],
   [Smartphone, "Tap Add, then open F1 Pitwall from the Home Screen."],
