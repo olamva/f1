@@ -6,11 +6,11 @@ import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
 import { pathPart, setPathPart } from "../path.ts";
 import { Loading } from "../Loading.tsx";
+import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
-import { ReplayPicker } from "./ReplayPicker.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
@@ -359,21 +359,36 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   );
 };
 
-export const Replays = () => {
+interface CalendarProps {
+  season: Loaded<Season>;
+}
+
+export const Calendar = ({ season }: CalendarProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
   const [path, setPath] = useState(
-    () => pathPart("replay") ?? pathPart("session"),
+    () => pathPart("calendar") ?? pathPart("replay") ?? pathPart("session"),
   );
   const choose = (s: SessionRef | null) => {
-    setPathPart("replay", s?.path ?? null);
+    setPathPart("calendar", s?.path ?? null);
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
-  if (!sessions.data)
-    return <Loading label="Loading past sessions…" error={sessions.error} />;
+  if (!sessions.data || !season.data)
+    return (
+      <Loading
+        label="Loading the calendar…"
+        error={sessions.error ?? season.error}
+      />
+    );
   if (chosen)
     return (
       <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />
     );
-  return <ReplayPicker sessions={sessions.data} onStart={choose} />;
+  return (
+    <CalendarList
+      sessions={sessions.data}
+      rounds={season.data.rounds}
+      onStart={choose}
+    />
+  );
 };

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Round } from "../../shared/season.ts";
 import { Flag } from "../Flag.tsx";
 
-const LABEL: Record<string, string> = {
+export const LABEL: Record<string, string> = {
   fp1: "Practice 1",
   fp2: "Practice 2",
   fp3: "Practice 3",

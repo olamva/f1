@@ -1,9 +1,13 @@
 import { Play } from "lucide-react";
+import { useEffect, useRef } from "react";
+import type { Round } from "../../shared/season.ts";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
+import { ScheduleWeekend, upcoming } from "./Schedule.tsx";
 
-interface ReplayPickerProps {
+interface CalendarListProps {
   sessions: SessionRef[];
+  rounds: Round[];
   onStart: (session: SessionRef) => void;
 }
 
@@ -13,7 +17,9 @@ interface SessionButtonProps {
   featured?: boolean;
 }
 
-interface WeekendProps extends ReplayPickerProps {
+interface WeekendProps {
+  sessions: SessionRef[];
+  onStart: (session: SessionRef) => void;
   featured?: boolean;
 }
 
@@ -82,11 +88,11 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
       <div className="min-w-0">
         {featured && (
           <p className="font-f1 text-xs tracking-wider text-red-400 uppercase">
-            {ongoing(sessions) ? "Current" : "Latest"} race weekend
+            Current race weekend
           </p>
         )}
         <h2
-          className={`font-f1 truncate ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
+          className={`font-f1 line-clamp-2 ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
         >
           <Flag country={sessions[0].country} />
           {sessions[0].meeting}
@@ -136,12 +142,42 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
   </article>
 );
 
-export const ReplayPicker = ({ sessions, onStart }: ReplayPickerProps) => (
-  <ul className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
-    {weekends(sessions).map((w, i) => (
-      <li key={w[0].start} className={i === 0 ? "sm:col-span-full" : ""}>
-        <Weekend sessions={w} onStart={onStart} featured={i === 0} />
-      </li>
-    ))}
-  </ul>
-);
+export const CalendarList = ({
+  sessions,
+  rounds,
+  onStart,
+}: CalendarListProps) => {
+  const ref = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    ref.current?.scrollIntoView({ block: "center" });
+  }, []);
+  const past = weekends(sessions);
+  const future = upcoming(rounds).reverse();
+  const anchor =
+    past[0] && ongoing(past[0]) ? past[0][0].start : future.at(-1)?.name;
+  const ahead = future.filter((r) => r.name !== anchor).length;
+  const lead = `${["", "sm:col-start-2"][ahead % 2]} ${["lg:col-start-auto", "lg:col-start-3", "lg:col-start-2"][ahead % 3]}`;
+  const item = (key: string) => ({
+    ref: key === anchor ? ref : undefined,
+    className:
+      key === anchor ? "sm:col-span-full" : key === future[0]?.name ? lead : "",
+  });
+  return (
+    <ul className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+      {future.map((r) => (
+        <li key={r.name} {...item(r.name)}>
+          <ScheduleWeekend round={r} featured={r.name === anchor} />
+        </li>
+      ))}
+      {past.map((w) => (
+        <li key={w[0].start} {...item(w[0].start)}>
+          <Weekend
+            sessions={w}
+            onStart={onStart}
+            featured={w[0].start === anchor}
+          />
+        </li>
+      ))}
+    </ul>
+  );
+};
