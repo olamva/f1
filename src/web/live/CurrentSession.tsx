@@ -6,12 +6,11 @@ import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
 import { pathPart, setPathPart } from "../path.ts";
 import { Loading } from "../Loading.tsx";
+import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
-import { ReplayPicker } from "./ReplayPicker.tsx";
-import { Schedule } from "./Schedule.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
@@ -388,19 +387,10 @@ export const Calendar = ({ season }: CalendarProps) => {
       <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />
     );
   return (
-    <div className="space-y-6">
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
-          Upcoming
-        </h2>
-        <Schedule rounds={season.data.rounds} />
-      </section>
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
-          Replays
-        </h2>
-        <ReplayPicker sessions={sessions.data} onStart={choose} />
-      </section>
-    </div>
+    <CalendarList
+      sessions={sessions.data}
+      rounds={season.data.rounds}
+      onStart={choose}
+    />
   );
 };

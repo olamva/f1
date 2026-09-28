@@ -2,10 +2,6 @@ import type { Round } from "../../shared/season.ts";
 import { Flag } from "../Flag.tsx";
 import { LABEL } from "./Countdown.tsx";
 
-interface ScheduleProps {
-  rounds: Round[];
-}
-
 interface WeekendProps {
   round: Round;
   featured?: boolean;
@@ -32,7 +28,7 @@ const time = (at: Date) =>
     minute: "2-digit",
   });
 
-const Weekend = ({ round, featured }: WeekendProps) => (
+export const ScheduleWeekend = ({ round, featured }: WeekendProps) => (
   <article
     className={`h-full space-y-3 rounded-xl ${featured ? "to-surface bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
   >
@@ -84,17 +80,5 @@ const Weekend = ({ round, featured }: WeekendProps) => (
   </article>
 );
 
-export const Schedule = ({ rounds }: ScheduleProps) => {
-  const upcoming = rounds.filter(
-    (r) => sessions(r).length && +sessions(r)[0].at > Date.now(),
-  );
-  return upcoming.length ? (
-    <ul className="grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
-      {upcoming.map((r, i) => (
-        <li key={r.round} className={i === 0 ? "sm:col-span-full" : ""}>
-          <Weekend round={r} featured={i === 0} />
-        </li>
-      ))}
-    </ul>
-  ) : null;
-};
+export const upcoming = (rounds: Round[]) =>
+  rounds.filter((r) => sessions(r).length && +sessions(r)[0].at > Date.now());
