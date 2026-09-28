@@ -3,6 +3,7 @@ import type { DriverProfile as Profile } from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
 import { Loading } from "../Loading.tsx";
+import { TeamNumber } from "./TeamNumber.tsx";
 
 interface DriverProfileProps {
   id: string;
@@ -36,40 +37,41 @@ export const DriverProfile = ({ id, onBack }: DriverProfileProps) => {
               className="absolute inset-y-0 left-0 w-1"
               style={{ background: color }}
             />
-            {data.number && (
-              <span
-                aria-hidden
-                className="tabular absolute -top-3 right-4 text-[9rem] leading-none font-black italic opacity-20"
-                style={{ color }}
-              >
-                {data.number}
-              </span>
+            {data.number && data.seasons[0] && (
+              <TeamNumber
+                year={data.seasons[0].year}
+                team={data.seasons[0].team}
+                name={data.name}
+                number={data.number}
+                color={color}
+                className="absolute top-5 right-5 flex h-16 items-start text-[4rem] opacity-30 sm:h-24 sm:text-[6rem]"
+              />
             )}
-            <div className="relative flex flex-wrap items-end justify-between gap-4">
-              <div>
-                <p className="text-sm text-zinc-400">
-                  {data.seasons[0]?.teamName}
-                </p>
-                <h2 className="text-3xl font-bold sm:text-4xl">{data.name}</h2>
-                <p className="mt-1 text-sm text-zinc-400">
-                  {[
-                    data.nationality,
-                    data.dateOfBirth,
-                    data.firstSeason &&
-                      (data.firstSeason === data.lastSeason
-                        ? `${data.firstSeason}`
-                        : `${data.firstSeason}–${data.lastSeason}`),
-                  ]
-                    .filter(Boolean)
-                    .join(" · ")}
-                </p>
-              </div>
+            <div className="relative">
+              <p className="text-sm text-zinc-400">
+                {data.seasons[0]?.teamName}
+              </p>
+              <h2 className="font-f1 text-3xl font-bold sm:text-4xl">
+                {data.name}
+              </h2>
+              <p className="mt-1 text-sm text-zinc-400">
+                {[
+                  data.nationality,
+                  data.dateOfBirth,
+                  data.firstSeason &&
+                    (data.firstSeason === data.lastSeason
+                      ? `${data.firstSeason}`
+                      : `${data.firstSeason}–${data.lastSeason}`),
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
+              </p>
               {data.url && (
                 <a
                   href={data.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-sm text-red-400 hover:text-red-300"
+                  className="mt-1 inline-block text-sm text-red-400 hover:text-red-300"
                 >
                   Biography ↗
                 </a>
@@ -95,13 +97,15 @@ export const DriverProfile = ({ id, onBack }: DriverProfileProps) => {
                   className="rounded-lg bg-zinc-800/60 p-3"
                 >
                   <p className="text-xs text-zinc-400">{label}</p>
-                  <p className="tabular text-2xl font-bold">{value ?? "—"}</p>
+                  <p className="tabular font-f1 text-2xl font-bold">
+                    {value ?? "—"}
+                  </p>
                 </div>
               ))}
             </div>
           </section>
           <section className="bg-surface overflow-x-auto rounded-xl p-3 sm:p-4">
-            <h3 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+            <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
               Seasons
             </h3>
             <table className="tabular w-full text-sm">

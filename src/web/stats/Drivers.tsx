@@ -2,6 +2,7 @@ import type { Standing } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { openDriver } from "../path.ts";
 import type { Who } from "./derive.ts";
+import { TeamNumber } from "./TeamNumber.tsx";
 
 interface DriversProps {
   season: Season;
@@ -31,17 +32,18 @@ export const Drivers = ({ season, who, table }: DriversProps) => {
               className="absolute inset-y-0 left-0 w-1"
               style={{ background: color }}
             />
-            <span
-              aria-hidden
-              className="tabular absolute -right-1 -bottom-5 text-8xl font-black italic opacity-20 transition group-hover:opacity-35"
-              style={{ color }}
-            >
-              {driver.number}
-            </span>
+            <TeamNumber
+              year={season.year}
+              team={driver.team}
+              name={driver.name}
+              number={driver.number}
+              color={color}
+              className="absolute right-4 bottom-4 flex h-16 items-end text-7xl opacity-30 transition group-hover:opacity-50 sm:h-20 sm:text-8xl"
+            />
             <span className="relative block text-xs font-semibold tracking-widest text-zinc-400">
               {driver.code}
             </span>
-            <span className="relative mt-1 block text-lg leading-tight font-bold">
+            <span className="font-f1 relative mt-1 block text-lg leading-tight font-bold">
               {driver.name}
             </span>
             <span className="relative block text-sm text-zinc-400">
@@ -57,7 +59,7 @@ export const Drivers = ({ season, who, table }: DriversProps) => {
               ).map(([label, value]) => (
                 <span key={label}>
                   {label}
-                  <span className="block text-base font-semibold text-white">
+                  <span className="font-f1 block text-base font-bold text-white">
                     {value}
                   </span>
                 </span>
