@@ -1,0 +1,14 @@
+{
+  "id": "8c4d2067",
+  "ts": "2026-09-28T21:46:40+00:00",
+  "text": "Sandbox test run blocks loopback listen; two dev tests fail with EPERM and child exit mismatch",
+  "tags": [
+    "test",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-luna",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-3158be53",
+  "branch": "t3code/fix-stats-scroll-reset"
+}
