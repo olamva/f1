@@ -35,12 +35,12 @@ export const ScheduleWeekend = ({ round, featured }: WeekendProps) => (
     <header className="flex items-baseline justify-between gap-2">
       <div className="min-w-0">
         <p
-          className={`text-xs font-semibold tracking-wider uppercase ${featured ? "text-red-400" : "text-zinc-500"}`}
+          className={`font-f1 text-xs tracking-wider uppercase ${featured ? "text-red-400" : "text-zinc-500"}`}
         >
           {featured ? "Next race weekend" : `Round ${round.round}`}
         </p>
         <h2
-          className={`truncate font-semibold ${featured ? "text-lg font-bold sm:text-2xl" : ""}`}
+          className={`font-f1 truncate ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
         >
           <Flag country={round.country} />
           {round.name}

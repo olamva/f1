@@ -87,12 +87,12 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
     <header className="flex items-baseline justify-between gap-2">
       <div className="min-w-0">
         {featured && (
-          <p className="text-xs font-semibold tracking-wider text-red-400 uppercase">
+          <p className="font-f1 text-xs tracking-wider text-red-400 uppercase">
             Current race weekend
           </p>
         )}
         <h2
-          className={`truncate font-semibold ${featured ? "text-lg font-bold sm:text-2xl" : ""}`}
+          className={`font-f1 truncate ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
         >
           <Flag country={sessions[0].country} />
           {sessions[0].meeting}

@@ -1,0 +1,14 @@
+{
+  "id": "b7dd1811",
+  "ts": "2026-09-28T16:44:41+00:00",
+  "text": "T3 preview host disconnected mid-session; preview_snapshot failed with no automation host",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "0d8b2b2e",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/apply-f1-font-styling"
+}

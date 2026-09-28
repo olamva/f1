@@ -27,7 +27,7 @@ export const InstallSheet = () => {
       >
         <div className="p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold">Add to Home Screen</h2>
+            <h2 className="font-f1 text-lg font-bold">Add to Home Screen</h2>
             <button
               type="button"
               aria-label="Close"

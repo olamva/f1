@@ -48,7 +48,7 @@ interface PanelProps {
 
 export const Panel = ({ title, className = "", children }: PanelProps) => (
   <section className={`bg-surface rounded-xl p-3 ${className}`}>
-    <h2 className="mb-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">
+    <h2 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
       {title}
     </h2>
     {children}
@@ -196,7 +196,7 @@ const Transcript = ({ url, color }: { url: string; color: string }) => {
       </p>
     );
   return (
-    <blockquote className="space-y-1 text-lg leading-snug font-bold tracking-tight uppercase">
+    <blockquote className="font-f1 space-y-1 text-lg leading-snug font-bold uppercase">
       {data.turns.map((t, i) => (
         <p
           key={i}
@@ -322,21 +322,19 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
         <div className="mb-3 overflow-hidden rounded-md bg-zinc-950">
           <div className="relative flex items-stretch hover:bg-zinc-800">
             <span
-              className="grid w-16 shrink-0 place-items-center text-3xl font-black text-white italic"
+              className="font-f1 grid w-16 shrink-0 place-items-center text-3xl font-black text-white italic"
               style={{ background: color }}
             >
               {current.number}
             </span>
             <div className="min-w-0 flex-1 px-3 py-2 leading-none">
               <p
-                className="truncate text-2xl font-black tracking-tight uppercase"
+                className="font-f1 truncate text-xl font-black uppercase"
                 style={{ color }}
               >
                 {driver?.last ?? current.number}
               </p>
-              <p className="text-2xl font-black tracking-tight text-white">
-                RADIO
-              </p>
+              <p className="font-f1 text-xl font-black text-white">RADIO</p>
             </div>
             <Bars audio={audio} playing={playing} color={color} />
             <button
@@ -381,12 +379,12 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
                 className={`flex w-full items-center gap-3 px-2 py-1.5 text-left hover:bg-zinc-800 ${active ? "bg-zinc-800" : ""}`}
               >
                 <span
-                  className="w-7 text-center font-black italic"
+                  className="font-f1 w-7 text-center font-black italic"
                   style={{ color: d?.color }}
                 >
                   {r.number}
                 </span>
-                <span className="font-bold tracking-tight uppercase">
+                <span className="font-f1 font-bold uppercase">
                   {d?.last ?? r.number}
                 </span>
                 <span className="tabular ml-auto font-mono text-xs text-zinc-500">

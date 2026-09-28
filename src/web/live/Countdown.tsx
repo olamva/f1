@@ -76,14 +76,14 @@ export const Countdown = ({ rounds }: CountdownProps) => {
   return (
     <section className="fixed inset-0 isolate grid content-center justify-items-center gap-3 px-4 text-center xl:gap-[1vw]">
       <div className="spotlight fixed inset-0 -z-10" />
-      <span className="text-sm tracking-widest text-zinc-300 uppercase xl:text-[1.1vw]">
+      <span className="font-f1-wide text-sm text-zinc-300 uppercase xl:text-[1.1vw]">
         Next up
       </span>
-      <h1 className="text-xl font-bold sm:text-3xl xl:text-[2.6vw]">
+      <h1 className="font-f1 text-xl font-bold sm:text-3xl xl:text-[2.6vw]">
         <Flag country={s.round.country} />
         {s.round.name} · {s.label}
       </h1>
-      <span className="tabular font-mono text-[13vw] font-bold whitespace-nowrap md:text-8xl xl:text-[10vw]">
+      <span className="tabular font-f1 text-[11vw] font-bold whitespace-nowrap md:text-8xl xl:text-[10vw]">
         {span(s.at - now)}
       </span>
       <span className="text-zinc-400 xl:text-[1.4vw]">

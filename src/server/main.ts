@@ -12,11 +12,11 @@ import {
 } from "./archive.ts";
 import { requireGoogle, user } from "./auth.ts";
 import * as live from "./live.ts";
-import { driverProfile, raceArchive } from "./history.ts";
+import { driverProfile, raceArchive, standings } from "./history.ts";
 import { audio, transcript } from "./radio.ts";
 import { pace, type PaceKind } from "./pace.ts";
 import * as push from "./push.ts";
-import { records, season } from "./season.ts";
+import { season } from "./season.ts";
 import * as token from "./token.ts";
 
 const DIST = process.env.DIST_DIR ?? "dist";
@@ -50,11 +50,7 @@ app.get("/api/pace/:year/:round/:kind", async (c) => {
     return c.notFound();
   return c.json(await pace(year, round, kind as PaceKind));
 });
-app.get("/api/records", async (c) => {
-  const s = await season();
-  return c.json(await records(s.drivers.map((d) => d.id)));
-});
-app.get("/api/results/:year", async (c) => {
+app.get("/api/:kind{results|standings}/:year", async (c) => {
   const year = Number(c.req.param("year"));
   if (
     !Number.isInteger(year) ||
@@ -62,7 +58,9 @@ app.get("/api/results/:year", async (c) => {
     year > new Date().getUTCFullYear()
   )
     return c.json({ error: "Invalid season." }, 400);
-  return c.json(await raceArchive(year));
+  return c.json(
+    await (c.req.param("kind") === "results" ? raceArchive : standings)(year),
+  );
 });
 app.get("/api/drivers/:id", async (c) => {
   const id = c.req.param("id");

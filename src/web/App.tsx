@@ -53,7 +53,10 @@ export const App = () => {
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
   useEffect(() => {
-    const on = () => setTab(fromPath());
+    const on = () => {
+      setTab(fromPath());
+      setVisit((v) => v + 1);
+    };
     addEventListener("popstate", on);
     return () => removeEventListener("popstate", on);
   }, []);
@@ -77,7 +80,7 @@ export const App = () => {
         >
           <img src={f1Logo} alt="F1" className="w-16 sm:w-20" />
           <span className="h-6 w-px bg-zinc-600 sm:h-7" />
-          <span className="text-[22px] leading-none font-extrabold tracking-wide text-white italic sm:text-[27px]">
+          <span className="font-f1 text-[22px] leading-none font-black tracking-wide text-white italic sm:text-[27px]">
             PITWALL
           </span>
         </button>
@@ -97,7 +100,7 @@ export const App = () => {
       </main>
       <main key={visit} hidden={tab === "Countdown"}>
         {tab === "Calendar" && <Calendar season={season} />}
-        {tab === "Results" && <Results />}
+        {tab === "Results" && <Results season={season.data} />}
         {tab === "Stats" &&
           (season.data ? (
             <Stats season={season.data} />
