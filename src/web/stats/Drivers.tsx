@@ -33,9 +33,7 @@ export const Drivers = ({ season, who, table }: DriversProps) => {
               style={{ background: color }}
             />
             <TeamNumber
-              year={season.year}
-              team={driver.team}
-              name={driver.name}
+              id={driver.id}
               number={driver.number}
               color={color}
               className="absolute right-4 bottom-4 flex h-16 items-end text-7xl opacity-30 transition group-hover:opacity-50 sm:h-20 sm:text-8xl"

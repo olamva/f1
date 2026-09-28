@@ -37,11 +37,9 @@ export const DriverProfile = ({ id, onBack }: DriverProfileProps) => {
               className="absolute inset-y-0 left-0 w-1"
               style={{ background: color }}
             />
-            {data.number && data.seasons[0] && (
+            {data.number && (
               <TeamNumber
-                year={data.seasons[0].year}
-                team={data.seasons[0].team}
-                name={data.name}
+                id={data.id}
                 number={data.number}
                 color={color}
                 className="absolute top-5 right-5 flex h-16 items-start text-[4rem] opacity-30 sm:h-24 sm:text-[6rem]"
