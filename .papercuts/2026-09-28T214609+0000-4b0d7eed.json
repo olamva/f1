@@ -1,0 +1,13 @@
+{
+  "id": "4b0d7eed",
+  "ts": "2026-09-28T21:46:09+00:00",
+  "text": "pnpm --version and pnpm format hang without output in task worktree",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "gpt-6-luna",
+  "session": "",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-3158be53",
+  "branch": "t3code/fix-stats-scroll-reset"
+}
