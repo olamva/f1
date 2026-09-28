@@ -63,7 +63,7 @@ export const Teammates = ({
           </header>
           <div className="text-xs text-zinc-500">Qualifying</div>
           <Split label="Qualifying" pair={d.quali} color={color} />
-          <div className="text-xs text-zinc-500">Race (both classified)</div>
+          <div className="text-xs text-zinc-500">Race</div>
           <Split label="Race" pair={d.race} color={color} />
           <div className="text-xs text-zinc-500">Race points</div>
           <Split label="Race points" pair={d.racePoints} color={color} />
@@ -74,9 +74,7 @@ export const Teammates = ({
               </div>
               {hasSprintQualifying && (
                 <>
-                  <div className="text-xs text-zinc-500">
-                    Sprint qualifying head to head
-                  </div>
+                  <div className="text-xs text-zinc-500">Sprint qualifying</div>
                   <Split
                     label="Sprint qualifying"
                     pair={d.sprintQuali}
@@ -84,9 +82,7 @@ export const Teammates = ({
                   />
                 </>
               )}
-              <div className="text-xs text-zinc-500">
-                Head to head (both classified)
-              </div>
+              <div className="text-xs text-zinc-500">Sprint race</div>
               <Split label="Sprint" pair={d.sprint} color={color} />
               <div className="text-xs text-zinc-500">Sprint points</div>
               <Split
