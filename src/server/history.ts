@@ -1,4 +1,8 @@
-import type { DriverProfile, RaceArchive } from "../shared/season.ts";
+import type {
+  DriverProfile,
+  RaceArchive,
+  SeasonStandings,
+} from "../shared/season.ts";
 import { all, get, total } from "./jolpica.ts";
 
 const DAY = 24 * 60 * 60_000;
@@ -61,16 +65,66 @@ export async function raceArchive(year: number): Promise<RaceArchive> {
   };
 }
 
+export async function standings(year: number): Promise<SeasonStandings> {
+  const freshMs = year === new Date().getUTCFullYear() ? undefined : DAY;
+  const [drivers, constructors] = await Promise.all([
+    get(`${year}/driverstandings.json?limit=100`, freshMs),
+    get(`${year}/constructorstandings.json?limit=100`, freshMs),
+  ]);
+  const rows = (data: any, key: string): any[] =>
+    data.StandingsTable.StandingsLists[0]?.[key] ?? [];
+  return {
+    year,
+    drivers: rows(drivers, "DriverStandings").map((row) => ({
+      id: row.Driver.driverId,
+      name: `${row.Driver.givenName} ${row.Driver.familyName}`,
+      team: row.Constructors.at(-1)?.constructorId ?? "",
+      points: Number(row.points),
+      wins: Number(row.wins),
+    })),
+    constructors: rows(constructors, "ConstructorStandings").map((row) => ({
+      id: row.Constructor.constructorId,
+      name: row.Constructor.name,
+      team: row.Constructor.constructorId,
+      points: Number(row.points),
+      wins: Number(row.wins),
+    })),
+  };
+}
+
 export async function driverProfile(id: string): Promise<DriverProfile | null> {
-  const [driver, races, poles] = await Promise.all([
+  const [driver, races, sprints, poles] = await Promise.all([
     get(`drivers/${id}.json`, DAY),
     all<any>(`drivers/${id}/results.json`, (data) => data.RaceTable.Races, DAY),
+    all<any>(`drivers/${id}/sprint.json`, (data) => data.RaceTable.Races, DAY),
     total(`drivers/${id}/qualifying/1.json`, DAY),
   ]);
   const info = driver.DriverTable.Drivers[0];
   if (!info) return null;
-  const results = races.flatMap((race) => race.Results);
-  const seasons = races.map((race) => Number(race.season));
+  const started = races.filter((race) =>
+    race.Results.some((result: any) => !NON_START.has(result.status)),
+  );
+  const podium = (result: any) => ["1", "2", "3"].includes(result.positionText);
+  const years = [...new Set(races.map((race) => Number(race.season)))];
+  const seasons = years
+    .sort((a, b) => b - a)
+    .map((year) => {
+      const inYear = (race: any) => Number(race.season) === year;
+      const results = races.filter(inYear).flatMap((race) => race.Results);
+      const team = results.at(-1)?.Constructor;
+      return {
+        year,
+        team: team?.constructorId ?? "",
+        teamName: team?.name ?? "",
+        starts: started.filter(inYear).length,
+        wins: results.filter((result) => result.positionText === "1").length,
+        podiums: results.filter(podium).length,
+        points: [
+          ...results,
+          ...sprints.filter(inYear).flatMap((race) => race.SprintResults),
+        ].reduce((sum, result) => sum + Number(result.points), 0),
+      };
+    });
   return {
     id,
     name: `${info.givenName} ${info.familyName}`,
@@ -80,19 +134,12 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
     url: info.url?.startsWith("http")
       ? info.url.replace(/^http:/, "https:")
       : null,
-    firstSeason: seasons.length ? Math.min(...seasons) : null,
-    lastSeason: seasons.length ? Math.max(...seasons) : null,
-    starts: new Set(
-      races
-        .filter((race) =>
-          race.Results.some((result: any) => !NON_START.has(result.status)),
-        )
-        .map((race) => `${race.season}:${race.round}`),
-    ).size,
-    wins: results.filter((result) => result.positionText === "1").length,
-    podiums: results.filter((result) =>
-      ["1", "2", "3"].includes(result.positionText),
-    ).length,
-    poles: Math.min(...seasons) < 1994 ? null : poles,
+    firstSeason: seasons.at(-1)?.year ?? null,
+    lastSeason: seasons[0]?.year ?? null,
+    starts: started.length,
+    wins: seasons.reduce((sum, season) => sum + season.wins, 0),
+    podiums: seasons.reduce((sum, season) => sum + season.podiums, 0),
+    poles: (seasons.at(-1)?.year ?? 0) < 1994 ? null : poles,
+    seasons,
   };
 }

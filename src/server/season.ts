@@ -1,10 +1,9 @@
-import { all, get, json, total } from "./jolpica.ts";
+import { all, get, json } from "./jolpica.ts";
 import type {
   Classified,
   DriverInfo,
   Pace,
   QualiResult,
-  Records,
   Round,
   Season,
 } from "../shared/season.ts";
@@ -200,43 +199,4 @@ export async function racePace(year: number, round: number): Promise<Pace> {
     }
   }
   return out;
-}
-
-const DAY = 24 * 60 * 60_000;
-
-async function career(id: string, titles: string[]): Promise<Records[string]> {
-  const [results, poles] = await Promise.all([
-    all(
-      `drivers/${id}/results.json`,
-      (d) => races(d).flatMap((r) => r.Results),
-      DAY,
-    ),
-    total(`drivers/${id}/qualifying/1.json`, DAY),
-  ]);
-  const place = results.map((r: any) => Number(r.positionText) || 0);
-  return {
-    starts: results.length,
-    wins: place.filter((p) => p === 1).length,
-    podiums: place.filter((p) => p >= 1 && p <= 3).length,
-    poles,
-    titles: titles.filter((t) => t === id).length,
-  };
-}
-
-export async function records(ids: string[]): Promise<Records> {
-  const seasons = await all<string>(
-    "seasons.json",
-    (d) => d.SeasonTable.Seasons.map((s: any) => s.season),
-    DAY,
-  );
-  const champions = await Promise.all(
-    seasons.map(async (year) => {
-      const standings = await get(`${year}/driverstandings/1.json`, DAY);
-      return standings.StandingsTable.StandingsLists[0]?.DriverStandings[0]
-        ?.Driver.driverId;
-    }),
-  );
-  const rows = [];
-  for (const id of ids) rows.push([id, await career(id, champions)] as const);
-  return Object.fromEntries(rows);
 }

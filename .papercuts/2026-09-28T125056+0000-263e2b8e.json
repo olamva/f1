@@ -1,0 +1,14 @@
+{
+  "id": "263e2b8e",
+  "ts": "2026-09-28T12:50:56+00:00",
+  "text": "DEV_WATCH=0 also sets Vite server.watch to null, so edits never reach the preview and pages look stale",
+  "tags": [
+    "dev",
+    "vite"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "36fc1ceb",
+  "where": "vite.config.ts",
+  "branch": "t3code/remove-records-page"
+}

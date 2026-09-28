@@ -6,11 +6,11 @@ import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
 import { pathPart, setPathPart } from "../path.ts";
 import { Loading } from "../Loading.tsx";
+import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
-import { ReplayPicker } from "./ReplayPicker.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
@@ -89,16 +89,14 @@ interface StatusProps {
 const Status = ({ ref, lap, part, banner, clock, delay }: StatusProps) => (
   <div ref={ref} className="flex scroll-mt-4 flex-wrap items-center gap-3">
     {lap && (
-      <span className="tabular text-2xl font-black">
-        <span className="mr-2 text-sm font-semibold tracking-wider text-zinc-400">
-          LAP
-        </span>
+      <span className="tabular font-f1 text-2xl font-black">
+        <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
         {lap.CurrentLap}
         <span className="text-zinc-500">/{lap.TotalLaps}</span>
       </span>
     )}
     {part && (
-      <span className="rounded bg-zinc-700 px-2 py-0.5 text-lg font-bold">
+      <span className="font-f1 rounded bg-zinc-700 px-2 py-0.5 text-lg font-bold">
         {part}
       </span>
     )}
@@ -146,7 +144,7 @@ const Board = ({
   const banner = status && (
     <div
       role="alert"
-      className={`flag-banner rounded-md px-4 py-0.5 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? "paused" : ""}`}
+      className={`flag-banner font-f1 rounded-md px-4 py-0.5 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? "paused" : ""}`}
     >
       {status.label}
     </div>
@@ -154,7 +152,7 @@ const Board = ({
   return (
     <div className="space-y-4">
       <header className="flex flex-wrap items-center gap-3">
-        <h1 className="text-xl font-bold">
+        <h1 className="font-f1 text-xl font-bold">
           <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
           {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
         </h1>
@@ -348,7 +346,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (
     <div className="to-surface rounded-xl bg-gradient-to-r from-red-700/40 p-4">
-      <h1 className="text-lg font-bold">
+      <h1 className="font-f1 text-lg font-bold">
         <Flag country={scheduled.round.country} />
         {scheduled.round.name} · {scheduled.label}
       </h1>
@@ -361,21 +359,36 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   );
 };
 
-export const Replays = () => {
+interface CalendarProps {
+  season: Loaded<Season>;
+}
+
+export const Calendar = ({ season }: CalendarProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
   const [path, setPath] = useState(
-    () => pathPart("replay") ?? pathPart("session"),
+    () => pathPart("calendar") ?? pathPart("replay") ?? pathPart("session"),
   );
   const choose = (s: SessionRef | null) => {
-    setPathPart("replay", s?.path ?? null);
+    setPathPart("calendar", s?.path ?? null);
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
-  if (!sessions.data)
-    return <Loading label="Loading past sessions…" error={sessions.error} />;
+  if (!sessions.data || !season.data)
+    return (
+      <Loading
+        label="Loading the calendar…"
+        error={sessions.error ?? season.error}
+      />
+    );
   if (chosen)
     return (
       <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />
     );
-  return <ReplayPicker sessions={sessions.data} onStart={choose} />;
+  return (
+    <CalendarList
+      sessions={sessions.data}
+      rounds={season.data.rounds}
+      onStart={choose}
+    />
+  );
 };
