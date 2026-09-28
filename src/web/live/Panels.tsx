@@ -9,6 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useJson } from "../api.ts";
+import { TeamNumber } from "../stats/TeamNumber.tsx";
 import {
   elapsed,
   highlight,
@@ -322,10 +323,18 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
         <div className="mb-3 overflow-hidden rounded-md bg-zinc-950">
           <div className="relative flex items-stretch hover:bg-zinc-800">
             <span
-              className="font-f1 grid w-16 shrink-0 place-items-center text-3xl font-black text-white italic"
+              className="grid w-16 shrink-0 place-items-center"
               style={{ background: color }}
             >
-              {current.number}
+              <TeamNumber
+                id={(driver?.last ?? "")
+                  .normalize("NFD")
+                  .replace(/\p{M}/gu, "")
+                  .toLowerCase()}
+                number={current.number}
+                color="white"
+                className="flex h-9 items-center text-3xl"
+              />
             </span>
             <div className="min-w-0 flex-1 px-3 py-2 leading-none">
               <p
