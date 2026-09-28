@@ -3,6 +3,7 @@ import { Save } from "lucide-react";
 import type { TokenStatus } from "../shared/token.ts";
 import { getJson } from "./api.ts";
 import { GlassSwitch } from "./GlassSwitch.tsx";
+import { InstallSheet } from "./InstallSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
 
 const PUSH_NOTES: Partial<Record<PushState, string>> = {
@@ -84,6 +85,7 @@ export const Settings = () => {
           Notify me 15 minutes and 5 minutes before each session
         </GlassSwitch>
         {note && <p className="text-sm text-zinc-400">{note}</p>}
+        {push === "unsupported" && <InstallSheet />}
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="text-lg font-semibold">F1TV token</h2>
