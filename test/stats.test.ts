@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Classified, Season } from "../src/shared/season.ts";
-import { duels, seasonRecords } from "../src/web/stats/derive.ts";
+import { duels } from "../src/web/stats/derive.ts";
 
 const result = (
   driver: string,
@@ -41,34 +41,6 @@ test("teammate results keep sprint and race head to head separate", () => {
   assert.deepEqual(headToHead?.sprintPoints, [7, 8]);
 });
 
-test("sprint records include sprint results without changing race records", () => {
-  const records = seasonRecords(season);
-  assert.deepEqual(
-    records.map(
-      ({ wins, sprintStarts, sprintWins, sprintPodiums, sprintPoints }) => ({
-        wins,
-        sprintStarts,
-        sprintWins,
-        sprintPodiums,
-        sprintPoints,
-      }),
-    ),
-    [
-      {
-        wins: 1,
-        sprintStarts: 1,
-        sprintWins: 0,
-        sprintPodiums: 1,
-        sprintPoints: 7,
-      },
-      {
-        wins: 0,
-        sprintStarts: 1,
-        sprintWins: 1,
-        sprintPodiums: 1,
-        sprintPoints: 8,
-      },
-    ],
-  );
+test("teammate pairs form from sprint results alone", () => {
   assert.equal(duels({ ...season, races: [] }).length, 1);
 });

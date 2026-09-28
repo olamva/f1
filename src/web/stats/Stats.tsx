@@ -1,11 +1,4 @@
-import {
-  ChartLine,
-  Gauge,
-  ListOrdered,
-  Medal,
-  Swords,
-  Users,
-} from "lucide-react";
+import { ChartLine, Gauge, ListOrdered, Swords, Users } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Championship } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
@@ -18,12 +11,10 @@ import {
   gains,
   latest,
   remaining,
-  seasonRecords,
   teamTables,
   teams,
 } from "./derive.ts";
 import { RacePace } from "./RacePace.tsx";
-import { Records } from "./Records.tsx";
 import { SeasonCharts } from "./SeasonCharts.tsx";
 import { StandingsTable } from "./Standings.tsx";
 import { Teammates } from "./Teammates.tsx";
@@ -35,7 +26,6 @@ const VIEWS = [
   "H2H",
   "Season",
   "Race pace",
-  "Records",
 ] as const;
 type View = (typeof VIEWS)[number];
 
@@ -45,7 +35,6 @@ const ICONS = {
   H2H: Users,
   Season: ChartLine,
   "Race pace": Gauge,
-  Records: Medal,
 };
 
 const slug = (v: View) => v.toLowerCase().replace(" ", "-");
@@ -74,7 +63,6 @@ export const Stats = ({ season }: StatsProps) => {
       events: remaining(season),
       duels: duels(season),
       gains: gains(season),
-      records: seasonRecords(season),
     };
   }, [season]);
   return (
@@ -145,13 +133,6 @@ export const Stats = ({ season }: StatsProps) => {
         <SeasonCharts tables={d.dt} who={d.who} gains={d.gains} />
       )}
       {view === "Race pace" && <RacePace season={season} who={d.who} />}
-      {view === "Records" && (
-        <Records
-          rows={d.records}
-          who={d.who}
-          hasSprints={season.sprints.length > 0}
-        />
-      )}
     </div>
   );
 };

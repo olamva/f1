@@ -57,17 +57,6 @@ export type Season = {
 
 export type Pace = Record<string, number[]>;
 
-export type Records = Record<
-  string,
-  {
-    starts: number;
-    wins: number;
-    podiums: number;
-    poles: number;
-    titles: number;
-  }
->;
-
 export type RaceArchive = {
   year: number;
   races: {
