@@ -638,3 +638,7 @@ textarea {
     animation: none;
   }
 }
+
+html:has(dialog[open]) {
+  overflow: hidden;
+}
