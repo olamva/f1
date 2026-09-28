@@ -25,7 +25,7 @@ const KEEPALIVE_MS = 20_000;
 
 const app = new Hono();
 app.get(
-  "/:asset{(apple-touch-icon|icon-192|icon-512)\\.png|manifest\\.webmanifest}",
+  "/:asset{(apple-touch-icon|icon-192|icon-512)\\.png|manifest\\.webmanifest|privacy\\.html}",
   serveStatic({ root: DIST }),
 );
 app.use(requireGoogle);
