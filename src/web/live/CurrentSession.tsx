@@ -363,9 +363,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
 
 export const Replays = () => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
-  const [path, setPath] = useState(
-    () => pathPart("replay") ?? pathPart("session"),
-  );
+  const [path, setPath] = useState(() => pathPart("replay"));
   const choose = (s: SessionRef | null) => {
     setPathPart("replay", s?.path ?? null);
     setPath(s?.path ?? null);
