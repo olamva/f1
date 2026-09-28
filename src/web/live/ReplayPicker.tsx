@@ -30,6 +30,10 @@ const weekends = (sessions: SessionRef[]) =>
     }, [])
     .reverse();
 
+const ongoing = (sessions: SessionRef[]) =>
+  !sessions.some((s) => s.name === "Race") &&
+  Date.now() - +day(sessions[0]) < 4 * 864e5;
+
 const dates = (sessions: SessionRef[]) =>
   new Intl.DateTimeFormat([], {
     day: "numeric",
@@ -78,7 +82,7 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
       <div className="min-w-0">
         {featured && (
           <p className="text-xs font-semibold tracking-wider text-red-400 uppercase">
-            Latest race weekend
+            {ongoing(sessions) ? "Current" : "Latest"} race weekend
           </p>
         )}
         <h2
