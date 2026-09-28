@@ -1,6 +1,8 @@
 import {
   addResult,
   beatsOnCountback,
+  hasClinched,
+  type Championship,
   type Standing,
   type Upcoming,
 } from "../../shared/clinch.ts";
@@ -121,6 +123,13 @@ export function remaining(s: Season): Upcoming[] {
       },
     ]);
 }
+
+export const clinched = (s: Season, champ: Championship): boolean => {
+  const table = latest(champ === "drivers" ? driverTables(s) : teamTables(s));
+  return (
+    table.length > 0 && hasClinched(table, remaining(s), table[0]!.id, champ)
+  );
+};
 
 export function gains(
   s: Season,
@@ -245,61 +254,3 @@ export const duels = (s: Season): Duel[] =>
     const p = pairOf(s, t.id);
     return p ? [duel(s, t.id, ...p)] : [];
   });
-
-export type SeasonRecord = {
-  id: string;
-  wins: number;
-  poles: number;
-  podiums: number;
-  dnfs: number;
-  pointsStreak: number;
-  bestPointsStreak: number;
-  bestPodiumStreak: number;
-  sprintStarts: number;
-  sprintWins: number;
-  sprintPodiums: number;
-  sprintPoints: number;
-};
-
-const streaks = (hits: boolean[]) => {
-  let run = 0;
-  let top = 0;
-  for (const h of hits) {
-    run = h ? run + 1 : 0;
-    top = Math.max(top, run);
-  }
-  return { current: run, best: top };
-};
-
-export function seasonRecords(s: Season): SeasonRecord[] {
-  return s.drivers.map((d) => {
-    const mine = s.races
-      .map((r) => r.results.find((x) => x.driver === d.id))
-      .filter((x) => x !== undefined);
-    const sprint = s.sprints
-      .map((r) => r.results.find((x) => x.driver === d.id))
-      .filter((x) => x !== undefined);
-    const points = streaks(mine.map((r) => r.points > 0));
-    return {
-      id: d.id,
-      wins: mine.filter((r) => r.position === 1).length,
-      poles: s.qualifying.filter(
-        (q) => q.results.find((x) => x.position === 1)?.driver === d.id,
-      ).length,
-      podiums: mine.filter((r) => r.position !== null && r.position <= 3)
-        .length,
-      dnfs: mine.filter((r) => r.position === null).length,
-      pointsStreak: points.current,
-      bestPointsStreak: points.best,
-      bestPodiumStreak: streaks(
-        mine.map((r) => r.position !== null && r.position <= 3),
-      ).best,
-      sprintStarts: sprint.length,
-      sprintWins: sprint.filter((r) => r.position === 1).length,
-      sprintPodiums: sprint.filter(
-        (r) => r.position !== null && r.position <= 3,
-      ).length,
-      sprintPoints: sprint.reduce((sum, r) => sum + r.points, 0),
-    };
-  });
-}
