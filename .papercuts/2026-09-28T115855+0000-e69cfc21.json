@@ -1,0 +1,14 @@
+{
+  "id": "e69cfc21",
+  "ts": "2026-09-28T11:58:55+00:00",
+  "text": "T3 preview tab stays visible:false and throttles requestAnimationFrame to about 1 frame per 2 s, so CSS animation sampling fails",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "4aef6fe5",
+  "where": "mcp__t3-code__preview_open",
+  "branch": "t3code/fix-liquid-glass-switch-tap"
+}
