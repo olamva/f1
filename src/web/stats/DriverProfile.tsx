@@ -33,10 +33,6 @@ export const DriverProfile = ({ id, onBack }: DriverProfileProps) => {
               backgroundImage: `linear-gradient(135deg, ${color}40, transparent 60%)`,
             }}
           >
-            <span
-              className="absolute inset-y-0 left-0 w-1"
-              style={{ background: color }}
-            />
             {data.number && (
               <TeamNumber
                 id={data.id}

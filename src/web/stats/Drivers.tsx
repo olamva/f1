@@ -28,10 +28,6 @@ export const Drivers = ({ season, who, table }: DriversProps) => {
               backgroundImage: `linear-gradient(135deg, ${color}40, transparent 65%)`,
             }}
           >
-            <span
-              className="absolute inset-y-0 left-0 w-1"
-              style={{ background: color }}
-            />
             <TeamNumber
               id={driver.id}
               number={driver.number}

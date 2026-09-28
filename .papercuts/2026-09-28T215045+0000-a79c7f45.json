@@ -1,0 +1,13 @@
+{
+  "id": "a79c7f45",
+  "ts": "2026-09-28T21:50:45+00:00",
+  "text": "mcp preview_snapshot fails with 'Preview automation snapshot failed on client' on every call",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "11598f66",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/remove-driver-card-accents"
+}
