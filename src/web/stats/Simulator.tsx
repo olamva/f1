@@ -163,106 +163,108 @@ export const Simulator = ({
           ? `${who.get(decided.id)?.name ?? decided.id} is champion after ${events[decided.index]!.name}.`
           : "With these results, the title is not decided before the final event."}
       </div>
-      <ol className="tabular grid gap-1 text-sm sm:grid-cols-2">
-        {standings.map((s, i) => (
-          <li
-            key={s.id}
-            className="flex items-center gap-2 rounded-md bg-zinc-800/40 px-2 py-1"
-          >
-            <span className="w-4 text-right text-xs text-zinc-500">
-              {i + 1}
-            </span>
-            <span
-              className="h-4 w-1 rounded-sm"
-              style={{ background: who.get(s.id)?.color }}
-            />
-            <span className="truncate">{who.get(s.id)?.name ?? s.id}</span>
-            <span className="ml-auto font-semibold">{s.points}</span>
-            <span className="w-10 text-right text-xs text-zinc-500">
-              {i ? `−${leader - s.points}` : ""}
-            </span>
-          </li>
-        ))}
-      </ol>
-      <div className="overflow-x-auto">
-        <table className="text-sm">
-          <thead>
-            <tr>
-              <th className="bg-surface sticky left-0 z-10 p-1 text-left text-xs font-normal text-zinc-500">
-                Event
-              </th>
-              {contenders.map((id) => (
-                <th key={id} className="p-1 text-xs text-zinc-300">
-                  <span className="flex items-center justify-center gap-1.5">
-                    <span
-                      className="h-3 w-1 rounded-sm"
-                      style={{ background: who.get(id)?.color }}
-                    />
-                    {code(id)}
-                  </span>
+      <div className="space-y-3 lg:flex lg:items-start lg:gap-4 lg:space-y-0">
+        <ol className="tabular grid gap-1 text-sm lg:order-last lg:w-72 lg:shrink-0">
+          {standings.map((s, i) => (
+            <li
+              key={s.id}
+              className="flex items-center gap-2 rounded-md bg-zinc-800/40 px-2 py-1"
+            >
+              <span className="w-4 text-right text-xs text-zinc-500">
+                {i + 1}
+              </span>
+              <span
+                className="h-4 w-1 rounded-sm"
+                style={{ background: who.get(s.id)?.color }}
+              />
+              <span className="truncate">{who.get(s.id)?.name ?? s.id}</span>
+              <span className="ml-auto font-semibold">{s.points}</span>
+              <span className="w-10 text-right text-xs text-zinc-500">
+                {i ? `−${leader - s.points}` : ""}
+              </span>
+            </li>
+          ))}
+        </ol>
+        <div className="min-w-0 overflow-x-auto lg:flex-1">
+          <table className="text-sm">
+            <thead>
+              <tr>
+                <th className="bg-surface sticky left-0 z-10 p-1 text-left text-xs font-normal text-zinc-500">
+                  Event
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="bg-zinc-800">
-              <td className="sticky left-0 z-10 rounded-l-md bg-zinc-800 p-1 pr-3 text-xs font-semibold whitespace-nowrap text-zinc-300">
-                All events
-              </td>
-              {contenders.map((id, n) => (
-                <td
-                  key={id}
-                  className={`p-1 ${n === contenders.length - 1 ? "rounded-r-md" : ""}`}
-                >
-                  <span className="flex justify-center gap-1">
-                    {Array.from({ length: cars }, (_, car) => (
-                      <Slot
-                        key={car}
-                        value={common(id, car)}
-                        owners={new Map()}
-                        highlight
-                        onChange={(p) => set(null, id, car, p)}
-                      />
-                    ))}
-                  </span>
-                </td>
-              ))}
-            </tr>
-            {events.map((e, i) => (
-              <tr
-                key={`${e.round}-${e.kind}`}
-                className={`border-t border-zinc-800 ${decided && i > decided.index ? "opacity-40" : ""}`}
-              >
-                <td
-                  className={`bg-surface sticky left-0 z-10 max-w-36 truncate p-1 pr-3 text-xs whitespace-nowrap sm:max-w-none ${decided?.index === i ? "font-semibold text-emerald-400" : "text-zinc-400"}`}
-                >
-                  <Flag country={e.country} />
-                  {e.name}
-                  {decided?.index === i && (
-                    <Trophy
-                      aria-label="Title decided"
-                      className="ml-1 inline size-3"
-                    />
-                  )}
-                </td>
                 {contenders.map((id) => (
-                  <td key={id} className="p-1">
+                  <th key={id} className="p-1 text-xs text-zinc-300">
+                    <span className="flex items-center justify-center gap-1.5">
+                      <span
+                        className="h-3 w-1 rounded-sm"
+                        style={{ background: who.get(id)?.color }}
+                      />
+                      {code(id)}
+                    </span>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="bg-zinc-800">
+                <td className="sticky left-0 z-10 rounded-l-md bg-zinc-800 p-1 pr-3 text-xs font-semibold whitespace-nowrap text-zinc-300">
+                  All events
+                </td>
+                {contenders.map((id, n) => (
+                  <td
+                    key={id}
+                    className={`p-1 ${n === contenders.length - 1 ? "rounded-r-md" : ""}`}
+                  >
                     <span className="flex justify-center gap-1">
                       {Array.from({ length: cars }, (_, car) => (
                         <Slot
                           key={car}
-                          value={grid[i]?.[id]?.[car]}
-                          owners={owners(i, id)}
-                          onChange={(p) => set(i, id, car, p)}
+                          value={common(id, car)}
+                          owners={new Map()}
+                          highlight
+                          onChange={(p) => set(null, id, car, p)}
                         />
                       ))}
                     </span>
                   </td>
                 ))}
               </tr>
-            ))}
-          </tbody>
-        </table>
+              {events.map((e, i) => (
+                <tr
+                  key={`${e.round}-${e.kind}`}
+                  className={`border-t border-zinc-800 ${decided && i > decided.index ? "opacity-40" : ""}`}
+                >
+                  <td
+                    className={`bg-surface sticky left-0 z-10 max-w-36 truncate p-1 pr-3 text-xs whitespace-nowrap sm:max-w-none ${decided?.index === i ? "font-semibold text-emerald-400" : "text-zinc-400"}`}
+                  >
+                    <Flag country={e.country} />
+                    {e.name}
+                    {decided?.index === i && (
+                      <Trophy
+                        aria-label="Title decided"
+                        className="ml-1 inline size-3"
+                      />
+                    )}
+                  </td>
+                  {contenders.map((id) => (
+                    <td key={id} className="p-1">
+                      <span className="flex justify-center gap-1">
+                        {Array.from({ length: cars }, (_, car) => (
+                          <Slot
+                            key={car}
+                            value={grid[i]?.[id]?.[car]}
+                            owners={owners(i, id)}
+                            onChange={(p) => set(i, id, car, p)}
+                          />
+                        ))}
+                      </span>
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </section>
   );
