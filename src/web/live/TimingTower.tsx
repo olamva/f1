@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
+import { TeamLogo } from "../TeamLogo.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
@@ -166,10 +167,7 @@ const TowerRow = ({
     </td>
     <td className="px-1 py-1 sm:px-2">
       <span className="flex items-center gap-2">
-        <span
-          className="h-4 w-1 rounded-sm"
-          style={{ background: row.color }}
-        />
+        <TeamLogo team={row.team} className="h-4 w-6" />
         <span className="font-semibold" title={row.name}>
           {row.tla}
         </span>

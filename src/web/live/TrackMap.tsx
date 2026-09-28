@@ -3,6 +3,7 @@ import { Crown } from "lucide-react";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
+import { MapCard } from "./MapCard.tsx";
 import { sectorSplits, type Row, type SessionBests } from "./view.ts";
 
 const SIZE = 1000;
@@ -242,6 +243,8 @@ export const TrackMap = ({
         : { project: null, box: [0, 0, SIZE, SIZE] as const },
     [outline, size],
   );
+  const cardX =
+    hover && (hover.x > box[0] + box[2] / 2 ? hover.x - 260 : hover.x + 20);
   const path = useMemo(
     () =>
       outline && project
@@ -450,31 +453,7 @@ export const TrackMap = ({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => onToggle(card.number)}
                 />
-                <foreignObject
-                  x={
-                    hover.x > box[0] + box[2] / 2 ? hover.x - 340 : hover.x + 20
-                  }
-                  y={hover.y - 45}
-                  width={320}
-                  height={90}
-                  className="pointer-events-none overflow-visible"
-                >
-                  <div
-                    id="track-map-card"
-                    className="rounded-lg bg-zinc-900 px-5 py-3 whitespace-nowrap shadow-lg"
-                  >
-                    <p className="text-[26px] font-semibold text-zinc-100">
-                      {card.name}
-                    </p>
-                    <p className="flex items-center gap-2 text-[20px] text-zinc-400">
-                      <span
-                        className="size-3 rounded-full"
-                        style={{ backgroundColor: card.color }}
-                      />
-                      {card.team}
-                    </p>
-                  </div>
-                </foreignObject>
+                <MapCard x={cardX!} y={hover.y} row={card} />
               </>
             )}
           </svg>

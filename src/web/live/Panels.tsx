@@ -9,7 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useJson } from "../api.ts";
-import { TeamNumber } from "../stats/TeamNumber.tsx";
+import { slug, TeamNumber } from "../stats/TeamNumber.tsx";
 import {
   elapsed,
   highlight,
@@ -274,9 +274,6 @@ const Bars = ({
     </span>
   );
 };
-
-const slug = (last = "") =>
-  last.normalize("NFD").replace(/\p{M}/gu, "").toLowerCase();
 
 export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
   const by = new Map(rows.map((r) => [r.number, r]));
