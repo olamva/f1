@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react";
 import {
+  CalendarDays,
   ChartColumn,
-  History,
   Settings as SettingsIcon,
   Timer,
   Trophy,
 } from "lucide-react";
 import type { Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
-import { LiveSession, Replays, type LiveInfo } from "./live/CurrentSession.tsx";
+import {
+  Calendar,
+  LiveSession,
+  type LiveInfo,
+} from "./live/CurrentSession.tsx";
 import { Loading } from "./Loading.tsx";
 import { Results } from "./Results.tsx";
 import { Settings } from "./Settings.tsx";
@@ -17,12 +21,12 @@ import { Tabs } from "./Tabs.tsx";
 import { UpdateToast } from "./UpdateToast.tsx";
 import f1Logo from "./f1-logo.svg";
 
-const TABS = ["Countdown", "Replays", "Results", "Stats", "Settings"] as const;
+const TABS = ["Countdown", "Calendar", "Results", "Stats", "Settings"] as const;
 type Tab = (typeof TABS)[number];
 
 const SLUG: Record<Tab, string> = {
   Countdown: "session",
-  Replays: "replay",
+  Calendar: "calendar",
   Results: "results",
   Stats: "stats",
   Settings: "settings",
@@ -30,15 +34,15 @@ const SLUG: Record<Tab, string> = {
 
 const ICONS = {
   Countdown: Timer,
-  Replays: History,
+  Calendar: CalendarDays,
   Results: Trophy,
   Stats: ChartColumn,
   Settings: SettingsIcon,
 };
 
 const fromPath = (): Tab =>
-  location.pathname.startsWith("/session/")
-    ? "Replays"
+  /^\/(session\/|replay)/.test(location.pathname)
+    ? "Calendar"
     : (TABS.find((t) => location.pathname.slice(1).startsWith(SLUG[t])) ??
       "Countdown");
 
@@ -92,7 +96,7 @@ export const App = () => {
         <LiveSession season={season} info={info} />
       </main>
       <main key={visit} hidden={tab === "Countdown"}>
-        {tab === "Replays" && <Replays />}
+        {tab === "Calendar" && <Calendar season={season} />}
         {tab === "Results" && <Results />}
         {tab === "Stats" &&
           (season.data ? (

@@ -11,6 +11,7 @@ import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
 import { ReplayPicker } from "./ReplayPicker.tsx";
+import { Schedule } from "./Schedule.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
@@ -361,21 +362,45 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   );
 };
 
-export const Replays = () => {
+interface CalendarProps {
+  season: Loaded<Season>;
+}
+
+export const Calendar = ({ season }: CalendarProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
   const [path, setPath] = useState(
-    () => pathPart("replay") ?? pathPart("session"),
+    () => pathPart("calendar") ?? pathPart("replay") ?? pathPart("session"),
   );
   const choose = (s: SessionRef | null) => {
-    setPathPart("replay", s?.path ?? null);
+    setPathPart("calendar", s?.path ?? null);
     setPath(s?.path ?? null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
-  if (!sessions.data)
-    return <Loading label="Loading past sessions…" error={sessions.error} />;
+  if (!sessions.data || !season.data)
+    return (
+      <Loading
+        label="Loading the calendar…"
+        error={sessions.error ?? season.error}
+      />
+    );
   if (chosen)
     return (
       <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />
     );
-  return <ReplayPicker sessions={sessions.data} onStart={choose} />;
+  return (
+    <div className="space-y-6">
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
+          Upcoming
+        </h2>
+        <Schedule rounds={season.data.rounds} />
+      </section>
+      <section className="space-y-3">
+        <h2 className="text-sm font-semibold tracking-wider text-zinc-400 uppercase">
+          Replays
+        </h2>
+        <ReplayPicker sessions={sessions.data} onStart={choose} />
+      </section>
+    </div>
+  );
 };
