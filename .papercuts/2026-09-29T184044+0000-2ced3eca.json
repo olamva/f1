@@ -1,0 +1,14 @@
+{
+  "id": "2ced3eca",
+  "ts": "2026-09-29T18:40:44+00:00",
+  "text": "T3 preview_click and preview_snapshot fail with 'automation failed on client' while preview_evaluate works",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "5df9fed1",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-6b443175",
+  "branch": "t3code/brighten-dark-picker"
+}
