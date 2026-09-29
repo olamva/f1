@@ -235,6 +235,12 @@ resource "azapi_resource" "auth" {
       globalValidation = {
         unauthenticatedClientAction = "AllowAnonymous"
       }
+      login = {
+        cookieExpiration = {
+          convention       = "FixedTime"
+          timeToExpiration = "30.00:00:00"
+        }
+      }
       identityProviders = {
         google = {
           enabled = true
