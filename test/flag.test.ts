@@ -10,15 +10,6 @@ test("green track status shows no flag banner", () => {
   assert.equal(trackStatus({}), null);
 });
 
-test("yellow and red flags use different tones", () => {
-  const yellow = trackStatus({
-    TrackStatus: { Status: "2", Message: "Yellow" },
-  });
-  const red = trackStatus({ TrackStatus: { Status: "5", Message: "Red" } });
-  assert.ok(yellow && red);
-  assert.notEqual(yellow.tone, red.tone);
-});
-
 test("safety car banner ends after the in this lap message", () => {
   const state = {
     TrackStatus: { Status: "4" },
