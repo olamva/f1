@@ -1,8 +1,9 @@
 import { ChartLine, Gauge, IdCard, Swords, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import type { Championship } from "../../shared/clinch.ts";
 import type { Season } from "../../shared/season.ts";
 import { pathPart, pathSegment, setPathPart } from "../path.ts";
+import { Swipe } from "../Swipe.tsx";
 import { Tabs } from "../Tabs.tsx";
 import {
   driverTables,
@@ -23,6 +24,7 @@ import { TitleFight } from "./TitleFight.tsx";
 
 const VIEWS = ["Drivers", "Title fight", "H2H", "Season", "Race pace"] as const;
 type View = (typeof VIEWS)[number];
+const CHAMPS = ["drivers", "constructors"] as const;
 
 const ICONS = {
   Drivers: IdCard,
@@ -51,6 +53,8 @@ export const Stats = ({ season }: StatsProps) => {
     setDriver(null);
   };
   const [champ, setChamp] = useState<Championship>("drivers");
+  const viewBlob = useRef<(offset: number, held: boolean) => void>(null);
+  const champBlob = useRef<(offset: number, held: boolean) => void>(null);
   const d = useMemo(() => {
     const dt = driverTables(season);
     const tt = teamTables(season);
@@ -73,49 +77,69 @@ export const Stats = ({ season }: StatsProps) => {
         icons={ICONS}
         small
         stretch
+        drive={viewBlob}
       />
-      {view === "Title fight" && (
-        <Tabs
-          items={["drivers", "constructors"] as const}
-          value={champ}
-          onChange={setChamp}
-          small
-          stretch
-        />
-      )}
-      {view === "Drivers" &&
-        (driver ? (
-          <DriverProfile
-            key={driver}
-            id={driver}
-            onBack={() => show("Drivers")}
-          />
-        ) : (
-          <Drivers season={season} who={d.who} table={latest(d.dt)} />
-        ))}
-      {view === "Title fight" && (
-        <TitleFight
-          key={champ}
-          champ={champ}
-          table={latest(champ === "drivers" ? d.dt : d.tt)}
-          events={d.events}
-          who={champ === "drivers" ? d.who : d.teamWho}
-        />
-      )}
-      {view === "H2H" && (
-        <Teammates
-          duels={d.duels}
-          who={d.who}
-          hasSprints={
-            season.sprints.length > 0 || season.sprintQualifying.length > 0
-          }
-          hasSprintQualifying={season.sprintQualifying.length > 0}
-        />
-      )}
-      {view === "Season" && (
-        <SeasonCharts tables={d.dt} who={d.who} gains={d.gains} />
-      )}
-      {view === "Race pace" && <RacePace season={season} who={d.who} />}
+      <Swipe
+        items={VIEWS}
+        value={view}
+        onChange={show}
+        drive={viewBlob}
+        render={(v) => (
+          <>
+            {v === "Drivers" &&
+              (driver ? (
+                <DriverProfile
+                  key={driver}
+                  id={driver}
+                  onBack={() => show("Drivers")}
+                />
+              ) : (
+                <Drivers season={season} who={d.who} table={latest(d.dt)} />
+              ))}
+            {v === "Title fight" && (
+              <div className="space-y-4">
+                <Tabs
+                  items={CHAMPS}
+                  value={champ}
+                  onChange={setChamp}
+                  small
+                  stretch
+                  drive={champBlob}
+                />
+                <Swipe
+                  items={CHAMPS}
+                  value={champ}
+                  onChange={setChamp}
+                  drive={champBlob}
+                  render={(c) => (
+                    <TitleFight
+                      champ={c}
+                      table={latest(c === "drivers" ? d.dt : d.tt)}
+                      events={d.events}
+                      who={c === "drivers" ? d.who : d.teamWho}
+                    />
+                  )}
+                />
+              </div>
+            )}
+            {v === "H2H" && (
+              <Teammates
+                duels={d.duels}
+                who={d.who}
+                hasSprints={
+                  season.sprints.length > 0 ||
+                  season.sprintQualifying.length > 0
+                }
+                hasSprintQualifying={season.sprintQualifying.length > 0}
+              />
+            )}
+            {v === "Season" && (
+              <SeasonCharts tables={d.dt} who={d.who} gains={d.gains} />
+            )}
+            {v === "Race pace" && <RacePace season={season} who={d.who} />}
+          </>
+        )}
+      />
     </div>
   );
 };

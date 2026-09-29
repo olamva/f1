@@ -1,4 +1,6 @@
 import {
+  createContext,
+  useContext,
   useEffect,
   useLayoutEffect,
   useRef,
@@ -16,18 +18,23 @@ interface SwipeProps<T extends string> {
   onChange: (v: T) => void;
   render: (v: T) => ReactNode;
   keep?: readonly T[];
-  onDrag?: (offset: number, held: boolean) => void;
+  drive?: RefObject<((offset: number, held: boolean) => void) | null>;
   lift?: RefObject<HTMLElement | null>;
 }
 
 const GAP = 32;
 const EASE = "translate 250ms cubic-bezier(0.2, 0.8, 0.2, 1)";
 const touch = matchMedia("(any-pointer: coarse)").matches;
+const Level = createContext({ depth: 0, active: true });
+const claimed = new WeakSet<Event>();
+let busy = false;
+let pending: (() => void) | null = null;
+let last = { at: -Infinity, depth: 0 };
 
-const blocked = (target: EventTarget, root: HTMLElement) => {
+const blocked = (target: EventTarget) => {
   for (
     let el = target instanceof Element ? target : null;
-    el && el !== root;
+    el && el !== document.body;
     el = el.parentElement
   ) {
     const style = getComputedStyle(el);
@@ -47,9 +54,10 @@ export const Swipe = <T extends string>({
   onChange,
   render,
   keep,
-  onDrag,
+  drive,
   lift,
 }: SwipeProps<T>) => {
+  const { depth, active } = useContext(Level);
   const root = useRef<HTMLDivElement>(null);
   const drag = useRef<{
     id: number;
@@ -60,8 +68,6 @@ export const Swipe = <T extends string>({
     speed: number;
     on: boolean;
   } | null>(null);
-  const busy = useRef(false);
-  const pending = useRef<(() => void) | null>(null);
   const landing = useRef<number | null>(null);
   const lands = useRef<Record<number, number>>({});
   const head = useRef<DOMRect | null>(null);
@@ -91,15 +97,13 @@ export const Swipe = <T extends string>({
     }
     lift?.current?.style.removeProperty("translate");
     lift?.current?.style.removeProperty("transition");
-    busy.current = false;
+    busy = false;
   };
 
   useLayoutEffect(() => {
     if (landing.current === null)
       return root
-        .current!.querySelector(
-          ":scope > main:not([inert]) [data-swipe-anchor]",
-        )
+        .current!.querySelector(":scope > :not([inert]) [data-swipe-anchor]")
         ?.scrollIntoView({ block: "center" });
     const y = landing.current;
     landing.current = null;
@@ -107,7 +111,16 @@ export const Swipe = <T extends string>({
     scrollTo(0, y);
   }, [value]);
 
+  useEffect(
+    () => () => {
+      busy = false;
+      pending = null;
+    },
+    [],
+  );
+
   useEffect(() => {
+    if (depth) return;
     const onKey = (event: KeyboardEvent) => {
       const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
       const next = step && items[index + step];
@@ -126,7 +139,7 @@ export const Swipe = <T extends string>({
     };
     addEventListener("keydown", onKey);
     return () => removeEventListener("keydown", onKey);
-  }, [items, index, onChange]);
+  }, [depth, items, index, onChange]);
 
   const reveal = () => {
     const el = root.current!;
@@ -175,8 +188,9 @@ export const Swipe = <T extends string>({
   const settle = (step: number) => {
     const el = root.current!;
     const next = step ? items[index + step] : undefined;
-    busy.current = true;
-    onDrag?.(next ? step : 0, false);
+    busy = true;
+    if (next) last = { at: performance.now(), depth };
+    drive?.current?.(next ? step : 0, false);
     el.dataset.settling = "";
     if (lift?.current) lift.current.style.transition = EASE;
     raise(next ? 1 : 0, step);
@@ -186,13 +200,13 @@ export const Swipe = <T extends string>({
     );
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
     const done = () => {
-      pending.current = null;
+      pending = null;
       if (!next) return reset();
       landing.current = lands.current[step] ?? scrollY;
       onChange(next);
     };
     const timer = setTimeout(done, reduced ? 0 : 250);
-    pending.current = () => {
+    pending = () => {
       clearTimeout(timer);
       flushSync(done);
     };
@@ -219,15 +233,15 @@ export const Swipe = <T extends string>({
       ref={root}
       className="swipe"
       onPointerDown={(event) => {
-        if (touch && event.pointerType === "touch") pending.current?.();
+        if (touch && event.pointerType === "touch") pending?.();
         if (
           !touch ||
-          busy.current ||
+          busy ||
           event.pointerType !== "touch" ||
           !event.isPrimary ||
           event.clientX < 20 ||
           event.clientX > innerWidth - 20 ||
-          blocked(event.target, root.current!)
+          blocked(event.target)
         )
           return;
         drag.current = {
@@ -248,6 +262,16 @@ export const Swipe = <T extends string>({
         if (!current.on) {
           if (Math.abs(dy) > Math.abs(dx)) drag.current = null;
           if (Math.abs(dx) < 10 || !drag.current) return;
+          if (
+            claimed.has(event.nativeEvent) ||
+            (depth &&
+              (!items[index + (dx < 0 ? 1 : -1)] ||
+                (event.timeStamp - last.at < 1000 && last.depth < depth)))
+          ) {
+            drag.current = null;
+            return;
+          }
+          claimed.add(event.nativeEvent);
           current.on = true;
           reveal();
         }
@@ -258,7 +282,7 @@ export const Swipe = <T extends string>({
         const shift = items[index + (dx < 0 ? 1 : -1)] ? dx : 0;
         root.current!.style.setProperty("--swipe", `${shift}px`);
         const offset = -shift / (root.current!.offsetWidth + GAP);
-        onDrag?.(offset, true);
+        drive?.current?.(offset, true);
         raise(Math.min(1, Math.abs(offset)), Math.sign(offset));
       }}
       onPointerUp={end}
@@ -266,18 +290,23 @@ export const Swipe = <T extends string>({
     >
       {items.map((item, i) => {
         const side = i - index;
-        const near = touch && Math.abs(side) === 1;
+        const near = touch && active && Math.abs(side) === 1;
         if (side && !near && !keep?.includes(item)) return null;
+        const Panel = depth ? "div" : "main";
         return (
-          <main
+          <Panel
             key={`${item}:${keep?.includes(item) ? 0 : (epochs[item] ?? 0)}`}
             data-side={near ? side : undefined}
             hidden={side !== 0 && !near}
             inert={side !== 0}
             style={{ "--side": side } as CSSProperties}
           >
-            {render(item)}
-          </main>
+            <Level.Provider
+              value={{ depth: depth + 1, active: active && side === 0 }}
+            >
+              {render(item)}
+            </Level.Provider>
+          </Panel>
         );
       })}
     </div>

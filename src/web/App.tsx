@@ -104,7 +104,7 @@ export const App = () => {
         value={tab}
         onChange={go}
         keep={["Countdown"]}
-        onDrag={(offset, held) => blob.current?.(offset, held)}
+        drive={blob}
         lift={logo}
         render={(t) =>
           t === "Countdown" ? (
