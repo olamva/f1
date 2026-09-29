@@ -205,9 +205,9 @@ export const Results = ({ season }: ResultsProps) => {
     years.includes(initialYear ?? "") ? initialYear! : String(currentYear),
   );
   const [part, setPart] = useState<Part>(
-    pathSegment(3) === "standings" ? "Standings" : "Races",
+    pathSegment("results", 3) === "standings" ? "Standings" : "Races",
   );
-  const [round, setRound] = useState(Number(pathSegment(3)));
+  const [round, setRound] = useState(Number(pathSegment("results", 3)));
   const show = (nextYear: string, nextPart: Part, nextRound = 0) => {
     setYear(nextYear);
     setPart(nextPart);

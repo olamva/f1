@@ -43,7 +43,7 @@ export const Stats = ({ season }: StatsProps) => {
     () => VIEWS.find((v) => slug(v) === pathPart("stats")) ?? "Drivers",
   );
   const [driver, setDriver] = useState(() =>
-    view === "Drivers" ? pathSegment(3) : null,
+    view === "Drivers" ? pathSegment("stats", 3) : null,
   );
   const show = (v: View) => {
     setPathPart("stats", slug(v));

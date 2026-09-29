@@ -1,0 +1,14 @@
+{
+  "id": "4bd69c3b",
+  "ts": "2026-09-29T07:29:24+00:00",
+  "text": "gh issue view 212 printed nothing, even with 2>&1; gh api worked",
+  "tags": [
+    "gh",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "be96c203",
+  "where": "gh issue view",
+  "branch": "t3code/explore-swipe-navigation"
+}

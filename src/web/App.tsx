@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import {
   CalendarDays,
   ChartColumn,
@@ -17,6 +17,7 @@ import { Loading } from "./Loading.tsx";
 import { Results } from "./Results.tsx";
 import { Settings } from "./Settings.tsx";
 import { Stats } from "./stats/Stats.tsx";
+import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
 import { UpdateToast } from "./UpdateToast.tsx";
 import f1Logo from "./f1-logo.svg";
@@ -65,11 +66,11 @@ export const App = () => {
     if (tab === "Calendar" && t !== "Calendar") scrollTo(0, 0);
     history.pushState(null, "", t === "Countdown" ? "/" : `/${SLUG[t]}`);
     if (t === "Countdown" && tab === "Countdown") setSession((s) => s + 1);
+    if (t === tab) setVisit((v) => v + 1);
     setTab(t);
-    setVisit((v) => v + 1);
   };
   return (
-    <div className="mx-auto max-w-[1600px] space-y-4 p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
+    <div className="mx-auto max-w-[1600px] space-y-4 overflow-x-clip p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
       <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-6">
         <button
           onClick={() => go("Countdown")}
@@ -94,20 +95,29 @@ export const App = () => {
           />
         </div>
       </header>
-      <main key={`session-${session}`} hidden={tab !== "Countdown"}>
-        <LiveSession season={season} info={info} />
-      </main>
-      <main key={visit} hidden={tab === "Countdown"}>
-        {tab === "Calendar" && <Calendar season={season} />}
-        {tab === "Results" && <Results season={season.data} />}
-        {tab === "Stats" &&
-          (season.data ? (
-            <Stats season={season.data} />
+      <Swipe
+        items={TABS}
+        value={tab}
+        onChange={go}
+        keep={["Countdown"]}
+        render={(t) =>
+          t === "Countdown" ? (
+            <LiveSession key={session} season={season} info={info} />
           ) : (
-            <Loading label="Loading the season…" error={season.error} />
-          ))}
-        {tab === "Settings" && <Settings />}
-      </main>
+            <Fragment key={visit}>
+              {t === "Calendar" && <Calendar season={season} />}
+              {t === "Results" && <Results season={season.data} />}
+              {t === "Stats" &&
+                (season.data ? (
+                  <Stats season={season.data} />
+                ) : (
+                  <Loading label="Loading the season…" error={season.error} />
+                ))}
+              {t === "Settings" && <Settings />}
+            </Fragment>
+          )
+        }
+      />
       <UpdateToast />
     </div>
   );

@@ -672,3 +672,31 @@ textarea {
 html:has(dialog[open]) {
   overflow: hidden;
 }
+
+.swipe {
+  position: relative;
+  touch-action: pan-y;
+}
+
+.swipe > [data-side] {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  max-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.swipe[data-swiping] > main {
+  translate: calc(var(--swipe, 0px) + var(--side) * (100% + 32px));
+}
+
+.swipe[data-swiping] > [data-side] {
+  max-height: none;
+  overflow: visible;
+  visibility: visible;
+}
+
+.swipe[data-settling] > main {
+  transition: translate 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
