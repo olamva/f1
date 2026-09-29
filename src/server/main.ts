@@ -30,6 +30,7 @@ app.get(
 );
 app.use("/api/token", requireGoogle);
 app.use("/api/push", requireGoogle);
+app.use("/api/radio/transcript", requireGoogle);
 
 const key = (c: Context) => {
   const u = user(c);
