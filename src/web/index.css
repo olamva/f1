@@ -58,7 +58,7 @@ textarea {
   scrollbar-gutter: stable;
 }
 
-:root:has(.spotlight) {
+:root[data-tab="Countdown"]:has(.spotlight) {
   scrollbar-gutter: auto;
 }
 
