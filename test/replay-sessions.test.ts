@@ -39,3 +39,23 @@ test("ended sessions without an archive path are listed without a path, future s
     ],
   );
 });
+
+test("sessions west of UTC keep a parseable start time", async (t) => {
+  t.mock.method(globalThis, "fetch", async () =>
+    Response.json({
+      Meetings: [
+        {
+          Name: "Miami Grand Prix",
+          Sessions: [
+            {
+              ...session("Race", "2026-05-03T16:00:00", "2026/r/"),
+              GmtOffset: "-04:00:00",
+            },
+          ],
+        },
+      ],
+    }),
+  );
+  const [race] = await seasonSessions(2026);
+  assert.equal(Date.parse(race.start), Date.parse("2026-05-03T20:00:00Z"));
+});

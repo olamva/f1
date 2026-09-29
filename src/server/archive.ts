@@ -22,7 +22,7 @@ const json = async (url: string): Promise<any> =>
   JSON.parse((await text(url)).replace(/^﻿/, ""));
 
 const local = (date: string, offset: string) =>
-  `${date}${offset.startsWith("-") ? "" : "+"}${offset.slice(0, 5)}`;
+  `${date}${offset.startsWith("-") ? "" : "+"}${offset.replace(/:\d\d$/, "")}`;
 
 export async function seasonSessions(year: number): Promise<SessionRef[]> {
   const index = await json(`${BASE}${year}/Index.json`);
