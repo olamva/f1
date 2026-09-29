@@ -8,6 +8,7 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
+import { flushSync } from "react-dom";
 
 interface SwipeProps<T extends string> {
   items: readonly T[];
@@ -60,6 +61,7 @@ export const Swipe = <T extends string>({
     on: boolean;
   } | null>(null);
   const busy = useRef(false);
+  const pending = useRef<(() => void) | null>(null);
   const landing = useRef<number | null>(null);
   const lands = useRef<Record<number, number>>({});
   const head = useRef<DOMRect | null>(null);
@@ -183,14 +185,17 @@ export const Swipe = <T extends string>({
       `${next ? -step * (el.offsetWidth + GAP) : 0}px`,
     );
     const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    setTimeout(
-      () => {
-        if (!next) return reset();
-        landing.current = lands.current[step] ?? scrollY;
-        onChange(next);
-      },
-      reduced ? 0 : 250,
-    );
+    const done = () => {
+      pending.current = null;
+      if (!next) return reset();
+      landing.current = lands.current[step] ?? scrollY;
+      onChange(next);
+    };
+    const timer = setTimeout(done, reduced ? 0 : 250);
+    pending.current = () => {
+      clearTimeout(timer);
+      flushSync(done);
+    };
   };
 
   const end = (event: PointerEvent) => {
@@ -214,6 +219,7 @@ export const Swipe = <T extends string>({
       ref={root}
       className="swipe"
       onPointerDown={(event) => {
+        if (touch && event.pointerType === "touch") pending.current?.();
         if (
           !touch ||
           busy.current ||
@@ -249,7 +255,7 @@ export const Swipe = <T extends string>({
         current.speed = (dx - current.dx) / elapsed;
         current.at = event.timeStamp;
         current.dx = dx;
-        const shift = items[index + (dx < 0 ? 1 : -1)] ? dx : dx / 3;
+        const shift = items[index + (dx < 0 ? 1 : -1)] ? dx : 0;
         root.current!.style.setProperty("--swipe", `${shift}px`);
         const offset = -shift / (root.current!.offsetWidth + GAP);
         onDrag?.(offset, true);
