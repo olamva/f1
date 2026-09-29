@@ -23,7 +23,9 @@ const ROLES = {
 };
 
 const pathOf = (url: string) =>
-  url.startsWith(STATIC) && !url.includes("..")
+  url.startsWith(STATIC) &&
+  !url.includes("..") &&
+  /\/TeamRadio\/[\w-]+\.mp3$/.test(url)
     ? url.slice(STATIC.length)
     : null;
 
