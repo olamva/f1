@@ -228,6 +228,25 @@ const analyserOf = (el: HTMLAudioElement) => {
   return analysers.get(el)!;
 };
 
+const START = [1047, 784];
+const END = [1175, 988];
+
+const chirp = (a: AnalyserNode, notes: number[]) => {
+  const ctx = a.context;
+  void (ctx as AudioContext).resume();
+  notes.forEach((hz, i) => {
+    const t = ctx.currentTime + i * 0.1;
+    const gain = new GainNode(ctx, { gain: 0 });
+    gain.gain.setTargetAtTime(0.2, t, 0.005);
+    gain.gain.setTargetAtTime(0, t + 0.07, 0.01);
+    const osc = new OscillatorNode(ctx, { type: "triangle", frequency: hz });
+    osc.connect(gain).connect(a);
+    osc.start(t);
+    osc.stop(t + 0.12);
+  });
+  return new Promise((r) => setTimeout(r, notes.length * 100));
+};
+
 const Bars = ({
   audio,
   playing,
@@ -291,7 +310,12 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
       setAt({ t: 0, d: 0 });
       a.src = `/api/radio/audio?url=${encodeURIComponent(r.url)}`;
     }
-    if (a.paused) void a.play();
+    if (a.paused)
+      void (
+        a.currentTime && !a.ended
+          ? Promise.resolve()
+          : chirp(analyserOf(a), START)
+      ).then(() => a.play());
     else a.pause();
   };
   const newest = useRef(radios[0]?.url);
@@ -309,6 +333,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
         preload="none"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
+        onEnded={(e) => void chirp(analyserOf(e.currentTarget), END)}
         onTimeUpdate={(e) =>
           setAt({
             t: e.currentTarget.currentTime,

@@ -1,0 +1,14 @@
+{
+  "id": "5eb98b8d",
+  "ts": "2026-09-29T15:41:21+00:00",
+  "text": "T3 preview_evaluate hangs on every call after one long-running promise expression",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c05bf943",
+  "where": "mcp__t3-code__preview_evaluate",
+  "branch": "t3code/add-radio-sounds"
+}
