@@ -81,7 +81,12 @@ export const Swipe = <T extends string>({
   };
 
   useLayoutEffect(() => {
-    if (landing.current === null) return;
+    if (landing.current === null)
+      return root
+        .current!.querySelector(
+          ":scope > main:not([inert]) [data-swipe-anchor]",
+        )
+        ?.scrollIntoView({ block: "center" });
     const y = landing.current;
     landing.current = null;
     reset();
