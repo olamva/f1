@@ -519,6 +519,11 @@ textarea {
   animation: spotlight 3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.swipe > [inert] .spotlight {
+  animation: none;
+  opacity: 0;
+}
+
 @keyframes spotlight {
   from {
     --spotlight: 0%;

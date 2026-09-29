@@ -1,0 +1,14 @@
+{
+  "id": "9e7d11d4",
+  "ts": "2026-09-29T09:23:31+00:00",
+  "text": "T3 preview host disconnected after session restart; resize timed out, evaluate said no automation host",
+  "tags": [
+    "t3",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "be96c203",
+  "where": "mcp__t3-code__preview_*",
+  "branch": "t3code/swipe-main-tabs"
+}
