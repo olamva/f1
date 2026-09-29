@@ -17,8 +17,13 @@ export const pathSegment = (prefix: string, index: number): string | null => {
     : null;
 };
 
+export const standalone = matchMedia("(display-mode: standalone)").matches;
+
+export const navigate = (url: string) =>
+  history[standalone ? "replaceState" : "pushState"](null, "", url);
+
 export const openDriver = (id: string) => {
-  history.pushState(null, "", `/stats/drivers/${encodeURIComponent(id)}`);
+  navigate(`/stats/drivers/${encodeURIComponent(id)}`);
   dispatchEvent(new PopStateEvent("popstate"));
   scrollTo(0, 0);
 };
