@@ -262,6 +262,10 @@ textarea {
     box-shadow 180ms ease;
 }
 
+.glass-control {
+  color-scheme: dark;
+}
+
 .glass-control option {
   background: #18181b;
   color: #f4f4f5;
