@@ -10,9 +10,11 @@ export const setPathPart = (prefix: string, part: string | null) =>
     `/${prefix}${part ? `/${encodeURIComponent(part)}` : ""}`,
   );
 
-export const pathSegment = (index: number): string | null => {
-  const part = location.pathname.split("/")[index];
-  return part ? decodeURIComponent(part) : null;
+export const pathSegment = (prefix: string, index: number): string | null => {
+  const parts = location.pathname.split("/");
+  return parts[1] === prefix && parts[index]
+    ? decodeURIComponent(parts[index])
+    : null;
 };
 
 export const openDriver = (id: string) => {

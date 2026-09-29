@@ -160,7 +160,8 @@ export const CalendarList = ({
 }: CalendarListProps) => {
   const ref = useRef<HTMLLIElement>(null);
   useEffect(() => {
-    ref.current?.scrollIntoView({ block: "center" });
+    if (!ref.current?.closest("[inert]"))
+      ref.current?.scrollIntoView({ block: "center" });
   }, []);
   const past = weekends(sessions);
   const future = upcoming(rounds).reverse();
@@ -172,6 +173,7 @@ export const CalendarList = ({
     const i = keys.indexOf(key);
     return {
       ref: key === anchor ? ref : undefined,
+      "data-swipe-anchor": key === anchor || undefined,
       className:
         key === anchor
           ? "sm:col-span-full"

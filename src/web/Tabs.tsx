@@ -1,5 +1,11 @@
 import type { LucideIcon } from "lucide-react";
-import { useLayoutEffect, useRef, useState, type PointerEvent } from "react";
+import {
+  useLayoutEffect,
+  useRef,
+  useState,
+  type PointerEvent,
+  type RefObject,
+} from "react";
 
 interface TabsProps<T extends string> {
   items: readonly T[];
@@ -10,6 +16,7 @@ interface TabsProps<T extends string> {
   labels?: Partial<Record<T, string>>;
   icons?: Partial<Record<T, LucideIcon>>;
   live?: T;
+  drive?: RefObject<((offset: number, held: boolean) => void) | null>;
 }
 
 export const Tabs = <T extends string>({
@@ -21,6 +28,7 @@ export const Tabs = <T extends string>({
   labels,
   icons,
   live,
+  drive,
 }: TabsProps<T>) => {
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
@@ -34,6 +42,7 @@ export const Tabs = <T extends string>({
   } | null>(null);
   const suppressClick = useRef(false);
   const rest = useRef(0);
+  const pull = useRef<number | null>(null);
   const [held, setHeld] = useState(false);
   const [moving, setMoving] = useState(false);
   const [size, setSize] = useState<number | null>(null);
@@ -60,6 +69,7 @@ export const Tabs = <T extends string>({
       const elapsed = Math.max(1, now - previous);
       const left =
         drag.current?.x ??
+        pull.current ??
         (reduced
           ? (drag.current?.left ?? rest.current)
           : ease(x, drag.current?.left ?? rest.current, elapsed, 60));
@@ -79,7 +89,11 @@ export const Tabs = <T extends string>({
       clip();
       x = left;
       previous = now;
-      if (!drag.current && Math.abs(rest.current - left) < 4) {
+      if (
+        !drag.current &&
+        pull.current === null &&
+        Math.abs(rest.current - left) < 4
+      ) {
         setSize(null);
         return setMoving(false);
       }
@@ -106,6 +120,34 @@ export const Tabs = <T extends string>({
     observer.observe(button);
     return () => observer.disconnect();
   }, [items, value]);
+
+  useLayoutEffect(() => {
+    if (!drive) return;
+    drive.current = (offset, hold) => {
+      const index = items.findIndex((item) => item === value);
+      const from = buttons.current[index];
+      const to = buttons.current[index + Math.sign(offset)] ?? from;
+      if (!from || !to) return;
+      const x =
+        from.offsetLeft +
+        (to.offsetLeft - from.offsetLeft) * Math.min(1, Math.abs(offset));
+      if (hold) {
+        pull.current = x;
+        if (!held) {
+          setHeld(true);
+          setMoving(false);
+          setSize(from.offsetWidth);
+        }
+        return;
+      }
+      pull.current = null;
+      rest.current = x;
+      setHighlight({ left: x, width: to.offsetWidth });
+      setHeld(false);
+      setMoving(true);
+      setSize(null);
+    };
+  });
 
   const clip = () => {
     const indicator = blob.current;

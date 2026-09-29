@@ -519,6 +519,11 @@ textarea {
   animation: spotlight 3s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+.swipe > [inert] .spotlight {
+  animation: none;
+  opacity: 0;
+}
+
 @keyframes spotlight {
   from {
     --spotlight: 0%;
@@ -671,4 +676,36 @@ textarea {
 
 html:has(dialog[open]) {
   overflow: hidden;
+}
+
+.swipe {
+  position: relative;
+  touch-action: pan-y;
+}
+
+.swipe > [data-side] {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  max-height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}
+
+.swipe[data-swiping] > :not([data-side]) {
+  position: relative;
+}
+
+.swipe[data-swiping] > main {
+  translate: calc(var(--swipe, 0px) + var(--side) * (100% + 32px));
+}
+
+.swipe[data-swiping] > [data-side] {
+  max-height: none;
+  overflow: visible;
+  visibility: visible;
+}
+
+.swipe[data-settling] > main {
+  transition: translate 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
