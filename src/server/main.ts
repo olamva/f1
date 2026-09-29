@@ -1,6 +1,6 @@
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import type { Delta, Snapshot } from "../shared/timing.ts";
 import {
@@ -28,7 +28,14 @@ app.get(
   "/:asset{(apple-touch-icon|icon-192|icon-512)\\.png|manifest\\.webmanifest|privacy\\.html}",
   serveStatic({ root: DIST }),
 );
-app.use(requireGoogle);
+app.use("/api/token", requireGoogle);
+app.use("/api/push", requireGoogle);
+
+const key = (c: Context) => {
+  const u = user(c);
+  return u && token.key(u);
+};
+const feed = (c: Context) => live.feed(key(c));
 
 const send = (s: SSEStreamingApi, event: string, data: unknown) =>
   s.writeSSE({ event, data: JSON.stringify(data) });
@@ -70,12 +77,12 @@ app.get("/api/drivers/:id", async (c) => {
   return profile ? c.json(profile) : c.notFound();
 });
 
-app.get("/api/token", (c) => c.json(token.status()));
+app.get("/api/token", (c) => c.json(token.status(key(c)!)));
 app.post("/api/token", async (c) => {
   const body = await c.req.json<{ value?: string }>();
   try {
-    await token.save(body.value ?? "");
-    return c.json(token.status());
+    await token.save(key(c)!, body.value ?? "");
+    return c.json(token.status(key(c)!));
   } catch (e) {
     return c.json({ error: (e as Error).message }, 400);
   }
@@ -87,14 +94,14 @@ app.get("/api/push", async (c) => {
     publicKey: push.publicKey,
     enabled:
       !!(push.publicKey && endpoint) &&
-      (await push.subscribed(user(c), endpoint!)),
+      (await push.subscribed(user(c)!, endpoint!)),
   });
 });
 app.put("/api/push", async (c) => {
   const body = await c.req.json();
   if (!push.publicKey) return c.json({ error: "Notifications are off." }, 404);
   if (!push.valid(body)) return c.json({ error: "Invalid subscription." }, 400);
-  await push.subscribe(user(c), body);
+  await push.subscribe(user(c)!, body);
   return c.body(null, 204);
 });
 app.delete("/api/push", async (c) => {
@@ -102,7 +109,7 @@ app.delete("/api/push", async (c) => {
   if (!push.publicKey) return c.json({ error: "Notifications are off." }, 404);
   if (typeof endpoint !== "string")
     return c.json({ error: "Invalid subscription." }, 400);
-  await push.unsubscribe(user(c), endpoint);
+  await push.unsubscribe(user(c)!, endpoint);
   return c.body(null, 204);
 });
 
@@ -110,28 +117,28 @@ app.get("/api/live", (c) =>
   c.json({
     live: live.isLive(),
     recent: live.hasRecentTiming(),
-    positions: live.hasPositions(),
-    info: live.session.state.SessionInfo ?? null,
+    positions: feed(c) !== live.shared,
+    info: live.shared.session.state.SessionInfo ?? null,
   }),
 );
-app.get("/api/live/laps", (c) => c.json(live.session.laps));
-app.get("/api/live/outline", async (c) =>
-  c.json(
-    await outlineFor(live.session.state.SessionInfo, () =>
-      live.session.outline(),
-    ),
-  ),
-);
+app.get("/api/live/laps", (c) => c.json(feed(c).session.laps));
+app.get("/api/live/outline", async (c) => {
+  const { session } = feed(c);
+  return c.json(
+    await outlineFor(session.state.SessionInfo, () => session.outline()),
+  );
+});
 app.get("/api/live/stream", (c) =>
   streamSSE(c, async (s) => {
+    const f = feed(c);
     const snapshot = (): Snapshot => ({
       mode: "live",
       t: Date.now(),
       duration: 0,
-      state: live.session.state,
+      state: f.session.state,
     });
     await send(s, "snapshot", snapshot());
-    const off = live.subscribe((batch) =>
+    const off = f.subscribe((batch) =>
       batch === "reset"
         ? send(s, "snapshot", snapshot())
         : send(s, "delta", batch),
@@ -158,10 +165,12 @@ app.get("/api/radio/audio", async (c) => {
     : c.notFound();
 });
 app.get("/api/radio/transcript", async (c) => {
-  const turns = transcript(c.req.query("url") ?? "");
+  const pending = transcript(c.req.query("url") ?? "", !!user(c));
+  if (!pending) return c.json({ error: "Transcripts are off." }, 404);
+  const turns = await pending;
   return turns
-    ? c.json({ turns: await turns })
-    : c.json({ error: "Transcripts are off." }, 404);
+    ? c.json({ turns })
+    : c.json({ error: "Sign in with Google to transcribe radio." }, 401);
 });
 
 app.get("/api/replay/sessions", async (c) => {

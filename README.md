@@ -1,6 +1,11 @@
 # F1 Pitwall
 
-F1 Pitwall is a private F1 site: live timing, replays of recent sessions, and season stats with a championship clinch calculator.
+F1 Pitwall is an F1 site: live timing, replays of recent sessions, and season stats with a championship clinch calculator.
+
+Everyone can use live timing, replays, results, and stats without sign-in.
+Google sign-in is necessary only for new radio transcripts, session reminders, and F1TV tokens. Transcripts use Azure Speech, so only signed-in users can start them. Everyone can read saved transcripts. `ALLOWED_EMAILS` lists the accounts that can sign in.
+Each user saves an own F1TV token in Settings. The server opens a separate live connection for each token. Only that user gets the car positions.
+The server keeps each token in Key Vault under a hash of the email address.
 
 - React + Vite + Tailwind in `src/web`, Hono server in `src/server`, shared logic in `src/shared`.
 - Live timing comes from `livetiming.formula1.com`. Results and standings come from Jolpica-F1.

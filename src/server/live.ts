@@ -18,45 +18,7 @@ const EDGE_MS = 30 * 60_000;
 const FRESH_MS = 2 * 60_000;
 const MAX_LAG_MS = 60_000;
 
-export let session = new Session();
-let key: unknown = null;
-let pending: Delta[] = [];
-let lag = 0;
-let connection: signalR.HubConnection | null = null;
-const listeners = new Set<(batch: Delta[] | "reset") => void>();
-
-export const subscribe = (fn: (batch: Delta[] | "reset") => void) => {
-  listeners.add(fn);
-  return () => listeners.delete(fn);
-};
-
-function events(topic: string, data: Json, now: number): Event[] {
-  if (topic === "Position.z") {
-    const raw = inflate(data as string);
-    const stamps = (
-      (raw as { Position?: { Timestamp: string }[] }).Position ?? []
-    ).map((s) => Date.parse(s.Timestamp));
-    const fresh = now - stamps.at(-1)!;
-    if (fresh < MAX_LAG_MS) lag = fresh;
-    return positionEvents(now - lag - (stamps.at(-1)! - stamps[0]!), raw);
-  }
-  if (topic.endsWith(".z")) return [];
-  return [{ t: now - lag, topic, data }];
-}
-
-function handle(topic: string, data: Json) {
-  const infoKey =
-    topic === "SessionInfo" ? (data as { Key?: unknown }).Key : undefined;
-  if (infoKey !== undefined && infoKey !== key) {
-    key = infoKey;
-    session = new Session();
-    pending = [];
-    lag = 0;
-    listeners.forEach((fn) => fn("reset"));
-  }
-  for (const e of events(topic, data, Date.now()))
-    if (session.apply(e)) pending.push([e.topic, e.data, e.t]);
-}
+type Listener = (batch: Delta[] | "reset") => void;
 
 async function cookie(): Promise<string> {
   const r = await fetch(`${URL}/negotiate`, { method: "OPTIONS" });
@@ -66,54 +28,124 @@ async function cookie(): Promise<string> {
     .join("; ");
 }
 
-async function connect() {
-  const bearer = token.current();
-  const conn = new signalR.HubConnectionBuilder()
-    .withUrl(URL, {
-      headers: { Cookie: await cookie() },
-      ...(bearer ? { accessTokenFactory: () => bearer } : {}),
-    })
-    .configureLogging(signalR.LogLevel.Warning)
-    .build();
-  conn.on("feed", (topic: string, data: Json) => handle(topic, data));
-  conn.onclose(() => {
-    if (connection === conn) setTimeout(run, RETRY_MS);
-  });
-  await conn.start();
-  connection = conn;
-  const state = (await conn.invoke("Subscribe", TOPICS)) as Record<
-    string,
-    Json
-  >;
-  if (state.SessionInfo) handle("SessionInfo", state.SessionInfo);
-  for (const [topic, data] of Object.entries(state)) handle(topic, data);
+export class Feed {
+  session = new Session();
+  private info: unknown = null;
+  private pending: Delta[] = [];
+  private lag = 0;
+  private connection: signalR.HubConnection | null = null;
+  private listeners = new Set<Listener>();
+  private key: string | null;
+
+  constructor(key: string | null) {
+    this.key = key;
+  }
+
+  subscribe(fn: Listener) {
+    this.listeners.add(fn);
+    return () => this.listeners.delete(fn);
+  }
+
+  private events(topic: string, data: Json, now: number): Event[] {
+    if (topic === "Position.z") {
+      const raw = inflate(data as string);
+      const stamps = (
+        (raw as { Position?: { Timestamp: string }[] }).Position ?? []
+      ).map((s) => Date.parse(s.Timestamp));
+      const fresh = now - stamps.at(-1)!;
+      if (fresh < MAX_LAG_MS) this.lag = fresh;
+      return positionEvents(
+        now - this.lag - (stamps.at(-1)! - stamps[0]!),
+        raw,
+      );
+    }
+    if (topic.endsWith(".z")) return [];
+    return [{ t: now - this.lag, topic, data }];
+  }
+
+  private handle(topic: string, data: Json) {
+    const infoKey =
+      topic === "SessionInfo" ? (data as { Key?: unknown }).Key : undefined;
+    if (infoKey !== undefined && infoKey !== this.info) {
+      this.info = infoKey;
+      this.session = new Session();
+      this.pending = [];
+      this.lag = 0;
+      this.listeners.forEach((fn) => fn("reset"));
+    }
+    for (const e of this.events(topic, data, Date.now()))
+      if (this.session.apply(e)) this.pending.push([e.topic, e.data, e.t]);
+  }
+
+  private async connect() {
+    const bearer = this.key && token.current(this.key);
+    if (this.key && !bearer) return;
+    const conn = new signalR.HubConnectionBuilder()
+      .withUrl(URL, {
+        headers: { Cookie: await cookie() },
+        ...(bearer ? { accessTokenFactory: () => bearer } : {}),
+      })
+      .configureLogging(signalR.LogLevel.Warning)
+      .build();
+    conn.on("feed", (topic: string, data: Json) => this.handle(topic, data));
+    conn.onclose(() => {
+      if (this.connection === conn) setTimeout(() => this.run(), RETRY_MS);
+    });
+    await conn.start();
+    this.connection = conn;
+    const topics = bearer ? TOPICS : TOPICS.filter((t) => !t.endsWith(".z"));
+    const state = (await conn.invoke("Subscribe", topics)) as Record<
+      string,
+      Json
+    >;
+    if (state.SessionInfo) this.handle("SessionInfo", state.SessionInfo);
+    for (const [topic, data] of Object.entries(state)) this.handle(topic, data);
+  }
+
+  private run() {
+    this.connect().catch((e) => {
+      console.error("live timing:", e.message);
+      setTimeout(() => this.run(), RETRY_MS);
+    });
+  }
+
+  async reconnect() {
+    const old = this.connection;
+    this.connection = null;
+    await old?.stop();
+    this.run();
+  }
+
+  start() {
+    this.run();
+    setInterval(() => {
+      if (!this.pending.length) return;
+      const batch = this.pending;
+      this.pending = [];
+      this.listeners.forEach((fn) => fn(batch));
+    }, FLUSH_MS);
+    return this;
+  }
 }
 
-function run() {
-  connect().catch((e) => {
-    console.error("live timing:", e.message);
-    setTimeout(run, RETRY_MS);
-  });
-}
+export const shared = new Feed(null);
+const feeds = new Map<string, Feed>();
 
-async function reconnect() {
-  const old = connection;
-  connection = null;
-  await old?.stop();
-  run();
+function follow(key: string) {
+  const f = feeds.get(key);
+  if (f) void f.reconnect();
+  else feeds.set(key, new Feed(key).start());
 }
 
 export function start() {
   if (process.env.NO_LIVE === "1") return;
-  token.onChange(() => void reconnect());
-  run();
-  setInterval(() => {
-    if (!pending.length) return;
-    const batch = pending;
-    pending = [];
-    listeners.forEach((fn) => fn(batch));
-  }, FLUSH_MS);
+  shared.start();
+  token.keys().forEach(follow);
+  token.onChange(follow);
 }
+
+export const feed = (key: string | null): Feed =>
+  (key && token.current(key) && feeds.get(key)) || shared;
 
 const at = (date: unknown, offset: unknown) =>
   Date.parse(
@@ -121,29 +153,26 @@ const at = (date: unknown, offset: unknown) =>
   );
 
 export function isLive(): boolean {
-  const info = session.state.SessionInfo as Record<string, any> | undefined;
+  const { state } = shared.session;
+  const info = state.SessionInfo as Record<string, any> | undefined;
   if (!info) return false;
-  const status = (
-    session.state.SessionStatus as { Status?: string } | undefined
-  )?.Status;
+  const status = (state.SessionStatus as { Status?: string } | undefined)
+    ?.Status;
   if (status === "Finished" || status === "Finalised" || status === "Ends")
     return false;
   const now = Date.now();
   if (now < at(info.StartDate, info.GmtOffset) - EDGE_MS) return false;
   if (now <= at(info.EndDate, info.GmtOffset) + EDGE_MS) return true;
-  const utc =
-    (session.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
+  const utc = (state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
   const beat = Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`);
   return now >= beat && now - beat <= FRESH_MS;
 }
 
 export function hasRecentTiming(): boolean {
-  if (!session.state.SessionInfo) return false;
-  const utc =
-    (session.state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
+  const { state } = shared.session;
+  if (!state.SessionInfo) return false;
+  const utc = (state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
   const beat = Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`);
   const now = Date.now();
   return now >= beat && now - beat <= EDGE_MS;
 }
-
-export const hasPositions = () => !!token.current();

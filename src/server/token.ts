@@ -1,8 +1,9 @@
+import { createHash } from "node:crypto";
 import { DefaultAzureCredential } from "@azure/identity";
 import { SecretClient } from "@azure/keyvault-secrets";
 import type { TokenStatus } from "../shared/token.ts";
 
-const SECRET = "f1tv-token";
+const PREFIX = "f1tv-user-";
 const RENEW_URL =
   "https://api.formula1.com/v1/account/Subscriber/RetrieveSubscriber";
 const F1_WEB_API_KEY = "fCUCjWrKPu9ylJwRAv8BpGLEgiAuThx7";
@@ -18,10 +19,15 @@ const vault = process.env.KEY_VAULT_NAME
     )
   : null;
 
-let token: string | null = process.env.F1TV_TOKEN ?? null;
-const listeners = new Set<() => void>();
+const tokens = new Map<string, string>();
+const listeners = new Set<(key: string) => void>();
 
-export const onChange = (fn: () => void) => listeners.add(fn);
+export const onChange = (fn: (key: string) => void) => listeners.add(fn);
+
+export const key = (user: string) =>
+  PREFIX + createHash("sha256").update(user.toLowerCase()).digest("hex");
+
+export const keys = () => [...tokens.keys()];
 
 const claims = (jwt: string): Record<string, any> =>
   JSON.parse(
@@ -45,20 +51,23 @@ export function extract(value: string): string {
   return t;
 }
 
-async function store(jwt: string) {
+async function store(key: string, jwt: string) {
   const exp = expiry(jwt);
   if (!exp || exp < Date.now()) throw new Error("That token has expired.");
-  await vault?.setSecret(SECRET, jwt);
-  token = jwt;
-  listeners.forEach((fn) => fn());
+  await vault?.setSecret(key, jwt);
+  tokens.set(key, jwt);
+  listeners.forEach((fn) => fn(key));
 }
 
-export const save = (value: string) => store(extract(value));
+export const save = (key: string, value: string) => store(key, extract(value));
 
-export const current = (): string | null =>
-  token && (expiry(token) ?? 0) > Date.now() ? token : null;
+export function current(key: string): string | null {
+  const token = tokens.get(key);
+  return token && (expiry(token) ?? 0) > Date.now() ? token : null;
+}
 
-export function status(): TokenStatus {
+export function status(key: string): TokenStatus {
+  const token = tokens.get(key);
   const session = token ? claims(token).SessionId : undefined;
   return {
     configured: !!token,
@@ -67,8 +76,9 @@ export function status(): TokenStatus {
   };
 }
 
-export async function renew() {
-  const s = status();
+async function renew(key: string) {
+  const token = tokens.get(key);
+  const s = status(key);
   if (!token || !s.expiresAt || s.expiresAt - Date.now() > RENEW_BEFORE_MS)
     return;
   if (!s.sessionExpiresAt || s.sessionExpiresAt < Date.now()) return;
@@ -87,14 +97,20 @@ export async function renew() {
   if (!res.ok) throw new Error(`renew ${res.status}`);
   const next = (await res.json())?.data?.subscriptionToken;
   if (typeof next === "string" && (expiry(next) ?? 0) > (s.expiresAt ?? 0))
-    await store(next);
+    await store(key, next);
 }
 
 export async function start() {
   if (vault)
-    token = (await vault.getSecret(SECRET).catch(() => null))?.value ?? token;
+    for await (const p of vault.listPropertiesOfSecrets()) {
+      if (!p.enabled || !p.name.startsWith(PREFIX)) continue;
+      const value = (await vault.getSecret(p.name).catch(() => null))?.value;
+      if (value) tokens.set(p.name, value);
+    }
   const tick = () =>
-    renew().catch((e) => console.error("f1tv renew:", e.message));
+    keys().forEach((key) =>
+      renew(key).catch((e) => console.error("f1tv renew:", e.message)),
+    );
   tick();
   setInterval(tick, 60 * 60_000);
 }
