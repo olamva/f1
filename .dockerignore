@@ -1,6 +1,7 @@
 node_modules
 dist
-infra
+infra/*
+!infra/sessions.json
 .notes
 .papercuts
 .git

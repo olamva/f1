@@ -37,7 +37,7 @@ export default defineConfig({
     host: "127.0.0.1",
     port: Number(process.env.VITE_PORT ?? 5173),
     strictPort: true,
-    watch: process.env.DEV_WATCH === "0" ? null : undefined,
+    watch: process.env.DEV_WATCH === "0" ? { usePolling: true } : undefined,
     proxy: { "^/api/": `http://127.0.0.1:${process.env.PORT ?? 8787}` },
   },
 });

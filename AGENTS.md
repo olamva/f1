@@ -19,6 +19,9 @@ Coordinate changes to shared state with concurrent agents. Worktrees do not isol
 - the Jolpica rate limit, which all local servers share
 - the Terraform state, Azure resources, and GitHub settings and variables
 
+Run `pnpm dev` with unused `PORT` and `VITE_PORT` values in each worktree.
+Point preview and Playwright checks at the Vite URL that the command prints.
+
 ## Pull requests
 
 Create a pull request into `main` for each completed task. Do not merge a stack of pull requests.

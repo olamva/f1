@@ -24,7 +24,7 @@ pnpm test
 Stop `pnpm dev` with Ctrl+C. The command stops both servers and the Node watcher.
 The command checks both ports before startup. Select unused ports for each worktree.
 Wait for both readiness messages before opening the printed Vite URL.
-Run `DEV_WATCH=0 pnpm dev` if file watchers report `EMFILE`. Restart the command after edits in this mode.
+Run `DEV_WATCH=0 pnpm dev` if file watchers report `EMFILE`. Vite then polls for edits. Restart the command after server edits.
 Give the command network permission if the sandbox blocks local ports.
 
 Jolpica requests share one queue per server, including sprint qualifying requests.
