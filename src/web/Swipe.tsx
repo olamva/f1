@@ -6,6 +6,7 @@ import {
   type CSSProperties,
   type PointerEvent,
   type ReactNode,
+  type RefObject,
 } from "react";
 
 interface SwipeProps<T extends string> {
@@ -15,9 +16,11 @@ interface SwipeProps<T extends string> {
   render: (v: T) => ReactNode;
   keep?: readonly T[];
   onDrag?: (offset: number, held: boolean) => void;
+  lift?: RefObject<HTMLElement | null>;
 }
 
 const GAP = 32;
+const EASE = "translate 250ms cubic-bezier(0.2, 0.8, 0.2, 1)";
 const touch = matchMedia("(any-pointer: coarse)").matches;
 
 const blocked = (target: EventTarget, root: HTMLElement) => {
@@ -44,6 +47,7 @@ export const Swipe = <T extends string>({
   render,
   keep,
   onDrag,
+  lift,
 }: SwipeProps<T>) => {
   const root = useRef<HTMLDivElement>(null);
   const drag = useRef<{
@@ -57,6 +61,8 @@ export const Swipe = <T extends string>({
   } | null>(null);
   const busy = useRef(false);
   const landing = useRef<number | null>(null);
+  const lands = useRef<Record<number, number>>({});
+  const head = useRef<DOMRect | null>(null);
   const [previous, setPrevious] = useState(value);
   const [epochs, setEpochs] = useState<Partial<Record<T, number>>>({});
   const index = items.indexOf(value);
@@ -77,8 +83,12 @@ export const Swipe = <T extends string>({
     delete el.dataset.swiping;
     delete el.dataset.settling;
     el.style.removeProperty("--swipe");
-    for (const panel of el.children)
+    for (const panel of el.children) {
       (panel as HTMLElement).style.removeProperty("top");
+      (panel as HTMLElement).style.removeProperty("height");
+    }
+    lift?.current?.style.removeProperty("translate");
+    lift?.current?.style.removeProperty("transition");
     busy.current = false;
   };
 
@@ -118,8 +128,14 @@ export const Swipe = <T extends string>({
 
   const reveal = () => {
     const el = root.current!;
+    const tail =
+      document.documentElement.scrollHeight -
+      scrollY -
+      el.getBoundingClientRect().bottom;
     el.dataset.swiping = "";
     const top = el.getBoundingClientRect().top;
+    head.current = lift?.current?.getBoundingClientRect() ?? null;
+    lands.current = {};
     for (const panel of panels()) {
       const anchor = panel.querySelector("[data-swipe-anchor]");
       const bounds = anchor?.getBoundingClientRect();
@@ -129,8 +145,29 @@ export const Swipe = <T extends string>({
           (bounds.top - panel.getBoundingClientRect().top) -
           bounds.height / 2
         : Infinity;
-      panel.style.top = `${Math.min(centered, Math.max(0, -top))}px`;
+      const room = scrollY + top + panel.offsetHeight + tail - innerHeight;
+      const land = Math.max(
+        0,
+        Math.min(room, scrollY - Math.min(centered, Math.max(0, -top))),
+      );
+      lands.current[Number(panel.dataset.side)] = land;
+      panel.style.top = `${scrollY - land}px`;
     }
+    for (const panel of el.children as HTMLCollectionOf<HTMLElement>)
+      if (!panel.hidden && !panel.offsetHeight) {
+        panel.style.top = `${-top}px`;
+        panel.style.height = `${innerHeight}px`;
+      }
+  };
+
+  const raise = (progress: number, step: number) => {
+    const el = lift?.current;
+    const from = head.current;
+    if (!el || !from) return;
+    const clamp = (y: number) => Math.max(-from.bottom + from.top, y);
+    const start = clamp(from.top);
+    const end = clamp(from.top + scrollY - (lands.current[step] ?? scrollY));
+    el.style.translate = `0 ${start + progress * (end - start) - from.top}px`;
   };
 
   const settle = (step: number) => {
@@ -139,6 +176,8 @@ export const Swipe = <T extends string>({
     busy.current = true;
     onDrag?.(next ? step : 0, false);
     el.dataset.settling = "";
+    if (lift?.current) lift.current.style.transition = EASE;
+    raise(next ? 1 : 0, step);
     el.style.setProperty(
       "--swipe",
       `${next ? -step * (el.offsetWidth + GAP) : 0}px`,
@@ -147,8 +186,7 @@ export const Swipe = <T extends string>({
     setTimeout(
       () => {
         if (!next) return reset();
-        const panel = panels().find((p) => p.dataset.side === String(step));
-        landing.current = scrollY - parseFloat(panel?.style.top || "0");
+        landing.current = lands.current[step] ?? scrollY;
         onChange(next);
       },
       reduced ? 0 : 250,
@@ -213,7 +251,9 @@ export const Swipe = <T extends string>({
         current.dx = dx;
         const shift = items[index + (dx < 0 ? 1 : -1)] ? dx : dx / 3;
         root.current!.style.setProperty("--swipe", `${shift}px`);
-        onDrag?.(-shift / (root.current!.offsetWidth + GAP), true);
+        const offset = -shift / (root.current!.offsetWidth + GAP);
+        onDrag?.(offset, true);
+        raise(Math.min(1, Math.abs(offset)), Math.sign(offset));
       }}
       onPointerUp={end}
       onPointerCancel={end}

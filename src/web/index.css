@@ -687,6 +687,10 @@ html:has(dialog[open]) {
   visibility: hidden;
 }
 
+.swipe[data-swiping] > :not([data-side]) {
+  position: relative;
+}
+
 .swipe[data-swiping] > main {
   translate: calc(var(--swipe, 0px) + var(--side) * (100% + 32px));
 }

@@ -50,6 +50,7 @@ export const App = () => {
   const [visit, setVisit] = useState(0);
   const [session, setSession] = useState(0);
   const blob = useRef<(offset: number, held: boolean) => void>(null);
+  const logo = useRef<HTMLButtonElement>(null);
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
   useEffect(() => {
@@ -74,6 +75,7 @@ export const App = () => {
     <div className="mx-auto max-w-[1600px] space-y-4 overflow-x-clip p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
       <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-6">
         <button
+          ref={logo}
           onClick={() => go("Countdown")}
           className="flex cursor-pointer items-center gap-3 justify-self-start rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400 sm:gap-3.5"
           aria-label="Go to live session"
@@ -103,6 +105,7 @@ export const App = () => {
         onChange={go}
         keep={["Countdown"]}
         onDrag={(offset, held) => blob.current?.(offset, held)}
+        lift={logo}
         render={(t) =>
           t === "Countdown" ? (
             <LiveSession key={session} season={season} info={info} />
