@@ -70,9 +70,14 @@ const blob = async (path: string, init: RequestInit = {}) => {
   });
 };
 
-async function stored(path: string): Promise<Turn[]> {
+async function saved(path: string): Promise<Turn[] | null> {
   const hit = STORE ? await blob(path) : null;
-  if (hit?.ok) return hit.json();
+  return hit?.ok ? hit.json() : null;
+}
+
+async function stored(path: string): Promise<Turn[]> {
+  const hit = await saved(path);
+  if (hit) return hit;
   const turns = await transcribe(path);
   if (STORE) {
     const res = await blob(path, {
@@ -211,16 +216,22 @@ async function transcribe(path: string): Promise<Turn[]> {
   }));
 }
 
-export function transcript(url: string): Promise<Turn[]> | null {
+const shown = (t: Turn[]): Turn[] =>
+  t.length ? t : [{ speaker: "driver", text: "****" }];
+
+export function transcript(
+  url: string,
+  create: boolean,
+): Promise<Turn[] | null> | null {
   const path = pathOf(url);
   if (!ENDPOINT || !VOICE || !path) return null;
+  if (!cache.has(path) && !create)
+    return saved(path).then((t) => t && shown(t));
   if (!cache.has(path))
     cache.set(
       path,
       stored(path)
-        .then((t) =>
-          t.length ? t : [{ speaker: "driver" as const, text: "****" }],
-        )
+        .then(shown)
         .catch((e) => (cache.delete(path), Promise.reject(e))),
     );
   return cache.get(path)!;

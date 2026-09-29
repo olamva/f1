@@ -30,7 +30,6 @@ app.get(
 );
 app.use("/api/token", requireGoogle);
 app.use("/api/push", requireGoogle);
-app.use("/api/radio/transcript", requireGoogle);
 
 const key = (c: Context) => {
   const u = user(c);
@@ -166,10 +165,12 @@ app.get("/api/radio/audio", async (c) => {
     : c.notFound();
 });
 app.get("/api/radio/transcript", async (c) => {
-  const turns = transcript(c.req.query("url") ?? "");
+  const pending = transcript(c.req.query("url") ?? "", !!user(c));
+  if (!pending) return c.json({ error: "Transcripts are off." }, 404);
+  const turns = await pending;
   return turns
-    ? c.json({ turns: await turns })
-    : c.json({ error: "Transcripts are off." }, 404);
+    ? c.json({ turns })
+    : c.json({ error: "Sign in with Google to transcribe radio." }, 401);
 });
 
 app.get("/api/replay/sessions", async (c) => {

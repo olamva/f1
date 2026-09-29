@@ -45,3 +45,16 @@ test("a saved F1TV token belongs to one user", async () => {
   assert.equal(token.current(token.key("friend@example.com")), null);
   assert.equal(token.status(token.key("friend@example.com")).configured, false);
 });
+
+test("a signed-out request never starts a transcript", async (t) => {
+  process.env.SPEECH_ENDPOINT = "https://speech.example.com";
+  process.env.VOICE_ENDPOINT = "https://voice.example.com";
+  const fetch = t.mock.method(globalThis, "fetch", async () => {
+    throw new Error("unexpected fetch");
+  });
+  const { transcript } = await import("../src/server/radio.ts");
+  const url =
+    "https://livetiming.formula1.com/static/2026/x/TeamRadio/MAXVER01_1_20260301_120000.mp3";
+  assert.equal(await transcript(url, false), null);
+  assert.equal(fetch.mock.callCount(), 0);
+});
