@@ -8,11 +8,16 @@ Use one branch and one worktree for each task.
 Start each task in a new T3 thread and its worktree.
 Import the `Setup Worktree` action from `t3.json` in T3 project settings once.
 Let T3 run the action for new worktrees. It updates the new branch to `origin/main` and installs dependencies.
-If T3 skips setup, run `git fetch origin main`, `git merge --ff-only origin/main`, and `pnpm install --frozen-lockfile` before edits.
+If T3 skips setup, run `git fetch origin main`, `git merge --ff-only origin/main`, and `CI=true pnpm install --frozen-lockfile` before edits.
 Use the branch that T3 creates for the worktree. Rename it with `git branch -m` when needed. Do not create a second branch.
 Create a new branch from the current `origin/main` only in a detached checkout.
 Keep edits in the task worktree. Do not change another task's branch or worktree.
-Coordinate changes to shared local paths, Azure resources, and GitHub settings with concurrent agents.
+Coordinate changes to shared state with concurrent agents. Worktrees do not isolate this state:
+
+- the main checkout at `~/Developer/f1` and its `.git` directory, including the stash
+- the dev server ports `8787` and `5173`
+- the Jolpica rate limit, which all local servers share
+- the Terraform state, Azure resources, and GitHub settings and variables
 
 ## Pull requests
 
@@ -21,6 +26,7 @@ Explain the change and report validation in the pull request description.
 Run `pnpm format` before each commit. `pnpm test` fails on unformatted files.
 Run relevant local checks before pushing. Use `pnpm test`, `pnpm typecheck`, and `pnpm build` when applicable.
 Review the final diff. Resolve review feedback within the task scope.
+Resolve each review thread. Unresolved threads block auto-merge.
 Fetch `origin/main` before you push. Merge it into the task branch if the branch is behind.
 Enable auto-merge on your own PR with `gh pr merge --auto --merge` immediately after you push.
 Do not wait for user review before you merge a PR without visual changes.
@@ -28,7 +34,7 @@ Let GitHub merge the PR when the required checks pass.
 Run `gh pr checks --watch --fail-fast` to wait. Then run `gh pr view --json state,mergeStateStatus`.
 If a check fails, fix the failure and push the correction. Auto-merge stays enabled for the new head commit.
 If the state is `BEHIND`, merge `origin/main` into the task branch, resolve conflicts, and push.
-Do not force-push, bypass branch protection, or merge with blocked checks.
+Do not force-push, bypass branch protection, or merge with blocked checks. Do not use `gh pr merge --admin`.
 
 ## Visual review
 
@@ -39,6 +45,7 @@ Require approval when the classification is unclear.
 Use T3 preview tools first for web UI review and screenshots when they are available.
 Call `mcp__t3_code__preview_snapshot` with `save: true`.
 Embed each returned `screenshotPath` in the review message.
+Copy other images to `~/.t3/userdata/attachments` before you embed them. T3 does not show images from `/tmp`.
 For required review, capture the changed UI in the running app. Include the before and after states.
 Show the screenshots to the user and ask for approval after the change is complete.
 Do not enable auto-merge before the user approves the reviewed change.
