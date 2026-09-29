@@ -14,6 +14,7 @@ import {
   type LiveInfo,
 } from "./live/CurrentSession.tsx";
 import { Loading } from "./Loading.tsx";
+import { navigate } from "./path.ts";
 import { Results } from "./Results.tsx";
 import { Settings } from "./Settings.tsx";
 import { Stats } from "./stats/Stats.tsx";
@@ -66,7 +67,7 @@ export const App = () => {
   }, [tab]);
   const go = (t: Tab) => {
     if (tab === "Calendar" && t !== "Calendar") scrollTo(0, 0);
-    history.pushState(null, "", t === "Countdown" ? "/" : `/${SLUG[t]}`);
+    navigate(t === "Countdown" ? "/" : `/${SLUG[t]}`);
     if (t === "Countdown" && tab === "Countdown") setSession((s) => s + 1);
     if (t === tab) setVisit((v) => v + 1);
     setTab(t);

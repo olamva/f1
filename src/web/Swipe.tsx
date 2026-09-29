@@ -11,6 +11,7 @@ import {
   type RefObject,
 } from "react";
 import { flushSync } from "react-dom";
+import { standalone } from "./path.ts";
 
 interface SwipeProps<T extends string> {
   items: readonly T[];
@@ -30,6 +31,29 @@ const claimed = new WeakSet<Event>();
 let busy = false;
 let pending: (() => void) | null = null;
 let last = { at: -Infinity, depth: 0 };
+const levels = new Set<{ depth: number; move: (step: number) => boolean }>();
+
+const locked = (depth: number) =>
+  performance.now() - last.at < 1000 && last.depth < depth;
+
+addEventListener("keydown", (event) => {
+  const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
+  if (
+    !step ||
+    event.defaultPrevented ||
+    event.altKey ||
+    event.ctrlKey ||
+    event.metaKey ||
+    event.shiftKey ||
+    (event.target instanceof Element &&
+      event.target.closest("input, select, textarea, [contenteditable]"))
+  )
+    return;
+  [...levels]
+    .filter((level) => !locked(level.depth))
+    .sort((a, b) => b.depth - a.depth)
+    .some((level) => level.move(step));
+});
 
 const blocked = (target: EventTarget) => {
   for (
@@ -120,26 +144,21 @@ export const Swipe = <T extends string>({
   );
 
   useEffect(() => {
-    if (depth) return;
-    const onKey = (event: KeyboardEvent) => {
-      const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
-      const next = step && items[index + step];
-      if (
-        !next ||
-        event.defaultPrevented ||
-        event.altKey ||
-        event.ctrlKey ||
-        event.metaKey ||
-        event.shiftKey ||
-        (event.target instanceof Element &&
-          event.target.closest("input, select, textarea, [contenteditable]"))
-      )
-        return;
-      onChange(next);
+    if (!active) return;
+    const level = {
+      depth,
+      move: (step: number) => {
+        const next = items[index + step];
+        if (!next || !root.current!.checkVisibility()) return false;
+        last = { at: performance.now(), depth };
+        drive?.current?.(0, false);
+        onChange(next);
+        return true;
+      },
     };
-    addEventListener("keydown", onKey);
-    return () => removeEventListener("keydown", onKey);
-  }, [depth, items, index, onChange]);
+    levels.add(level);
+    return () => void levels.delete(level);
+  }, [active, depth, items, index, onChange, drive]);
 
   const reveal = () => {
     const el = root.current!;
@@ -239,8 +258,8 @@ export const Swipe = <T extends string>({
           busy ||
           event.pointerType !== "touch" ||
           !event.isPrimary ||
-          event.clientX < 20 ||
-          event.clientX > innerWidth - 20 ||
+          (!standalone &&
+            (event.clientX < 20 || event.clientX > innerWidth - 20)) ||
           blocked(event.target)
         )
           return;
@@ -264,9 +283,7 @@ export const Swipe = <T extends string>({
           if (Math.abs(dx) < 10 || !drag.current) return;
           if (
             claimed.has(event.nativeEvent) ||
-            (depth &&
-              (!items[index + (dx < 0 ? 1 : -1)] ||
-                (event.timeStamp - last.at < 1000 && last.depth < depth)))
+            (depth && (!items[index + (dx < 0 ? 1 : -1)] || locked(depth)))
           ) {
             drag.current = null;
             return;
