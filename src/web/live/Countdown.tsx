@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { Round } from "../../shared/season.ts";
 import { Flag } from "../Flag.tsx";
 
@@ -65,6 +65,43 @@ const span = (ms: number) => {
   return d ? `${d}d ${hms}` : hms;
 };
 
+interface SessionTitleProps {
+  round: Round;
+  label: string;
+}
+
+const SessionTitle = ({ round, label }: SessionTitleProps) => {
+  const title = useRef<HTMLHeadingElement>(null);
+  const sep = useRef<HTMLSpanElement>(null);
+  const tail = useRef<HTMLSpanElement>(null);
+  const [wrapped, setWrapped] = useState(false);
+  useLayoutEffect(() => {
+    const el = title.current;
+    if (!el) return;
+    const measure = () =>
+      setWrapped(
+        (tail.current?.offsetTop ?? 0) > (sep.current?.offsetTop ?? 0),
+      );
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [round.name, label]);
+  return (
+    <h1
+      ref={title}
+      className="font-f1 text-xl font-bold sm:text-3xl xl:text-[2.6vw]"
+    >
+      <Flag country={round.country} />
+      {round.name}
+      <span ref={sep} className={wrapped ? "invisible" : undefined}>
+        {" ·"}
+      </span>{" "}
+      <span ref={tail}>{label}</span>
+    </h1>
+  );
+};
+
 export const Countdown = ({ rounds }: CountdownProps) => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -79,10 +116,7 @@ export const Countdown = ({ rounds }: CountdownProps) => {
       <span className="font-f1-wide text-sm text-zinc-300 uppercase xl:text-[1.1vw]">
         Next up
       </span>
-      <h1 className="font-f1 text-xl font-bold sm:text-3xl xl:text-[2.6vw]">
-        <Flag country={s.round.country} />
-        {s.round.name} · {s.label}
-      </h1>
+      <SessionTitle round={s.round} label={s.label} />
       <span className="tabular font-f1 text-[11vw] font-bold whitespace-nowrap md:text-8xl xl:text-[10vw]">
         {span(s.at - now)}
       </span>
