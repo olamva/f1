@@ -34,7 +34,7 @@ let last = { at: -Infinity, depth: 0 };
 const levels = new Set<{ depth: number; move: (step: number) => boolean }>();
 
 const locked = (depth: number) =>
-  performance.now() - last.at < 1000 && last.depth < depth;
+  depth > 0 && !last.depth && performance.now() - last.at < 1000;
 
 addEventListener("keydown", (event) => {
   const step = { ArrowLeft: -1, ArrowRight: 1 }[event.key];
