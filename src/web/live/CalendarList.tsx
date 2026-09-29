@@ -142,6 +142,17 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
   </article>
 );
 
+const SM_SPAN = ["", "sm:col-span-2"];
+const LG_SPAN = ["lg:col-span-2", "lg:col-span-6", "lg:col-span-3"];
+
+const leftover = (i: number, at: number, total: number, cols: number) => {
+  const tail = i > at;
+  const size = tail ? total - at - 1 : at;
+  const pos = tail ? i - at - 1 : i;
+  const rest = size % cols;
+  return (tail ? pos >= size - rest : pos < rest) ? rest : 0;
+};
+
 export const CalendarList = ({
   sessions,
   rounds,
@@ -155,15 +166,20 @@ export const CalendarList = ({
   const future = upcoming(rounds).reverse();
   const anchor =
     past[0] && ongoing(past[0]) ? past[0][0].start : future.at(-1)?.name;
-  const ahead = future.filter((r) => r.name !== anchor).length;
-  const lead = `${["", "sm:col-start-2"][ahead % 2]} ${["lg:col-start-auto", "lg:col-start-3", "lg:col-start-2"][ahead % 3]}`;
-  const item = (key: string) => ({
-    ref: key === anchor ? ref : undefined,
-    className:
-      key === anchor ? "sm:col-span-full" : key === future[0]?.name ? lead : "",
-  });
+  const keys = [...future.map((r) => r.name), ...past.map((w) => w[0].start)];
+  const at = keys.indexOf(anchor ?? "");
+  const item = (key: string) => {
+    const i = keys.indexOf(key);
+    return {
+      ref: key === anchor ? ref : undefined,
+      className:
+        key === anchor
+          ? "sm:col-span-full"
+          : `${SM_SPAN[leftover(i, at, keys.length, 2)]} ${LG_SPAN[leftover(i, at, keys.length, 3)]}`,
+    };
+  };
   return (
-    <ul className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-3">
+    <ul className="grid grid-cols-1 gap-3 text-sm sm:grid-cols-2 lg:grid-cols-6">
       {future.map((r) => (
         <li key={r.name} {...item(r.name)}>
           <ScheduleWeekend round={r} featured={r.name === anchor} />
