@@ -14,6 +14,7 @@ interface SwipeProps<T extends string> {
   onChange: (v: T) => void;
   render: (v: T) => ReactNode;
   keep?: readonly T[];
+  onDrag?: (offset: number, held: boolean) => void;
 }
 
 const GAP = 32;
@@ -42,6 +43,7 @@ export const Swipe = <T extends string>({
   onChange,
   render,
   keep,
+  onDrag,
 }: SwipeProps<T>) => {
   const root = useRef<HTMLDivElement>(null);
   const drag = useRef<{
@@ -135,6 +137,7 @@ export const Swipe = <T extends string>({
     const el = root.current!;
     const next = step ? items[index + step] : undefined;
     busy.current = true;
+    onDrag?.(next ? step : 0, false);
     el.dataset.settling = "";
     el.style.setProperty(
       "--swipe",
@@ -208,10 +211,9 @@ export const Swipe = <T extends string>({
         current.speed = (dx - current.dx) / elapsed;
         current.at = event.timeStamp;
         current.dx = dx;
-        root.current!.style.setProperty(
-          "--swipe",
-          `${items[index + (dx < 0 ? 1 : -1)] ? dx : dx / 3}px`,
-        );
+        const shift = items[index + (dx < 0 ? 1 : -1)] ? dx : dx / 3;
+        root.current!.style.setProperty("--swipe", `${shift}px`);
+        onDrag?.(-shift / (root.current!.offsetWidth + GAP), true);
       }}
       onPointerUp={end}
       onPointerCancel={end}

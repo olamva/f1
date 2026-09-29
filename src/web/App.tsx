@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import {
   CalendarDays,
   ChartColumn,
@@ -49,6 +49,7 @@ export const App = () => {
   const [tab, setTab] = useState<Tab>(fromPath);
   const [visit, setVisit] = useState(0);
   const [session, setSession] = useState(0);
+  const blob = useRef<(offset: number, held: boolean) => void>(null);
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
   useEffect(() => {
@@ -92,6 +93,7 @@ export const App = () => {
             icons={ICONS}
             labels={info.data?.live ? { Countdown: "Live" } : undefined}
             live={info.data?.live ? "Countdown" : undefined}
+            drive={blob}
           />
         </div>
       </header>
@@ -100,6 +102,7 @@ export const App = () => {
         value={tab}
         onChange={go}
         keep={["Countdown"]}
+        onDrag={(offset, held) => blob.current?.(offset, held)}
         render={(t) =>
           t === "Countdown" ? (
             <LiveSession key={session} season={season} info={info} />
