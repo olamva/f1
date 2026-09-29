@@ -142,6 +142,7 @@ export const Tabs = <T extends string>({
       }
       pull.current = null;
       rest.current = x;
+      setHighlight({ left: x, width: to.offsetWidth });
       setHeld(false);
       setMoving(true);
       setSize(null);
