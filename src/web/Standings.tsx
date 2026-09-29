@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { Championship } from "../shared/clinch.ts";
 import type { Season, SeasonStandings, StandingRow } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
@@ -8,7 +8,10 @@ import { openDriver } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { clinched } from "./stats/derive.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
+import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
+
+const CHAMPS = ["drivers", "constructors"] as const;
 
 interface StandingsTableProps {
   title: string;
@@ -100,6 +103,7 @@ interface StandingsProps {
 
 export const Standings = ({ year, season }: StandingsProps) => {
   const [champ, setChamp] = useState<Championship>("drivers");
+  const blob = useRef<(offset: number, held: boolean) => void>(null);
   const { data, error } = useJson<SeasonStandings>(`/api/standings/${year}`);
   if (data?.year !== Number(year))
     return <Loading label="Loading standings…" error={error} />;
@@ -113,39 +117,47 @@ export const Standings = ({ year, season }: StandingsProps) => {
   const crowned = (champ: Championship) =>
     Number(year) < new Date().getUTCFullYear() ||
     (season?.year === data.year && clinched(season, champ));
+  const table = (champ: Championship) =>
+    champ === "drivers" ? (
+      <StandingsTable
+        title="Drivers"
+        rows={data.drivers}
+        crowned={crowned("drivers")}
+        onSelect={openDriver}
+      />
+    ) : (
+      <StandingsTable
+        title="Constructors"
+        rows={data.constructors}
+        crowned={crowned("constructors")}
+      />
+    );
   return (
     <div className="space-y-4">
       {teams && (
         <div className="xl:hidden">
           <Tabs
-            items={["drivers", "constructors"] as const}
+            items={CHAMPS}
             value={champ}
             onChange={setChamp}
             small
             stretch
+            drive={blob}
           />
         </div>
       )}
-      <div className="grid gap-4 xl:grid-cols-2">
-        <div className={champ === "drivers" ? undefined : "max-xl:hidden"}>
-          <StandingsTable
-            title="Drivers"
-            rows={data.drivers}
-            crowned={crowned("drivers")}
-            onSelect={openDriver}
-          />
-        </div>
-        {teams && (
-          <div
-            className={champ === "constructors" ? undefined : "max-xl:hidden"}
-          >
-            <StandingsTable
-              title="Constructors"
-              rows={data.constructors}
-              crowned={crowned("constructors")}
-            />
-          </div>
-        )}
+      <div className="xl:hidden">
+        <Swipe
+          items={teams ? CHAMPS : CHAMPS.slice(0, 1)}
+          value={teams ? champ : "drivers"}
+          onChange={setChamp}
+          drive={blob}
+          render={table}
+        />
+      </div>
+      <div className="grid grid-cols-2 gap-4 max-xl:hidden">
+        {table("drivers")}
+        {teams && table("constructors")}
       </div>
     </div>
   );

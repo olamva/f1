@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import type { RaceArchive, Season } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
@@ -7,6 +7,7 @@ import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { Standings } from "./Standings.tsx";
+import { Swipe } from "./Swipe.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
 
@@ -214,6 +215,7 @@ export const Results = ({ season }: ResultsProps) => {
     setRound(nextRound);
     history.replaceState(null, "", resultsPath(nextYear, nextPart, nextRound));
   };
+  const blob = useRef<(offset: number, held: boolean) => void>(null);
 
   return (
     <div className="space-y-4">
@@ -223,6 +225,7 @@ export const Results = ({ season }: ResultsProps) => {
           value={part}
           onChange={(nextPart) => show(year, nextPart)}
           small
+          drive={blob}
         />
         <select
           aria-label="Season"
@@ -235,16 +238,24 @@ export const Results = ({ season }: ResultsProps) => {
           ))}
         </select>
       </div>
-      {part === "Standings" ? (
-        <Standings key={year} year={year} season={season} />
-      ) : (
-        <Races
-          key={year}
-          year={year}
-          round={round}
-          onRound={(nextRound) => show(year, "Races", nextRound)}
-        />
-      )}
+      <Swipe
+        items={PARTS}
+        value={part}
+        onChange={(nextPart) => show(year, nextPart)}
+        drive={blob}
+        render={(p) =>
+          p === "Standings" ? (
+            <Standings key={year} year={year} season={season} />
+          ) : (
+            <Races
+              key={year}
+              year={year}
+              round={round}
+              onRound={(nextRound) => show(year, "Races", nextRound)}
+            />
+          )
+        }
+      />
     </div>
   );
 };
