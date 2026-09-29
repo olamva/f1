@@ -224,7 +224,7 @@ export const Swipe = <T extends string>({
       landing.current = lands.current[step] ?? scrollY;
       onChange(next);
     };
-    const timer = setTimeout(done, reduced ? 0 : 250);
+    const timer = setTimeout(() => flushSync(done), reduced ? 0 : 250);
     pending = () => {
       clearTimeout(timer);
       flushSync(done);
