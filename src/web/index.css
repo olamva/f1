@@ -709,3 +709,8 @@ html:has(dialog[open]) {
 .swipe[data-settling] > * {
   transition: translate 250ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
+
+.swipe[data-swiping] > main .fixed.inset-0 {
+  left: calc(50% - 50vw);
+  width: 100vw;
+}

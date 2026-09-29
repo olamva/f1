@@ -31,19 +31,15 @@ const allowed = (address: string): boolean =>
     .filter(Boolean)
     .includes(address.toLowerCase());
 
-export const requireGoogle: MiddlewareHandler = async (c, next) => {
-  if (process.env.DEV_NO_AUTH === "1") return next();
-  const principal = c.req.header("x-ms-client-principal");
-  if (!principal) {
-    const back = encodeURIComponent(c.req.path);
-    return c.redirect(`/.auth/login/google?post_login_redirect_uri=${back}`);
-  }
-  const address = email(principal);
-  if (!address || !allowed(address)) return c.text("Not your paddock.\n", 403);
-  return next();
+export const user = (c: Context): string | null => {
+  if (process.env.DEV_NO_AUTH === "1") return "dev";
+  const address = email(c.req.header("x-ms-client-principal"));
+  return address && allowed(address) ? address : null;
 };
 
-export const user = (c: Context): string =>
-  process.env.DEV_NO_AUTH === "1"
-    ? "dev"
-    : email(c.req.header("x-ms-client-principal"))!;
+export const requireGoogle: MiddlewareHandler = async (c, next) => {
+  if (user(c)) return next();
+  return c.req.header("x-ms-client-principal")
+    ? c.json({ error: "This Google account has no access." }, 403)
+    : c.json({ error: "Sign in with Google to use this." }, 401);
+};

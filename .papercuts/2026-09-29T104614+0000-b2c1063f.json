@@ -1,0 +1,14 @@
+{
+  "id": "b2c1063f",
+  "ts": "2026-09-29T10:46:14+00:00",
+  "text": "pnpm dev dies on EADDRINUSE when another worktree holds 5173, and Playwright checks then silently hit that other server",
+  "tags": [
+    "dev",
+    "worktrees"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "7b62e141",
+  "where": "scripts/dev.ts",
+  "branch": "t3code/swipe-subtabs"
+}
