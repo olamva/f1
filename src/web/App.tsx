@@ -74,11 +74,11 @@ export const App = () => {
   };
   return (
     <div className="mx-auto flex min-h-dvh max-w-[1600px] flex-col gap-4 overflow-x-clip p-4 pt-[max(1.5rem,env(safe-area-inset-top))] pb-24 sm:pb-4 [&>.swipe]:grow [@media(display-mode:standalone)]:pt-[calc(env(safe-area-inset-top)+1.5rem)]">
-      <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:grid sm:grid-cols-[1fr_auto_1fr] sm:gap-6">
+      <header className="relative z-10 flex flex-wrap items-center gap-1.5 sm:h-13.5">
         <button
           ref={logo}
           onClick={() => go("Countdown")}
-          className="flex cursor-pointer items-center gap-3 justify-self-start rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400 sm:gap-3.5"
+          className="flex cursor-pointer items-center gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400 sm:gap-3.5"
           aria-label="Go to live session"
           type="button"
         >
@@ -88,7 +88,7 @@ export const App = () => {
             PITWALL
           </span>
         </button>
-        <div className="fixed inset-x-[21px] bottom-[21px] flex justify-center sm:static sm:min-w-0 max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl max-sm:[&>nav>button]:flex-1">
+        <div className="fixed inset-x-[21px] bottom-[21px] flex justify-center sm:pointer-events-none sm:inset-x-4 sm:top-[calc(env(safe-area-inset-top)+1.5rem)] sm:bottom-auto sm:justify-end xl:justify-center max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl sm:[&>nav]:pointer-events-auto max-sm:[&>nav>button]:flex-1">
           <Tabs
             items={TABS}
             value={tab}

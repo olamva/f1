@@ -87,7 +87,10 @@ interface StatusProps {
 }
 
 const Status = ({ ref, lap, part, banner, clock, delay }: StatusProps) => (
-  <div ref={ref} className="flex scroll-mt-4 flex-wrap items-center gap-3">
+  <div
+    ref={ref}
+    className="flex scroll-mt-4 flex-wrap items-center gap-3 sm:scroll-mt-[calc(env(safe-area-inset-top)+5.875rem)]"
+  >
     {lap && (
       <span className="tabular font-f1 text-2xl font-black">
         <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
