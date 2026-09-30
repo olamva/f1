@@ -2,7 +2,7 @@ export const TEAM_COLORS: Record<string, string> = {
   alpine: "#00A1E8",
   aston_martin: "#229971",
   audi: "#F50537",
-  cadillac: "#C9A227",
+  cadillac: "#909090",
   ferrari: "#ED1131",
   haas: "#9C9FA2",
   mclaren: "#F47600",
