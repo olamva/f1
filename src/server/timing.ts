@@ -34,9 +34,9 @@ type Sample = {
 
 export function positionEvents(t: number, raw: Json): Event[] {
   const samples = (raw as { Position?: Sample[] }).Position ?? [];
-  const first = Date.parse(samples[0]?.Timestamp ?? "");
+  const last = Date.parse(samples.at(-1)?.Timestamp ?? "");
   return samples.map((s) => ({
-    t: t + (Date.parse(s.Timestamp) - first || 0),
+    t: t + (Date.parse(s.Timestamp) - last || 0),
     topic: "Position",
     data: Object.fromEntries(
       Object.entries(s.Entries).map(([n, e]) => [n, [e.X, e.Y]]),

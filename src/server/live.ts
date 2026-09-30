@@ -54,10 +54,7 @@ export class Feed {
       ).map((s) => Date.parse(s.Timestamp));
       const fresh = now - stamps.at(-1)!;
       if (fresh < MAX_LAG_MS) this.lag = fresh;
-      return positionEvents(
-        now - this.lag - (stamps.at(-1)! - stamps[0]!),
-        raw,
-      );
+      return positionEvents(now - this.lag, raw);
     }
     if (topic.endsWith(".z")) return [];
     return [{ t: now - this.lag, topic, data }];
