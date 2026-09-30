@@ -150,7 +150,7 @@ const Board = ({
     </div>
   );
   return (
-    <div className="space-y-4">
+    <div className="board space-y-4">
       <header className="flex flex-wrap items-center gap-3">
         <h1 className="font-f1 text-xl font-bold">
           <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
