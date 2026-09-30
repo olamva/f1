@@ -1,0 +1,14 @@
+{
+  "id": "380c4036",
+  "ts": "2026-09-30T13:15:29+00:00",
+  "text": "node --watch server in pnpm dev died with 'Failed running src/server/main.ts' after pnpm format, test, and build ran in the same worktree; the API stayed down until a manual restart",
+  "tags": [
+    "dev",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "69ceb4f9",
+  "where": "scripts/dev.ts",
+  "branch": "t3code/desktop-sticky-navbar"
+}
