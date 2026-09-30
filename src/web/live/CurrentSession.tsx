@@ -200,6 +200,7 @@ const Board = ({
               note={positionsNote}
               positionTrail={feed.positionTrail}
               speed={speed}
+              stream={feed.src}
               banner={banner}
             />
             <RaceControl
