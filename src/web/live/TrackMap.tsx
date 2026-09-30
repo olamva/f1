@@ -1,8 +1,9 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Crown } from "lucide-react";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
+import { useCarMotion } from "./useCarMotion.ts";
 import { MapCard } from "./MapCard.tsx";
 import { sectorSplits, type Row, type SessionBests } from "./view.ts";
 
@@ -19,6 +20,7 @@ interface TrackMapProps {
   onToggle: (number: string) => void;
   note: string | null;
   positionTrail?: PositionTrail;
+  time: number;
   speed?: number;
   stream?: string;
   banner?: React.ReactNode;
@@ -217,6 +219,7 @@ export const TrackMap = ({
   onToggle,
   note,
   positionTrail,
+  time,
   speed = 1,
   stream,
   banner,
@@ -282,29 +285,7 @@ export const TrackMap = ({
     transform: `translate(${x}px, ${y}px)`,
     transition: speed > 1 ? "none" : "transform 1000ms linear",
   });
-  useLayoutEffect(() => {
-    if (!project || !positionTrail || speed <= 1) return;
-    for (const car of svg.current!.querySelectorAll<SVGGElement>(
-      "g[data-number]",
-    )) {
-      const number = car.dataset.number!;
-      const points = [
-        positionTrail.from[number],
-        ...positionTrail.samples.map((sample) => sample[number]),
-      ]
-        .filter((p): p is [number, number] => !!p && (p[0] !== 0 || p[1] !== 0))
-        .map(([x, y]) => project(x, y));
-      if (points.length < 2) continue;
-      car.getAnimations().forEach((animation) => animation.cancel());
-      car.animate(
-        points.map(([x, y]) => ({ transform: `translate(${x}px, ${y}px)` })),
-        {
-          duration: 250,
-          easing: "linear",
-        },
-      );
-    }
-  }, [positionTrail, project, speed]);
+  useCarMotion(svg, project, { positions, positionTrail, time, speed, stream });
   return (
     <MapFrame banner={banner}>
       {(full) => (

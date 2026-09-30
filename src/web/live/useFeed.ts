@@ -2,9 +2,32 @@ import { useEffect, useRef, useState } from "react";
 import { merge, type Json } from "../../shared/merge.ts";
 import type { Delta, Snapshot } from "../../shared/timing.ts";
 
-export type PositionTrail = {
-  from: Record<string, [number, number]>;
-  samples: Record<string, [number, number]>[];
+type Point = [number, number];
+
+export type PositionTrail = [number, Record<string, Point>][];
+
+const known = (p?: Point) => (p && (p[0] || p[1]) ? p : undefined);
+
+export const positionsAt = (
+  trail: PositionTrail,
+  clock: number,
+): Record<string, Point> => {
+  const i = Math.max(
+    0,
+    trail.findLastIndex(([t]) => t <= clock),
+  );
+  const [t0, a] = trail[i]!;
+  const [t1, b] = trail[i + 1] ?? trail[i]!;
+  const k = Math.min(1, Math.max(0, (clock - t0) / (t1 - t0 || 1)));
+  return Object.fromEntries(
+    Object.keys(b).flatMap((n) => {
+      const p = known(a[n]) ?? known(b[n]);
+      const q = known(b[n]) ?? p;
+      return p && q
+        ? [[n, [p[0] + (q[0] - p[0]) * k, p[1] + (q[1] - p[1]) * k]]]
+        : [];
+    }),
+  );
 };
 
 export type Feed = Snapshot & {
@@ -17,18 +40,15 @@ export type Feed = Snapshot & {
 export const applyDelta = (f: Feed, batch: Delta[]): Feed => {
   const state = { ...f.state } as Record<string, Json>;
   let { t, beat } = f;
-  const samples: PositionTrail["samples"] = [];
+  const positionTrail: PositionTrail = [];
   for (const [topic, data, at] of batch) {
     t = at;
     if (topic === "Clock") continue;
     if (topic === "Heartbeat") beat = at;
     if (topic === "Position")
-      samples.push(data as Record<string, [number, number]>);
+      positionTrail.push([at, data as Record<string, Point>]);
     state[topic] = merge(state[topic], data as Json);
   }
-  const positionTrail = samples.length
-    ? { from: (f.state.Position as PositionTrail["from"]) ?? {}, samples }
-    : undefined;
   return { ...f, state, t, beat, positionTrail };
 };
 

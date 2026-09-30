@@ -199,6 +199,7 @@ const Board = ({
               onToggle={toggle}
               note={positionsNote}
               positionTrail={feed.positionTrail}
+              time={feed.t}
               speed={speed}
               stream={feed.src}
               banner={banner}
