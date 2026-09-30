@@ -20,6 +20,7 @@ interface TrackMapProps {
   note: string | null;
   positionTrail?: PositionTrail;
   speed?: number;
+  stream?: string;
   banner?: React.ReactNode;
 }
 
@@ -217,6 +218,7 @@ export const TrackMap = ({
   note,
   positionTrail,
   speed = 1,
+  stream,
   banner,
 }: TrackMapProps) => {
   const svg = useRef<SVGSVGElement>(null);
@@ -343,104 +345,106 @@ export const TrackMap = ({
               strokeLinecap="round"
             />
             {marks && <Markers {...marks} />}
-            {cars.map(({ r, x, y, focus }) => (
-              <g
-                key={r.number}
-                data-number={r.number}
-                role="button"
-                tabIndex={0}
-                aria-label={`Select ${r.name}`}
-                aria-pressed={selected.has(r.number)}
-                aria-describedby={
-                  hovered === r.number ? "track-map-card" : undefined
-                }
-                onFocus={() =>
-                  setHover((h) =>
-                    h?.number === r.number ? h : { number: r.number, x, y },
-                  )
-                }
-                onBlur={() => setHover(null)}
-                onClick={() => onToggle(r.number)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    onToggle(r.number);
-                  }
-                }}
-                className="group cursor-pointer outline-none"
-                style={place(x, y)}
-                opacity={focus || hovered === r.number ? 1 : 0.35}
-              >
-                <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
-                <circle
-                  r={14}
-                  fill={r.color}
-                  stroke="#18181b"
-                  strokeWidth={4}
-                  className="group-focus-visible:stroke-zinc-100"
-                />
-              </g>
-            ))}
-            {cars.map(({ r, x, y, focus }) => {
-              const crown = r.position === 1 && (race || r.bestLap);
-              const laps =
-                !crown && race && r.lapsBehind ? `+${r.lapsBehind}` : "";
-              const extra = crown ? 34 : laps ? 12 * laps.length + 12 : 0;
-              return (
+            <g key={stream}>
+              {cars.map(({ r, x, y, focus }) => (
                 <g
                   key={r.number}
                   data-number={r.number}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Select ${r.name}`}
+                  aria-pressed={selected.has(r.number)}
+                  aria-describedby={
+                    hovered === r.number ? "track-map-card" : undefined
+                  }
+                  onFocus={() =>
+                    setHover((h) =>
+                      h?.number === r.number ? h : { number: r.number, x, y },
+                    )
+                  }
+                  onBlur={() => setHover(null)}
                   onClick={() => onToggle(r.number)}
-                  className="cursor-pointer"
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      onToggle(r.number);
+                    }
+                  }}
+                  className="group cursor-pointer outline-none"
                   style={place(x, y)}
                   opacity={focus || hovered === r.number ? 1 : 0.35}
                 >
-                  <rect
-                    x={-94 - extra}
-                    y={-56}
-                    width={70 + extra}
-                    height={32}
-                    rx={3}
-                    fill="#27272a"
-                    fillOpacity={0.9}
+                  <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
+                  <circle
+                    r={14}
+                    fill={r.color}
+                    stroke="#18181b"
+                    strokeWidth={4}
+                    className="group-focus-visible:stroke-zinc-100"
                   />
-                  <path
-                    d={`M-24 -24H${-94 - extra}`}
-                    stroke={r.color}
-                    strokeWidth={3}
-                  />
-                  <text
-                    x={-59 - extra}
-                    y={-40}
-                    dominantBaseline="middle"
-                    textAnchor="middle"
-                    className="fill-zinc-100 text-[22px] font-semibold"
+                </g>
+              ))}
+              {cars.map(({ r, x, y, focus }) => {
+                const crown = r.position === 1 && (race || r.bestLap);
+                const laps =
+                  !crown && race && r.lapsBehind ? `+${r.lapsBehind}` : "";
+                const extra = crown ? 34 : laps ? 12 * laps.length + 12 : 0;
+                return (
+                  <g
+                    key={r.number}
+                    data-number={r.number}
+                    onClick={() => onToggle(r.number)}
+                    className="cursor-pointer"
+                    style={place(x, y)}
+                    opacity={focus || hovered === r.number ? 1 : 0.35}
                   >
-                    {r.tla}
-                  </text>
-                  {crown ? (
-                    <Crown
-                      x={-58}
-                      y={-51}
-                      width={22}
-                      height={22}
-                      className="stroke-yellow-300"
-                      strokeWidth={2.5}
+                    <rect
+                      x={-94 - extra}
+                      y={-56}
+                      width={70 + extra}
+                      height={32}
+                      rx={3}
+                      fill="#27272a"
+                      fillOpacity={0.9}
                     />
-                  ) : laps ? (
+                    <path
+                      d={`M-24 -24H${-94 - extra}`}
+                      stroke={r.color}
+                      strokeWidth={3}
+                    />
                     <text
-                      x={-36}
+                      x={-59 - extra}
                       y={-40}
                       dominantBaseline="middle"
-                      textAnchor="end"
-                      className="fill-zinc-300 text-[21px] font-bold"
+                      textAnchor="middle"
+                      className="fill-zinc-100 text-[22px] font-semibold"
                     >
-                      {laps}
+                      {r.tla}
                     </text>
-                  ) : null}
-                </g>
-              );
-            })}
+                    {crown ? (
+                      <Crown
+                        x={-58}
+                        y={-51}
+                        width={22}
+                        height={22}
+                        className="stroke-yellow-300"
+                        strokeWidth={2.5}
+                      />
+                    ) : laps ? (
+                      <text
+                        x={-36}
+                        y={-40}
+                        dominantBaseline="middle"
+                        textAnchor="end"
+                        className="fill-zinc-300 text-[21px] font-bold"
+                      >
+                        {laps}
+                      </text>
+                    ) : null}
+                  </g>
+                );
+              })}
+            </g>
             {hover && card && (
               <>
                 <circle

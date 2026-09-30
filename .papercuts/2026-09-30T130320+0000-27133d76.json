@@ -1,0 +1,13 @@
+{
+  "id": "27133d76",
+  "ts": "2026-09-30T13:03:20+00:00",
+  "text": "pkill -f on my own dev server is denied by permissions; TaskStop is the only way to stop a background pnpm dev",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "9d4708e9",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-d75868b7",
+  "branch": "t3code/snap-cars-on-seek"
+}
