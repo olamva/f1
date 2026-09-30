@@ -11,6 +11,7 @@ interface TabsProps<T extends string> {
   items: readonly T[];
   value: T | null;
   onChange: (v: T) => void;
+  onReselect?: () => void;
   small?: boolean;
   stretch?: boolean;
   labels?: Partial<Record<T, string>>;
@@ -23,6 +24,7 @@ export const Tabs = <T extends string>({
   items,
   value,
   onChange,
+  onReselect,
   small,
   stretch,
   labels,
@@ -264,10 +266,12 @@ export const Tabs = <T extends string>({
         const button = buttons.current[index]!;
         button.focus({ preventScroll: true });
         rest.current = button.offsetLeft;
+        const tapped = !suppressClick.current;
         suppressClick.current = true;
         cancelDrag();
         setSize(button.offsetWidth);
         if (items[index] !== value) onChange(items[index]!);
+        else if (tapped) onReselect?.();
       }}
       onPointerCancel={cancelDrag}
       onLostPointerCapture={cancelDrag}
@@ -324,7 +328,7 @@ export const Tabs = <T extends string>({
                   if (!matchMedia("(prefers-reduced-motion: reduce)").matches)
                     setMoving(true);
                   onChange(i);
-                }
+                } else onReselect?.();
               }
               suppressClick.current = false;
             }}
