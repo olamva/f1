@@ -24,5 +24,8 @@ test("a red-flagged session stays live past its scheduled end while the feed is 
   assert.equal(hasRecentTiming(), true);
   shared.session.state.Heartbeat = { Utc: "2026-09-24T14:25:00Z" };
   assert.equal(hasRecentTiming(), false);
+  t.mock.method(Date, "now", () => Date.parse("2026-09-29T15:00:00Z"));
+  shared.session.state.Heartbeat = { Utc: "2026-09-29T14:59:30Z" };
+  assert.equal(hasRecentTiming(), false);
   shared.session.state = {};
 });
