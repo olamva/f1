@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+*:focus {
+  outline: none;
+}
+
 @font-face {
   font-family: "Formula1";
   src: url("./fonts/Formula1-Regular.woff2") format("woff2");
@@ -234,11 +238,6 @@ textarea {
   opacity: 0;
 }
 
-.glass-tab:focus-visible {
-  outline: 2px solid #fca5a5;
-  outline-offset: 3px;
-}
-
 .glass-panel,
 .glass-control,
 .glass-gear {
@@ -289,14 +288,6 @@ textarea {
     0 6px 20px rgb(0 0 0 / 0.25);
 }
 
-.glass-control:focus-visible,
-.glass-gear:focus-visible,
-.glass-seek:has(:focus-visible),
-.peer:focus-visible + .glass-switch {
-  outline: 2px solid #fca5a5;
-  outline-offset: 4px;
-}
-
 .glass-seek {
   height: 44px;
   border-radius: 9999px;
@@ -333,8 +324,7 @@ textarea {
     box-shadow 180ms ease;
 }
 
-.glass-seek[data-held="true"] .glass-seek-thumb,
-.glass-seek:has(:focus-visible) .glass-seek-thumb {
+.glass-seek[data-held="true"] .glass-seek-thumb {
   scale: 1.65 1.5;
   background: rgb(255 255 255 / 0.12);
   backdrop-filter: blur(1px) saturate(1.8);

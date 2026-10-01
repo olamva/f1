@@ -78,7 +78,7 @@ export const App = () => {
         <button
           ref={logo}
           onClick={() => go("Countdown")}
-          className="relative z-10 flex cursor-pointer items-center gap-3 rounded-md focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-red-400 sm:gap-3.5"
+          className="relative z-10 flex cursor-pointer items-center gap-3 rounded-md sm:gap-3.5"
           aria-label="Go to live session"
           type="button"
         >

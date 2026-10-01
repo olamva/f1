@@ -39,7 +39,7 @@ export const UpdateToast = () => {
           update();
         }}
         disabled={updating}
-        className="flex cursor-pointer items-center gap-2 rounded-full bg-amber-500 px-4 py-1.5 font-semibold text-zinc-950 hover:bg-amber-400 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-amber-300 disabled:cursor-default disabled:opacity-70 disabled:hover:bg-amber-500"
+        className="flex cursor-pointer items-center gap-2 rounded-full bg-amber-500 px-4 py-1.5 font-semibold text-zinc-950 hover:bg-amber-400 disabled:cursor-default disabled:opacity-70 disabled:hover:bg-amber-500"
         type="button"
       >
         {updating && <LoaderCircle className="size-4 animate-spin" />}
