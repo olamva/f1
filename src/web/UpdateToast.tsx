@@ -20,7 +20,7 @@ export const UpdateToast = () => {
   } = useRegisterSW({
     onRegisteredSW: (_, registration) => {
       if (!registration) return;
-      setInterval(() => registration.update(), 60 * 60_000);
+      setInterval(() => document.hidden || registration.update(), 60 * 60_000);
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") registration.update();
       });

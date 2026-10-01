@@ -12,7 +12,6 @@ const SESSIONS: Record<string, [string, number]> = {
 const LEADS = [15, 5];
 const BASE = "https://api.jolpi.ca/ergast/f1";
 const MINUTE = 60_000;
-const DAY = 24 * 60 * MINUTE;
 
 export type Race = { date: string; time?: string } & Record<
   string,
@@ -23,57 +22,36 @@ export type Window = {
   at: number;
   start: number;
   end: number;
-  dayStart: number;
-  dayEnd: number;
 };
 
 export function windows(races: Race[]): Window[] {
-  return races.flatMap((race) => {
-    const starts = Object.entries(SESSIONS).flatMap(
-      ([key, [name, duration]]) => {
-        const session = key === "Race" ? race : race[key];
-        if (
-          !session ||
-          typeof session === "string" ||
-          !session.date ||
-          !session.time
-        )
-          return [];
-        const start = Date.parse(`${session.date}T${session.time}`);
-        return Number.isFinite(start)
-          ? [
-              {
-                title: `${race.raceName} · ${name}`,
-                start,
-                end: start + (duration + 30) * MINUTE,
-              },
-            ]
-          : [];
-      },
-    );
-    if (!starts.length) return [];
-    const firstDay = new Date(Math.min(...starts.map((s) => s.start)))
-      .toISOString()
-      .slice(0, 10);
-    const dayStart = Date.parse(`${firstDay}T00:00:00Z`);
-    const dayEnd = Date.parse(`${race.date}T00:00:00Z`) + 2 * DAY;
-    return starts.map(({ title, start, end }) => ({
-      title,
-      at: start,
-      start: start - 15 * MINUTE,
-      end,
-      dayStart,
-      dayEnd,
-    }));
-  });
+  return races.flatMap((race) =>
+    Object.entries(SESSIONS).flatMap(([key, [name, duration]]) => {
+      const session = key === "Race" ? race : race[key];
+      if (
+        !session ||
+        typeof session === "string" ||
+        !session.date ||
+        !session.time
+      )
+        return [];
+      const at = Date.parse(`${session.date}T${session.time}`);
+      return Number.isFinite(at)
+        ? [
+            {
+              title: `${race.raceName} · ${name}`,
+              at,
+              start: at - 15 * MINUTE,
+              end: at + (duration + 120) * MINUTE,
+            },
+          ]
+        : [];
+    }),
+  );
 }
 
 export function shouldWake(schedule: Window[], now: number): boolean {
-  return (
-    schedule.some((w) => now >= w.start && now <= w.end) ||
-    (Math.floor(now / MINUTE) % 3 === 0 &&
-      schedule.some((w) => now >= w.dayStart && now < w.dayEnd))
-  );
+  return schedule.some((w) => now >= w.start && now <= w.end);
 }
 
 export function reminders(schedule: Window[], now: number) {

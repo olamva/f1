@@ -1,0 +1,14 @@
+{
+  "id": "db0b638f",
+  "ts": "2026-10-01T08:23:50+00:00",
+  "text": "Azure Cost Management query API returns 429 on the first call; each query needs a retry loop with ~40 s backoff",
+  "tags": [
+    "azure",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "2b4aa3ef",
+  "where": "az rest Microsoft.CostManagement/query",
+  "branch": "t3code/compare-vm-and-container-costs"
+}
