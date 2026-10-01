@@ -351,7 +351,7 @@ export const TrackMap = ({
                       onToggle(r.number);
                     }
                   }}
-                  className="group cursor-pointer outline-none"
+                  className="cursor-pointer"
                   style={place(x, y)}
                   opacity={focus || hovered === r.number ? 1 : 0.35}
                 >
@@ -361,7 +361,6 @@ export const TrackMap = ({
                     fill={r.color}
                     stroke="#18181b"
                     strokeWidth={4}
-                    className="group-focus-visible:stroke-zinc-100"
                   />
                 </g>
               ))}
