@@ -22,10 +22,13 @@ export function useJson<T>(url: string | null, refreshMs?: number): Loaded<T> {
       );
     setState({ data: null, error: null });
     load();
-    const id = refreshMs ? setInterval(load, refreshMs) : undefined;
+    const poll = () => document.hidden || load();
+    const id = refreshMs ? setInterval(poll, refreshMs) : undefined;
+    if (refreshMs) document.addEventListener("visibilitychange", poll);
     return () => {
       alive = false;
       clearInterval(id);
+      document.removeEventListener("visibilitychange", poll);
     };
   }, [url, refreshMs]);
   return state;

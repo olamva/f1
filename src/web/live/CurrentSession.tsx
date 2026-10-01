@@ -5,6 +5,7 @@ import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
 import { pathPart, setPathPart } from "../path.ts";
+import { useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
 import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
@@ -237,7 +238,8 @@ const Live = ({ positions }: LiveProps) => {
   const [delay, setDelay] = useState(
     () => Number(localStorage.getItem("delay")) || 0,
   );
-  const feed = useFeed("/api/live/stream", delay * 1000);
+  const visible = useVisible();
+  const feed = useFeed(visible ? "/api/live/stream" : null, delay * 1000);
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
   const outline = useJson<Outline | null>("/api/live/outline", 60_000);
   const note = positions
@@ -282,11 +284,16 @@ const Replay = ({ session, onClose }: ReplayProps) => {
     speed: number;
     on: boolean;
   }>({ t: null, speed: 4, on: true });
+  const visible = useVisible();
   const q = `path=${encodeURIComponent(session.path)}`;
-  const url = play.on
-    ? `/api/replay/stream?${q}&speed=${play.speed}${play.t === null ? "" : `&t=${play.t}`}`
-    : null;
+  const url =
+    play.on && visible
+      ? `/api/replay/stream?${q}&speed=${play.speed}${play.t === null ? "" : `&t=${play.t}`}`
+      : null;
   const feed = useFeed(url);
+  useEffect(() => {
+    if (!visible) setPlay((s) => ({ ...s, t: feed?.t ?? s.t }));
+  }, [visible, feed?.t]);
   const laps = useJson<Record<string, LapRow[]>>(`/api/replay/laps?${q}`);
   const outline = useJson<Outline | null>(`/api/replay/outline?${q}`);
   const race = Boolean(feed?.state.LapCount);

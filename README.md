@@ -9,7 +9,7 @@ The server keeps each token in Key Vault under a hash of the email address.
 
 - React + Vite + Tailwind in `src/web`, Hono server in `src/server`, shared logic in `src/shared`.
 - Live timing comes from `livetiming.formula1.com`. Results and standings come from Jolpica-F1.
-- It runs on Azure Container Apps. It scales to zero after 20 minutes without requests. A scheduled Container Apps job checks the calendar and wakes it for sessions.
+- It runs on Azure Container Apps. It scales to zero after 20 minutes without requests. A scheduled Container Apps job checks the calendar and wakes it for sessions. Hidden browser tabs stop polling and close their streams, so an open tab does not keep the app awake.
 
 ## Run it
 
@@ -54,7 +54,7 @@ Keep the worktree while its T3 thread is active. Remove it from another checkout
 
 Use the existing Azure account and backend permissions. See the [Azure CLI login options](https://learn.microsoft.com/en-us/cli/azure/reference-index#az-login).
 
-The wake job checks the current and next season calendars every five minutes. It wakes the app from 15 minutes before each session until 30 minutes after its expected end. On race days, it also wakes the app every 15 minutes. This covers delayed sessions outside their planned windows. The app scales to zero after the wake requests stop. No year-specific cron rule remains.
+The wake job checks the current and next season calendars every five minutes. It wakes the app from 15 minutes before each session until two hours after its expected end. The two hours cover delayed sessions. The app scales to zero after the wake requests stop. No year-specific cron rule remains.
 
 A calendar change takes effect at the next five-minute check. If the calendar source fails, the job uses the schedule bundled during the last deployment. A deployment stops if it cannot refresh that schedule. The bundled schedule covers the seasons available when the image was built. Run `pnpm sessions` to refresh `infra/sessions.json` during local work. Terraform creates the wake job. The deployment workflow updates its image.
 

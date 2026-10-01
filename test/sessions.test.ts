@@ -48,12 +48,11 @@ test("the next season loads without changing the year in code", async () => {
   assert.ok(years.some((url) => url.includes("/2028.json")));
 });
 
-test("a delayed session wakes outside its planned window and can then scale down", () => {
+test("a delayed session wakes until two hours after its expected end, and the app sleeps between sessions", () => {
   const result = windows([race("2026-10-04")]);
-  assert.equal(shouldWake(result, at("2026-10-04T20:00:00Z")), true);
-  assert.equal(shouldWake(result, at("2026-10-04T20:05:00Z")), false);
-  assert.equal(shouldWake(result, at("2026-10-04T20:15:00Z")), true);
-  assert.equal(shouldWake(result, at("2026-10-07T20:00:00Z")), false);
+  assert.equal(shouldWake(result, at("2026-10-04T18:00:00Z")), true);
+  assert.equal(shouldWake(result, at("2026-10-04T18:05:00Z")), false);
+  assert.equal(shouldWake(result, at("2026-10-04T13:30:00Z")), false);
 });
 
 test("a failed next-season request keeps the current schedule", async () => {

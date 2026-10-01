@@ -1,0 +1,14 @@
+{
+  "id": "8b54ab1b",
+  "ts": "2026-10-01T08:23:51+00:00",
+  "text": "Azure Retail Prices API rounds NOK prices to 4 decimals, so per-second Container Apps meters show 0.0; query in USD instead",
+  "tags": [
+    "azure",
+    "docs"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "2b4aa3ef",
+  "where": "prices.azure.com",
+  "branch": "t3code/compare-vm-and-container-costs"
+}
