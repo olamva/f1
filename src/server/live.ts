@@ -16,6 +16,7 @@ const FLUSH_MS = 250;
 const RETRY_MS = 5_000;
 const EDGE_MS = 30 * 60_000;
 const FRESH_MS = 2 * 60_000;
+const RETAIN_MS = 2 * 60 * 60_000;
 const MAX_LAG_MS = 60_000;
 
 type Listener = (batch: Delta[] | "reset") => void;
@@ -167,9 +168,14 @@ export function isLive(): boolean {
 
 export function hasRecentTiming(): boolean {
   const { state } = shared.session;
-  if (!state.SessionInfo) return false;
+  const info = state.SessionInfo as Record<string, any> | undefined;
+  if (!info) return false;
   const utc = (state.Heartbeat as { Utc?: string } | undefined)?.Utc ?? "";
   const beat = Date.parse(utc.endsWith("Z") ? utc : `${utc}Z`);
   const now = Date.now();
-  return now >= beat && now - beat <= EDGE_MS;
+  return (
+    now >= beat &&
+    now - beat <= EDGE_MS &&
+    now <= at(info.EndDate, info.GmtOffset) + RETAIN_MS
+  );
 }
