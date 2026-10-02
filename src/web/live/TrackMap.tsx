@@ -59,16 +59,10 @@ const projector = (outline: Outline, extra = 0) => {
   return { project, box };
 };
 
-const fitted = (
-  outline: Outline,
-  [width, height]: [number, number],
-  turn: number,
-) => {
-  const scale = (extra: number) => {
-    const { box } = projector(outline, extra);
-    return Math.min(width / box[2], height / box[3]);
-  };
-  return projector(outline, (scale(90) > scale(0) * 1.01 ? 90 : 0) - 90 * turn);
+const fitted = (outline: Outline, turn: number) => {
+  const span = (extra: number) =>
+    Math.max(...projector(outline, extra).box.slice(2));
+  return projector(outline, (span(0) > span(90) * 1.01 ? 90 : 0) - 90 * turn);
 };
 
 const indexAt = (progress: number[], fraction: number) =>
@@ -246,24 +240,16 @@ export const TrackMap = ({
   } | null>(null);
   const hovered = hover?.number ?? null;
   const card = rows.find((r) => r.number === hovered);
-  const [size, setSize] = useState<[number, number]>([1, 1]);
   const [turns, setTurns] = useState<Record<string, number>>(() =>
     JSON.parse(localStorage.getItem("turns") ?? "{}"),
   );
   const turn = turns[circuit ?? ""] ?? 0;
-  useEffect(() => {
-    const observer = new ResizeObserver(([entry]) =>
-      setSize([entry!.contentRect.width, entry!.contentRect.height]),
-    );
-    observer.observe(svg.current!);
-    return () => observer.disconnect();
-  }, []);
   const { project, box } = useMemo(
     () =>
       outline
-        ? fitted(outline, size, turn)
+        ? fitted(outline, turn)
         : { project: null, box: [0, 0, SIZE, SIZE] as const },
-    [outline, size, turn],
+    [outline, turn],
   );
   const cardX =
     hover && (hover.x > box[0] + box[2] / 2 ? hover.x - 260 : hover.x + 20);

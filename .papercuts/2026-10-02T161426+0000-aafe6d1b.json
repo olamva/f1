@@ -1,0 +1,14 @@
+{
+  "id": "aafe6d1b",
+  "ts": "2026-10-02T16:14:26+00:00",
+  "text": "live-replay skill points to recordings/, but the repo and worktree have no recordings directory",
+  "tags": [
+    "docs",
+    "skills"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b2addcc2",
+  "where": ".claude/skills/live-replay/SKILL.md",
+  "branch": "t3code/fix-fullscreen-map-orientation-1"
+}
