@@ -112,6 +112,7 @@ export class Session {
       time: points.map((p) => p[0]),
       rotation: 0,
       corners: [],
+      sectors: [],
     };
   }
 }
