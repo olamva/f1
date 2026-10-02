@@ -25,6 +25,7 @@ interface TrackMapProps {
   speed?: number;
   stream?: string;
   banner?: React.ReactNode;
+  circuit?: number;
 }
 
 const projector = (outline: Outline, extra = 0) => {
@@ -229,6 +230,7 @@ export const TrackMap = ({
   speed = 1,
   stream,
   banner,
+  circuit,
 }: TrackMapProps) => {
   const svg = useRef<SVGSVGElement>(null);
   const pointer = useRef("");
@@ -240,7 +242,10 @@ export const TrackMap = ({
   const hovered = hover?.number ?? null;
   const card = rows.find((r) => r.number === hovered);
   const [size, setSize] = useState<[number, number]>([1, 1]);
-  const [turn, setTurn] = useState(0);
+  const [turns, setTurns] = useState<Record<string, number>>(() =>
+    JSON.parse(localStorage.getItem("turns") ?? "{}"),
+  );
+  const turn = turns[circuit ?? ""] ?? 0;
   useEffect(() => {
     const observer = new ResizeObserver(([entry]) =>
       setSize([entry!.contentRect.width, entry!.contentRect.height]),
@@ -303,7 +308,14 @@ export const TrackMap = ({
   });
   useCarMotion(svg, project, { positions, positionTrail, time, speed, stream });
   return (
-    <MapFrame banner={banner} onRotate={() => setTurn((t) => (t + 1) % 4)}>
+    <MapFrame
+      banner={banner}
+      onRotate={() => {
+        const next = { ...turns, [circuit ?? ""]: (turn + 1) % 4 };
+        localStorage.setItem("turns", JSON.stringify(next));
+        setTurns(next);
+      }}
+    >
       {(full) => (
         <>
           <svg
