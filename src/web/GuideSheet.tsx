@@ -1,14 +1,13 @@
-import { useRef } from "react";
-import { Menu, Share, Smartphone, SquarePlus, X } from "lucide-react";
+import { useRef, type ReactNode } from "react";
+import { X, type LucideIcon } from "lucide-react";
 
-const STEPS = [
-  [Menu, "In Safari, tap the menu button in the address bar."],
-  [Share, "Tap Share."],
-  [SquarePlus, "Tap Add to Home Screen. You may need to tap View More."],
-  [Smartphone, "Tap Add, then open F1 Pitwall from the Home Screen."],
-] as const;
+interface GuideSheetProps {
+  title: string;
+  steps: readonly (readonly [LucideIcon, ReactNode])[];
+  children?: ReactNode;
+}
 
-export const InstallSheet = () => {
+export const GuideSheet = ({ title, steps, children }: GuideSheetProps) => {
   const dialog = useRef<HTMLDialogElement>(null);
   return (
     <>
@@ -25,9 +24,9 @@ export const InstallSheet = () => {
         onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
         className="bg-surface motion-safe:animate-toast-in fixed inset-x-0 top-auto bottom-0 mx-auto w-full max-w-lg rounded-t-3xl border-t border-white/10 text-zinc-100 backdrop:bg-black/60"
       >
-        <div className="p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="font-f1 text-lg font-bold">Add to Home Screen</h2>
+        <div className="space-y-4 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
+          <div className="flex items-center justify-between">
+            <h2 className="font-f1 text-lg font-bold">{title}</h2>
             <button
               type="button"
               aria-label="Close"
@@ -38,15 +37,16 @@ export const InstallSheet = () => {
             </button>
           </div>
           <ol className="space-y-3 text-sm">
-            {STEPS.map(([Icon, text]) => (
-              <li key={text} className="flex items-center gap-3">
+            {steps.map(([Icon, text], i) => (
+              <li key={i} className="flex items-center gap-3">
                 <span className="grid size-9 shrink-0 place-items-center rounded-full bg-zinc-800">
                   <Icon aria-hidden="true" className="size-4" />
                 </span>
-                {text}
+                <span>{text}</span>
               </li>
             ))}
           </ol>
+          {children}
         </div>
       </dialog>
     </>
