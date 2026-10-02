@@ -1,0 +1,14 @@
+{
+  "id": "4a6772aa",
+  "ts": "2026-10-02T10:09:39+00:00",
+  "text": "T3 preview_snapshot fails with 'Preview automation snapshot failed on client' on a loaded page while preview_status reports it ready",
+  "tags": [
+    "t3",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "3a093cae",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/continue-thread-work"
+}

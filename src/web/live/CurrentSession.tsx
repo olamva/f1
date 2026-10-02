@@ -1,4 +1,4 @@
-import { ArrowDownToLine, ChevronLeft, Eye } from "lucide-react";
+import { ChevronLeft, Eye, SkipBack } from "lucide-react";
 import {
   useEffect,
   useMemo,
@@ -7,60 +7,31 @@ import {
   type CSSProperties,
 } from "react";
 import type { Season } from "../../shared/season.ts";
-import {
-  MAX_DELAY_MS,
-  type LapRow,
-  type Outline,
-  type SessionRef,
-} from "../../shared/timing.ts";
+import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
 import { pathPart, setPathPart } from "../path.ts";
 import { useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
+import { Board } from "./Board.tsx";
 import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
-import { LapCharts } from "./LapCharts.tsx";
-import { clip, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
+import { clip } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
-import { TimingTower } from "./TimingTower.tsx";
-import { TrackMap } from "./TrackMap.tsx";
-import { feedUtc, useFeed, type Feed } from "./useFeed.ts";
-import {
-  isQualifying,
-  messages,
-  lapStarts,
-  qualifyingPart,
-  radios,
-  remaining,
-  rows as towerRows,
-  sessionBests,
-  sessionStart,
-  trackStatus,
-} from "./view.ts";
+import { useFeed, type Feed } from "./useFeed.ts";
+import { lapStarts } from "./view.ts";
 
 export type LiveInfo = {
   live: boolean;
   recent: boolean;
   positions: boolean;
+  start: number | null;
   info: Record<string, any> | null;
 };
 
 interface LiveSessionProps {
   season: Loaded<Season>;
   info: Loaded<LiveInfo>;
-}
-
-interface BoardProps {
-  feed: Feed;
-  laps: Record<string, LapRow[]>;
-  outline: Outline | null;
-  replay: boolean;
-  positionsNote: string | null;
-  speed?: number;
-  paused?: boolean;
-  delay?: number;
-  onDelay?: (s: number) => void;
 }
 
 const useTick = (ms: number) => {
@@ -75,27 +46,22 @@ const useTick = (ms: number) => {
 interface DelayInputProps {
   delay: number;
   onDelay: (s: number) => void;
+  label?: string;
 }
 
-const DelayInput = ({ delay, onDelay }: DelayInputProps) => (
+const DelayInput = ({ delay, onDelay, label }: DelayInputProps) => (
   <label
-    title="Delay behind live, up to 10 minutes, to match the F1TV stream"
+    title="Delay behind live, to match the F1TV stream"
     className="tabular flex items-center text-xs text-zinc-500"
   >
-    −
+    {label && <span className="mr-1.5">{label}</span>}−
     <input
       inputMode="numeric"
       placeholder="0"
       value={delay || ""}
-      onChange={(e) =>
-        onDelay(
-          Math.min(
-            MAX_DELAY_MS / 1000,
-            Number(e.target.value.replace(/\D/g, "")),
-          ),
-        )
-      }
-      className="w-7 bg-transparent text-right text-zinc-400 outline-none placeholder:text-zinc-600 focus:text-zinc-100"
+      maxLength={4}
+      onChange={(e) => onDelay(Number(e.target.value.replace(/\D/g, "")))}
+      className="w-8 bg-transparent text-right text-zinc-400 outline-none placeholder:text-zinc-600 focus:text-zinc-100"
     />
     s
   </label>
@@ -126,198 +92,145 @@ const DelayWait = ({ due, delay }: DelayWaitProps) => {
   );
 };
 
-interface StatusProps {
-  ref: React.Ref<HTMLDivElement>;
-  lap?: { CurrentLap: number; TotalLaps: number };
-  part: string | null;
-  banner: React.ReactNode;
-  clock: string;
-  delay: React.ReactNode;
+type Rewind = { session: string; delay: number; pausedAt: number | null };
+
+const rewind = (session: string, delay: number, pausedAt: number | null) =>
+  localStorage.setItem(
+    "rewind",
+    JSON.stringify({ session, delay, pausedAt } satisfies Rewind),
+  );
+
+interface GoLiveProps {
+  behind: number;
+  onClick: () => void;
 }
 
-const Status = ({ ref, lap, part, banner, clock, delay }: StatusProps) => (
-  <div ref={ref} className="flex scroll-mt-4 flex-wrap items-center gap-3">
-    {lap && (
-      <span className="tabular font-f1 text-2xl font-black">
-        <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
-        {lap.CurrentLap}
-        <span className="text-zinc-500">/{lap.TotalLaps}</span>
-      </span>
-    )}
-    {part && (
-      <span className="font-f1 rounded bg-zinc-700 px-2 py-0.5 text-lg font-bold">
-        {part}
-      </span>
-    )}
-    {banner && (
-      <div className="order-last grow basis-full sm:order-none sm:basis-60">
-        {banner}
-      </div>
-    )}
-    <div className="ml-auto flex items-center gap-2">
-      {delay}
-      <span className="tabular font-mono text-xl">{clock}</span>
-    </div>
-  </div>
+const GoLive = ({ behind, onClick }: GoLiveProps) => (
+  <button
+    onClick={onClick}
+    title="Go to live"
+    className="glass-control tabular flex cursor-pointer items-center px-3 py-1.5 text-sm font-semibold"
+  >
+    <span
+      aria-hidden="true"
+      className={
+        behind < 1000 ? "live-dot" : "mr-2 size-2 rounded-full bg-zinc-500"
+      }
+    />
+    {behind < 1000 ? "LIVE" : `−${clip(behind / 1000)}`}
+  </button>
 );
 
-const Board = ({
-  feed,
-  laps,
-  outline,
-  replay,
-  positionsNote,
-  speed,
-  paused,
-  delay = 0,
-  onDelay,
-}: BoardProps) => {
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const top = useRef<HTMLDivElement>(null);
-  const now = useTick(1000);
-  const state = feed.state as Record<string, any>;
-  const rows = useMemo(() => towerRows(state), [state]);
-  const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
-  const race =
-    /Race|Sprint$/.test(state.SessionInfo?.Type ?? "") ||
-    state.SessionInfo?.Name === "Sprint";
-  const qualifying = isQualifying(state.SessionInfo);
-  const status = trackStatus(state);
-  const part = qualifyingPart(state);
-  const toggle = (n: string) =>
-    setSelected((s) => new Set(s.has(n) ? [] : [n]));
-  const focus = selected.size
-    ? [...selected]
-    : rows.slice(0, 5).map((r) => r.number);
-  const utc = replay ? feedUtc(feed) : now - delay;
-  const banner = status && (
-    <div
-      role="alert"
-      className={`flag-banner font-f1 rounded-md px-4 py-0.5 text-center text-lg font-black tracking-widest uppercase ${status.tone}${paused ? "paused" : ""}`}
-    >
-      {status.label}
-    </div>
+interface LiveBarProps {
+  feed: Feed;
+  laps: Record<string, LapRow[]>;
+  at: number;
+  end: number;
+  playing: boolean;
+  onToggle: () => void;
+  onSeek: (t: number) => void;
+  children: React.ReactNode;
+}
+
+const LiveBar = ({ feed, laps, ...rest }: LiveBarProps) => {
+  const race = Boolean(feed.state.LapCount);
+  const start = Math.max(feed.since ?? 0, feed.start ?? 0);
+  const starts = useMemo(
+    () => (race ? lapStarts(laps, start, true) : []),
+    [race, laps, start],
   );
-  return (
-    <div className="board space-y-4">
-      <header className="flex flex-wrap items-center gap-3">
-        <h1 className="font-f1 text-xl font-bold">
-          <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
-          {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
-        </h1>
-        <button
-          type="button"
-          onClick={() => top.current!.scrollIntoView({ behavior: "smooth" })}
-          title="Scroll the timing to the top of the screen"
-          className="glass-gear ml-auto flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm"
-        >
-          <ArrowDownToLine aria-hidden="true" size={16} />
-          Focus
-        </button>
-      </header>
-      <Status
-        ref={top}
-        lap={state.LapCount}
-        part={part}
-        banner={banner}
-        clock={remaining(state, utc)}
-        delay={onDelay && <DelayInput delay={delay / 1000} onDelay={onDelay} />}
-      />
-      <div
-        className={`grid gap-4 ${race ? "lg:grid-cols-[auto_minmax(0,1fr)]" : "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]"}`}
-      >
-        <TimingTower
-          rows={rows}
-          race={race}
-          qualifying={qualifying}
-          bests={bests}
-          selected={selected}
-          onToggle={toggle}
-        />
-        <div
-          className={`grid content-start gap-4 ${race ? "xl:grid-cols-2 xl:content-stretch" : ""}`}
-        >
-          <div className="flex flex-col gap-4">
-            <TrackMap
-              outline={outline}
-              positions={state.Position}
-              rows={rows}
-              bests={bests}
-              race={race}
-              selected={selected}
-              onToggle={toggle}
-              note={positionsNote}
-              positionTrail={feed.positionTrail}
-              time={feed.t}
-              speed={speed}
-              stream={feed.src}
-              banner={banner}
-            />
-            <RaceControl
-              messages={messages(state)}
-              rows={rows}
-              start={sessionStart(state)}
-            />
-          </div>
-          <div className="flex flex-col gap-4">
-            <TeamRadio radios={radios(state)} rows={rows} />
-            <Weather weather={state.WeatherData} />
-          </div>
-        </div>
-      </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
-        <LapCharts
-          laps={laps}
-          rows={rows}
-          focus={focus}
-          until={feed.t}
-          race={race}
-        />
-      </div>
-    </div>
-  );
+  return <ReplayBar race={race} starts={starts} start={start} {...rest} />;
 };
 
 interface LiveProps {
+  session: string;
   positions: boolean;
+  sync: number;
+  onSync: (s: number) => void;
 }
 
-const Live = ({ positions }: LiveProps) => {
-  const [delay, setDelay] = useState(
-    () => Number(localStorage.getItem("delay")) || 0,
-  );
+const Live = ({ session, positions, sync, onSync }: LiveProps) => {
+  const [pos, setPos] = useState<Rewind>(() => {
+    const saved = JSON.parse(localStorage.getItem("rewind") ?? "null");
+    if (saved?.session !== session)
+      return { session, delay: sync * 1000, pausedAt: null };
+    return saved.pausedAt === null
+      ? saved
+      : {
+          session,
+          delay: saved.delay + Date.now() - saved.pausedAt,
+          pausedAt: Date.now(),
+        };
+  });
+  const [loading, setLoading] = useState(pos.pausedAt !== null);
+  const now = useTick(1000);
   const visible = useVisible();
-  const url = visible ? `/api/live/stream?delay=${delay}` : null;
-  const [feed, due] = useFeed(url, delay * 1000);
+  const url =
+    visible && (pos.pausedAt === null || loading)
+      ? `/api/live/stream?delay=${Math.round(pos.delay)}`
+      : null;
+  const [feed, due] = useFeed(url, pos.delay);
+  if (loading && feed) setLoading(false);
   const waiting = !!due && due > Date.now() && feed?.src !== url;
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
   const outline = useJson<Outline | null>("/api/live/outline", 60_000);
   const note = positions
     ? null
     : "Add an F1TV token in Settings to see the cars.";
-  const change = (s: number) => {
-    localStorage.setItem("delay", String(s));
-    setDelay(s);
+  const live = sync * 1000;
+  const delay = pos.delay + (pos.pausedAt === null ? 0 : now - pos.pausedAt);
+  const rows = laps.data ?? {};
+  const move = (delay: number, pausedAt: number | null = null) => {
+    rewind(session, delay, pausedAt);
+    setPos({ session, delay, pausedAt });
   };
+  const changeSync = (s: number) => {
+    onSync(s);
+    move(s * 1000);
+  };
+  const seek = (t: number) => {
+    const d = Date.now() - t;
+    move(d < live + 1000 ? live : d);
+  };
+  const toggle = () =>
+    pos.pausedAt === null
+      ? move(pos.delay, Date.now())
+      : move(pos.delay + Date.now() - pos.pausedAt);
+  const delayInput = <DelayInput delay={sync} onDelay={changeSync} />;
+  const goLive = <GoLive behind={delay - live} onClick={() => move(live)} />;
   return (
     <div className="space-y-4">
       {feed && !waiting ? (
-        <Board
-          feed={feed}
-          laps={laps.data ?? {}}
-          outline={outline.data ?? null}
-          replay={false}
-          positionsNote={note}
-          delay={delay * 1000}
-          onDelay={change}
-        />
+        <>
+          <LiveBar
+            feed={feed}
+            laps={rows}
+            end={now - live}
+            at={now - delay}
+            playing={pos.pausedAt === null}
+            onToggle={toggle}
+            onSeek={seek}
+          >
+            {goLive}
+          </LiveBar>
+          <Board
+            feed={feed}
+            laps={rows}
+            outline={outline.data ?? null}
+            positionsNote={note}
+            paused={pos.pausedAt !== null}
+            utc={now - delay}
+            delayInput={delayInput}
+          />
+        </>
       ) : (
         <div className="space-y-4">
-          <div className="flex justify-end">
-            <DelayInput delay={delay} onDelay={change} />
+          <div className="flex items-center justify-end gap-3">
+            {waiting && goLive}
+            {delayInput}
           </div>
           {waiting ? (
-            <DelayWait due={due} delay={delay * 1000} />
+            <DelayWait due={due} delay={pos.delay} />
           ) : (
             <Loading label="Connecting to live timing…" />
           )}
@@ -365,10 +278,17 @@ const Replay = ({ session, onClose }: ReplayProps) => {
         All replays
       </button>
       <ReplayBar
-        session={session}
+        title={
+          <>
+            <Flag country={session.country} />
+            {session.meeting} · {session.name}
+          </>
+        }
+        race={/^(Race|Sprint)$/.test(session.name)}
         starts={starts}
-        feed={feed}
-        pending={feed?.src === url ? null : play.t}
+        start={feed?.start ?? 0}
+        end={feed?.duration ?? 0}
+        at={(feed?.src === url ? null : play.t) ?? feed?.t ?? 0}
         playing={play.on}
         speed={play.speed}
         onToggle={() =>
@@ -389,7 +309,6 @@ const Replay = ({ session, onClose }: ReplayProps) => {
           feed={feed}
           laps={laps.data ?? {}}
           outline={outline.data ?? null}
-          replay
           positionsNote={null}
           speed={play.speed}
           paused={!play.on}
@@ -404,10 +323,23 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   const [continued, setContinued] = useState(() =>
     localStorage.getItem("continued"),
   );
+  const [sync, setSync] = useState(
+    () => Number(localStorage.getItem("delay")) || 0,
+  );
   if (info.data?.live) wasLive.current = true;
   if (!info.data || !season.data)
     return <Loading label="Loading…" error={info.error ?? season.error} />;
   const key = String(info.data.info?.Key);
+  const start = info.data.start;
+  const changeSync = (s: number) => {
+    localStorage.setItem("delay", String(s));
+    setSync(s);
+  };
+  const go = (delay: number) => {
+    rewind(key, delay, null);
+    localStorage.setItem("continued", key);
+    setContinued(key);
+  };
   if (info.data.live || info.data.recent || wasLive.current)
     return localStorage.getItem("spoilers") !== "0" && continued !== key ? (
       <div className="to-surface space-y-3 rounded-xl bg-gradient-to-r from-red-700/40 p-4">
@@ -420,19 +352,34 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
             Spoiler mode hides the live timing for this session.
           </p>
         </div>
-        <button
-          onClick={() => {
-            localStorage.setItem("continued", key);
-            setContinued(key);
-          }}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
-        >
-          <Eye aria-hidden="true" className="size-4" />
-          Continue to live timing
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={() => go(sync * 1000)}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
+          >
+            <Eye aria-hidden="true" className="size-4" />
+            Continue to live timing
+          </button>
+          {start !== null && (
+            <button
+              onClick={() => go(Date.now() - start)}
+              className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-4 py-1.5 text-sm font-semibold hover:bg-zinc-700"
+            >
+              <SkipBack aria-hidden="true" className="size-4" />
+              From start
+            </button>
+          )}
+          <DelayInput delay={sync} onDelay={changeSync} label="Delay" />
+        </div>
       </div>
     ) : (
-      <Live positions={info.data.positions} />
+      <Live
+        key={key}
+        session={key}
+        positions={info.data.positions}
+        sync={sync}
+        onSync={changeSync}
+      />
     );
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (

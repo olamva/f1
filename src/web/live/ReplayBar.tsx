@@ -1,23 +1,23 @@
-import { useState, type CSSProperties } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { Pause, Play } from "lucide-react";
-import type { SessionRef } from "../../shared/timing.ts";
-import { Flag } from "../Flag.tsx";
 import { Tabs } from "../Tabs.tsx";
-import type { Feed } from "./useFeed.ts";
 
 const SPEEDS = [1, 2, 4, 8, 16, 32];
 const UNITS = ["time", "laps"] as const;
 
 interface ReplayBarProps {
-  session: SessionRef;
+  title?: ReactNode;
+  race: boolean;
   starts: number[];
-  feed: Feed | null;
-  pending: number | null;
+  start: number;
+  end: number;
+  at: number;
   playing: boolean;
-  speed: number;
+  speed?: number;
   onToggle: () => void;
-  onSpeed: (speed: number) => void;
+  onSpeed?: (speed: number) => void;
   onSeek: (t: number) => void;
+  children?: ReactNode;
 }
 
 const clock = (ms: number) => {
@@ -26,29 +26,31 @@ const clock = (ms: number) => {
 };
 
 export const ReplayBar = ({
-  session,
+  title,
+  race,
   starts,
-  feed,
-  pending,
+  start,
+  end,
+  at,
   playing,
   speed,
   onToggle,
   onSpeed,
   onSeek,
+  children,
 }: ReplayBarProps) => {
   const [drag, setDrag] = useState<number | null>(null);
   const [held, setHeld] = useState(false);
-  const start = feed?.start ?? 0;
   const [unit, setUnit] = useState<(typeof UNITS)[number]>("time");
   const laps = unit === "laps" && starts.length > 1;
-  const value = drag ?? pending ?? feed?.t ?? 0;
+  const value = drag ?? at;
   const lap = Math.max(
     0,
     starts.findLastIndex((s) => s <= value),
   );
   const toT = (v: number) => (laps ? starts[v]! : v);
   const min = laps ? 0 : start;
-  const max = laps ? starts.length - 1 : (feed?.duration ?? 0);
+  const max = laps ? starts.length - 1 : end;
   const position = laps ? lap : value;
   const progress = Math.max(
     0,
@@ -63,14 +65,11 @@ export const ReplayBar = ({
   };
   return (
     <div className="glass-panel flex flex-wrap items-center gap-3 rounded-xl p-3 text-sm">
-      <span className="font-semibold">
-        <Flag country={session.country} />
-        {session.meeting} · {session.name}
-      </span>
+      {title && <span className="font-semibold">{title}</span>}
       <button
         onClick={onToggle}
-        aria-label={playing ? "Pause replay" : "Play replay"}
-        title={playing ? "Pause replay" : "Play replay"}
+        aria-label={playing ? "Pause" : "Play"}
+        title={playing ? "Pause" : "Play"}
         className="glass-control grid size-9 cursor-pointer place-items-center"
       >
         {playing ? (
@@ -79,21 +78,21 @@ export const ReplayBar = ({
           <Play aria-hidden="true" className="size-4" />
         )}
       </button>
-      <select
-        aria-label="Replay speed"
-        value={speed}
-        onChange={(e) => onSpeed(Number(e.target.value))}
-        className="glass-control px-2 py-1.5"
-      >
-        {SPEEDS.map((s) => (
-          <option key={s} value={s}>
-            {s}×
-          </option>
-        ))}
-      </select>
-      {/^(Race|Sprint)$/.test(session.name) && (
-        <Tabs items={UNITS} value={unit} onChange={setUnit} small />
+      {onSpeed && (
+        <select
+          aria-label="Replay speed"
+          value={speed}
+          onChange={(e) => onSpeed(Number(e.target.value))}
+          className="glass-control px-2 py-1.5"
+        >
+          {SPEEDS.map((s) => (
+            <option key={s} value={s}>
+              {s}×
+            </option>
+          ))}
+        </select>
       )}
+      {race && <Tabs items={UNITS} value={unit} onChange={setUnit} small />}
       <div
         className="glass-seek relative min-w-24 flex-1"
         data-held={held}
@@ -137,6 +136,7 @@ export const ReplayBar = ({
         />
       </div>
       <span className="tabular font-mono text-zinc-300">{readout}</span>
+      {children}
     </div>
   );
 };

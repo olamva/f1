@@ -31,7 +31,6 @@ export const positionsAt = (
 };
 
 export type Feed = Snapshot & {
-  start?: number;
   beat: number;
   positionTrail?: PositionTrail;
   src?: string;

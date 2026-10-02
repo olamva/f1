@@ -1,12 +1,6 @@
 import { inflateRawSync } from "node:zlib";
 import { merge, type Json } from "../shared/merge.ts";
-import {
-  MAX_DELAY_MS,
-  type Delta,
-  type LapRow,
-  type Outline,
-  type Point,
-} from "../shared/timing.ts";
+import type { Delta, LapRow, Outline, Point } from "../shared/timing.ts";
 import { seconds } from "./season.ts";
 
 export type Event = { t: number; topic: string; data: Json };
@@ -30,6 +24,7 @@ export const TOPICS = [
 ];
 
 const POSITION_SPACING_MS = 500;
+const CHECKPOINT_MS = 2 * 60_000;
 
 export const inflate = (b64: string): Json =>
   JSON.parse(inflateRawSync(Buffer.from(b64, "base64")).toString("utf8"));
@@ -122,28 +117,52 @@ export class Session {
 }
 
 export class History {
-  private deltas: Delta[] = [];
-  private base: State = {};
-  private since = Date.now();
+  since = Date.now();
+  start?: number;
+  private deltas: [t: number, json: string][] = [];
+  private checkpoints: { i: number; t: number; state: string }[] = [];
+  private state: State = {};
+  private latest = -Infinity;
 
   add(batch: Delta[]) {
-    const cut = Date.now() - MAX_DELAY_MS;
-    this.deltas.push(...batch);
-    while (this.deltas[0] && this.deltas[0][2] <= cut) {
-      const [topic, data, t] = this.deltas.shift()!;
-      this.base[topic] = merge(this.base[topic], data as Json);
-      this.since = Math.max(this.since, t);
+    for (const d of batch) {
+      if (d[0] === "SessionStatus" && (d[1] as any)?.Status === "Started")
+        this.start ??= Math.max(d[2], this.since);
+      this.deltas.push([d[2], JSON.stringify(d)]);
+      this.state[d[0]] = merge(this.state[d[0]], d[1] as Json);
+      this.latest = Math.max(this.latest, d[2]);
     }
+    if (
+      this.latest - (this.checkpoints.at(-1)?.t ?? this.since) >=
+      CHECKPOINT_MS
+    )
+      this.checkpoints.push({
+        i: this.deltas.length,
+        t: this.latest,
+        state: JSON.stringify(this.state),
+      });
   }
 
-  window(from: number): { t: number; state: State; deltas: Delta[] } {
+  window(from: number): { t: number; state: State; next: number } {
     const t = Math.max(from, this.since);
-    const state = { ...this.base };
-    const deltas: Delta[] = [];
-    for (const d of this.deltas)
-      if (d[2] <= t) state[d[0]] = merge(state[d[0]], d[1] as Json);
-      else deltas.push(d);
-    return { t, state, deltas };
+    const cp = this.checkpoints.findLast((c) => c.t <= t);
+    const state: State = cp ? JSON.parse(cp.state) : {};
+    let i = cp?.i ?? 0;
+    for (; i < this.deltas.length && this.deltas[i]![0] <= t; i++) {
+      const [topic, data] = JSON.parse(this.deltas[i]![1]) as Delta;
+      state[topic] = merge(state[topic], data as Json);
+    }
+    return { t, state, next: i };
+  }
+
+  after(next: number, until: number): { next: number; json: string | null } {
+    let i = next;
+    while (i < this.deltas.length && this.deltas[i]![0] <= until) i++;
+    const json = this.deltas
+      .slice(next, i)
+      .map((d) => d[1])
+      .join(",");
+    return { next: i, json: json ? `[${json}]` : null };
   }
 }
 

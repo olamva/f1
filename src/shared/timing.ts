@@ -28,13 +28,13 @@ export type Snapshot = {
   mode: "live" | "replay";
   t: number;
   now?: number;
+  since?: number;
+  start?: number;
   duration: number;
   state: Record<string, unknown>;
 };
 
 export type Delta = [topic: string, data: unknown, t: number];
-
-export const MAX_DELAY_MS = 10 * 60_000;
 
 export const lapSeconds = (s: string): number | null => {
   const m = /^(?:(\d+):)?(\d+(?:\.\d+)?)$/.exec(s.trim());

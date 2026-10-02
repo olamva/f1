@@ -20,7 +20,7 @@ const FRESH_MS = 2 * 60_000;
 const RETAIN_MS = 2 * 60 * 60_000;
 const MAX_LAG_MS = 60_000;
 
-type Listener = (batch: Delta[] | "reset") => void;
+type Listener = (reset: boolean) => void;
 
 async function cookie(): Promise<string> {
   const r = await fetch(`${URL}/negotiate`, { method: "OPTIONS" });
@@ -32,7 +32,7 @@ async function cookie(): Promise<string> {
 
 export class Feed {
   session = new Session();
-  private history = new History();
+  history = new History();
   private info: unknown = null;
   private pending: Delta[] = [];
   private lag = 0;
@@ -72,7 +72,7 @@ export class Feed {
       this.history = new History();
       this.pending = [];
       this.lag = 0;
-      this.listeners.forEach((fn) => fn("reset"));
+      this.listeners.forEach((fn) => fn(true));
     }
     for (const e of this.events(topic, data, Date.now()))
       if (this.session.apply(e)) this.pending.push([e.topic, e.data, e.t]);
@@ -83,7 +83,7 @@ export class Feed {
     const batch = this.pending;
     this.pending = [];
     this.history.add(batch);
-    this.listeners.forEach((fn) => fn(batch));
+    this.listeners.forEach((fn) => fn(false));
   }
 
   window(from: number) {
