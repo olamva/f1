@@ -9,6 +9,7 @@ import { sectorSplits, type Row, type SessionBests } from "./view.ts";
 
 const SIZE = 1000;
 const PAD = 60;
+const TAG = 70;
 
 interface TrackMapProps {
   outline: Outline | null;
@@ -45,9 +46,9 @@ const projector = (outline: Outline, extra = 0) => {
   const offX = (SIZE - (maxX - minX) * scale) / 2;
   const offY = (SIZE - (maxY - minY) * scale) / 2;
   const box = [
-    offX - PAD,
+    offX - PAD - TAG,
     offY - PAD,
-    SIZE - 2 * offX + 2 * PAD,
+    SIZE - 2 * offX + 2 * PAD + TAG,
     SIZE - 2 * offY + 2 * PAD,
   ] as const;
   const project = (x: number, y: number): [number, number] => {

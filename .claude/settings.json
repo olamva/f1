@@ -21,7 +21,9 @@
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm build:*)",
       "Bash(pnpm dev:*)",
-      "Bash(pnpm worktree:cleanup:*)"
+      "Bash(pnpm worktree:cleanup:*)",
+      "mcp__t3-code__link_pull_request",
+      "mcp__t3-code__list_thread_pull_requests"
     ],
     "deny": [
       "Bash(git push --force:*)",
