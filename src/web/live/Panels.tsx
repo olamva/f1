@@ -234,7 +234,7 @@ const sfx = async (a: AnalyserNode, name: "in" | "out") => {
   const res = await fetch(`/radio-${name}.mp3`);
   const buffer = await ctx.decodeAudioData(await res.arrayBuffer());
   const src = new AudioBufferSourceNode(ctx, { buffer });
-  src.connect(a);
+  src.connect(ctx.destination);
   src.start();
 };
 
