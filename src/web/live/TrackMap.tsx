@@ -282,9 +282,12 @@ export const TrackMap = ({
         ];
       })
     : [];
+  const shown = useRef(time);
+  useEffect(() => void (shown.current = time), [time]);
+  const snap = speed > 1 || Math.abs(time - shown.current) > 2000;
   const place = (x: number, y: number) => ({
     transform: `translate(${x}px, ${y}px)`,
-    transition: speed > 1 ? "none" : "transform 1000ms linear",
+    transition: snap ? "none" : "transform 1000ms linear",
   });
   useCarMotion(svg, project, { positions, positionTrail, time, speed, stream });
   return (
