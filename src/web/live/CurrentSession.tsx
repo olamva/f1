@@ -12,7 +12,7 @@ import { useJson, type Loaded } from "../api.ts";
 import { useDelay } from "../delay.ts";
 import { DelayInput } from "../DelayInput.tsx";
 import { Flag } from "../Flag.tsx";
-import { pathPart, setPathPart } from "../path.ts";
+import { navigate, pathPart, setPathPart, standalone } from "../path.ts";
 import { useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
 import { Board } from "./Board.tsx";
@@ -380,9 +380,16 @@ interface CalendarProps {
 export const Calendar = ({ season }: CalendarProps) => {
   const sessions = useJson<SessionRef[]>("/api/replay/sessions");
   const [path, setPath] = useState(() => pathPart("calendar"));
-  const choose = (s: SessionRef | null) => {
-    setPathPart("calendar", s?.path ?? null);
-    setPath(s?.path ?? null);
+  const pushed = useRef(false);
+  const open = (s: SessionRef) => {
+    navigate(`/calendar/${encodeURIComponent(s.path)}`);
+    pushed.current = !standalone;
+    setPath(s.path);
+  };
+  const close = () => {
+    if (pushed.current) return history.back();
+    setPathPart("calendar", null);
+    setPath(null);
   };
   const chosen = sessions.data?.find((s) => s.path === path);
   if (!sessions.data || !season.data)
@@ -393,14 +400,12 @@ export const Calendar = ({ season }: CalendarProps) => {
       />
     );
   if (chosen)
-    return (
-      <Replay key={chosen.path} session={chosen} onClose={() => choose(null)} />
-    );
+    return <Replay key={chosen.path} session={chosen} onClose={close} />;
   return (
     <CalendarList
       sessions={sessions.data}
       rounds={season.data.rounds}
-      onStart={choose}
+      onStart={open}
     />
   );
 };
