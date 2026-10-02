@@ -100,13 +100,17 @@ async function renew(key: string) {
     await store(key, next);
 }
 
-export async function start() {
+export async function load() {
   if (vault)
     for await (const p of vault.listPropertiesOfSecrets()) {
       if (!p.enabled || !p.name.startsWith(PREFIX)) continue;
       const value = (await vault.getSecret(p.name).catch(() => null))?.value;
       if (value) tokens.set(p.name, value);
     }
+}
+
+export async function start() {
+  await load();
   const tick = () =>
     keys().forEach((key) =>
       renew(key).catch((e) => console.error("f1tv renew:", e.message)),

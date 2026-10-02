@@ -2,6 +2,7 @@ import * as signalR from "@microsoft/signalr";
 import type { Json } from "../shared/merge.ts";
 import type { Delta } from "../shared/timing.ts";
 import { F1_ORIGIN } from "./origin.ts";
+import { play, read, type Line } from "./recording.ts";
 import {
   inflate,
   positionEvents,
@@ -61,7 +62,7 @@ export class Feed {
     return [{ t: now - this.lag, topic, data }];
   }
 
-  private handle(topic: string, data: Json) {
+  protected handle(topic: string, data: Json, now = Date.now()) {
     const infoKey =
       topic === "SessionInfo" ? (data as { Key?: unknown }).Key : undefined;
     if (infoKey !== undefined && infoKey !== this.info) {
@@ -71,7 +72,7 @@ export class Feed {
       this.lag = 0;
       this.listeners.forEach((fn) => fn("reset"));
     }
-    for (const e of this.events(topic, data, Date.now()))
+    for (const e of this.events(topic, data, now))
       if (this.session.apply(e)) this.pending.push([e.topic, e.data, e.t]);
   }
 
@@ -114,8 +115,7 @@ export class Feed {
     this.run();
   }
 
-  start() {
-    this.run();
+  private flush() {
     setInterval(() => {
       if (!this.pending.length) return;
       const batch = this.pending;
@@ -123,6 +123,16 @@ export class Feed {
       this.listeners.forEach((fn) => fn(batch));
     }, FLUSH_MS);
     return this;
+  }
+
+  start() {
+    this.run();
+    return this.flush();
+  }
+
+  replay(lines: Line[], from: number) {
+    play(lines, from, (topic, data, t) => this.handle(topic, data, t));
+    return this.flush();
   }
 }
 
@@ -136,6 +146,12 @@ function follow(key: string) {
 }
 
 export function start() {
+  const file = process.env.LIVE_REPLAY;
+  if (file)
+    return void shared.replay(
+      read(file),
+      Number(process.env.LIVE_REPLAY_FROM ?? 0) * 60_000,
+    );
   if (process.env.NO_LIVE === "1") return;
   shared.start();
   token.keys().forEach(follow);

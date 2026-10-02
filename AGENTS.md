@@ -39,6 +39,10 @@ If a check fails, fix the failure and push the correction. Auto-merge stays enab
 If the state is `BEHIND`, merge `origin/main` into the task branch, resolve conflicts, and push.
 Do not force-push, bypass branch protection, or merge with blocked checks. Do not use `gh pr merge --admin`.
 
+## Live timing
+
+Test live timing changes with a recorded session. Follow `.claude/skills/live-replay/SKILL.md`.
+
 ## Visual review
 
 Require explicit visual approval for changes beyond a minor correction.

@@ -117,7 +117,7 @@ app.get("/api/live", (c) =>
   c.json({
     live: live.isLive(),
     recent: live.hasRecentTiming(),
-    positions: feed(c) !== live.shared,
+    positions: feed(c) !== live.shared || !!live.shared.session.state.Position,
     info: live.shared.session.state.SessionInfo ?? null,
   }),
 );
