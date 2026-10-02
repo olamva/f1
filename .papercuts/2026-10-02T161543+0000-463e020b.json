@@ -1,0 +1,14 @@
+{
+  "id": "463e020b",
+  "ts": "2026-10-02T16:15:43+00:00",
+  "text": "preview_snapshot fails on every call with 'Preview automation snapshot failed' while preview_evaluate works; tab reports visible:false after preview_open open:true",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b2addcc2",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/fix-fullscreen-map-orientation-1"
+}
