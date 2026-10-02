@@ -1,6 +1,7 @@
 import { inflateRawSync } from "node:zlib";
 import { merge, type Json } from "../shared/merge.ts";
 import type { LapRow, Outline, Point } from "../shared/timing.ts";
+import { seconds } from "./season.ts";
 
 export type Event = { t: number; topic: string; data: Json };
 export type State = Record<string, Json>;
@@ -91,13 +92,17 @@ export class Session {
 
   outline(): Outline | null {
     const best = Object.entries(this.laps)
-      .filter(([n]) => (this.track[n]?.length ?? 0) > 0)
-      .sort((a, b) => b[1].length - a[1].length)[0];
-    if (!best || best[1].length < 3) return null;
-    const [n, rows] = best;
-    const mid = Math.floor(rows.length / 2);
-    const from = rows[mid - 1]!.t;
-    const to = rows[mid]!.t;
+      .filter(([n]) => this.track[n]?.length)
+      .flatMap(([n, rows]) =>
+        rows.flatMap((row, i) =>
+          row.time && row.lap === rows[i - 1]?.lap + 1
+            ? [{ n, from: rows[i - 1]!.t, to: row.t, time: seconds(row.time) }]
+            : [],
+        ),
+      )
+      .sort((a, b) => a.time - b.time)[0];
+    if (!best) return null;
+    const { n, from, to } = best;
     const points = this.track[n]!.filter(([t]) => t >= from && t <= to);
     if (points.length < 20) return null;
     return {
