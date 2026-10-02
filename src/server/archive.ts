@@ -1,5 +1,6 @@
 import { merge } from "../shared/merge.ts";
 import type { Outline, SessionRef } from "../shared/timing.ts";
+import circuits from "./circuits.json" with { type: "json" };
 import { F1_ORIGIN } from "./origin.ts";
 import {
   parseStream,
@@ -48,12 +49,22 @@ export type Replay = {
   session: Session;
 };
 
+const circuit = (key: number, date: string): Outline | null => {
+  const c = circuits.find(
+    (c) => c.key === key && c.from <= date && date <= c.to,
+  );
+  return c
+    ? { x: c.x, y: c.y, time: [], rotation: 0, corners: c.corners }
+    : null;
+};
+
 export async function outlineFor(
   info: any,
   fallback: () => Outline | null,
 ): Promise<Outline | null> {
   const key = info?.Meeting?.Circuit?.Key;
-  const year = Number(String(info?.StartDate ?? "").slice(0, 4));
+  const date = String(info?.StartDate ?? "").slice(0, 10);
+  const year = Number(date.slice(0, 4));
   if (key && year) {
     const res = await fetch(
       `https://api.multiviewer.app/api/v1/circuits/${key}/${year}`,
@@ -75,7 +86,7 @@ export async function outlineFor(
       };
     }
   }
-  return fallback();
+  return (key && circuit(key, date)) || fallback();
 }
 
 async function load(path: string): Promise<Replay> {

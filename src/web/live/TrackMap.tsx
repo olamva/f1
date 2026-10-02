@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Crown } from "lucide-react";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline } from "../../shared/timing.ts";
@@ -285,6 +285,7 @@ export const TrackMap = ({
   const shown = useRef(time);
   useEffect(() => void (shown.current = time), [time]);
   const snap = speed > 1 || Math.abs(time - shown.current) > 2000;
+  useLayoutEffect(() => void (snap && svg.current?.getBoundingClientRect()));
   const place = (x: number, y: number) => ({
     transform: `translate(${x}px, ${y}px)`,
     transition: snap ? "none" : "transform 1000ms linear",
