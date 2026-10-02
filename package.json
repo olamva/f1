@@ -11,6 +11,7 @@
     "lint": "oxlint",
     "format": "prettier --write .",
     "sessions": "node scripts/sessions.ts",
+    "record": "node --env-file-if-exists=.env.local scripts/record.ts",
     "worktree:cleanup": "node scripts/worktree-cleanup.ts"
   },
   "dependencies": {
