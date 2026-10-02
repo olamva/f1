@@ -117,9 +117,7 @@ export const Board = ({
         banner={banner}
         clock={remaining(state, utc)}
       />
-      <div
-        className={`grid gap-4 ${race ? "lg:grid-cols-[auto_minmax(0,1fr)]" : "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]"}`}
-      >
+      <div className="grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)]">
         <TimingTower
           rows={rows}
           race={race}
@@ -129,7 +127,7 @@ export const Board = ({
           onToggle={toggle}
         />
         <div
-          className={`grid content-start gap-4 ${race ? "xl:grid-cols-2 xl:content-stretch" : ""}`}
+          className={`grid content-start gap-4 ${race ? "xl:grid-cols-2 xl:content-stretch" : "2xl:grid-cols-2 2xl:content-stretch"}`}
         >
           <div className="flex flex-col gap-4">
             <TrackMap
