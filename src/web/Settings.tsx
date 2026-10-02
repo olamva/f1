@@ -1,9 +1,19 @@
 import { useEffect, useState } from "react";
-import { LogIn, Save } from "lucide-react";
+import {
+  ClipboardPaste,
+  Cookie,
+  LogIn,
+  Menu,
+  Save,
+  Share,
+  Smartphone,
+  SquarePlus,
+  SquareTerminal,
+} from "lucide-react";
 import type { TokenStatus } from "../shared/token.ts";
 import { DelayInput } from "./DelayInput.tsx";
 import { GlassSwitch } from "./GlassSwitch.tsx";
-import { InstallSheet } from "./InstallSheet.tsx";
+import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
 
 const PUSH_NOTES: Partial<Record<PushState, string>> = {
@@ -14,8 +24,37 @@ const PUSH_NOTES: Partial<Record<PushState, string>> = {
 const LOGIN = "https://account.formula1.com/#/en/login";
 const SIGN_IN = "/.auth/login/google?post_login_redirect_uri=/settings";
 
-const date = (ms: number | null) =>
-  ms ? new Date(ms).toLocaleString("nb-NO") : "—";
+const INSTALL_STEPS = [
+  [Menu, "In Safari, tap the menu button in the address bar."],
+  [Share, "Tap Share."],
+  [SquarePlus, "Tap Add to Home Screen. You may need to tap View More."],
+  [Smartphone, "Tap Add, then open F1 Pitwall from the Home Screen."],
+] as const;
+
+const TOKEN_STEPS = [
+  [
+    LogIn,
+    <a
+      href={LOGIN}
+      target="_blank"
+      rel="noreferrer"
+      className="font-semibold text-red-400 underline"
+    >
+      Log in to F1TV.
+    </a>,
+  ],
+  [
+    SquareTerminal,
+    "Open DevTools (⌥⌘I). Go to Application → Cookies → https://www.formula1.com.",
+  ],
+  [
+    Cookie,
+    <>
+      Copy the value of <code>login-session</code>.
+    </>,
+  ],
+  [ClipboardPaste, "Paste the value in the token box and click Save."],
+] as const;
 
 async function post(value: string): Promise<TokenStatus> {
   const res = await fetch("/api/token", {
@@ -135,67 +174,54 @@ export const Settings = () => {
               Notify me 15 minutes and 5 minutes before each session
             </GlassSwitch>
             {note && <p className="text-sm text-zinc-400">{note}</p>}
-            {push === "unsupported" && <InstallSheet />}
+            {push === "unsupported" && (
+              <GuideSheet title="Add to Home Screen" steps={INSTALL_STEPS} />
+            )}
           </section>
           <section className="bg-surface space-y-2 rounded-xl p-4">
             <h2 className="font-f1 text-lg font-bold">F1TV token</h2>
-            <p className="text-sm text-zinc-400">
-              The car positions on the track map need an F1TV subscription
-              token. Only you see the cars from your token. The app renews the
-              token every few days until the F1TV login expires, which is after
-              30 days.
-            </p>
-            <dl className="grid grid-cols-[auto_1fr] gap-x-4 text-sm">
-              <dt className="text-zinc-500">Status</dt>
-              <dd>{status?.configured ? "Set" : "Not set"}</dd>
-              <dt className="text-zinc-500">Token expires</dt>
-              <dd>{date(status?.expiresAt ?? null)}</dd>
-              <dt className="text-zinc-500">Login expires</dt>
-              <dd className={soon ? "font-semibold text-yellow-300" : ""}>
-                {date(status?.sessionExpiresAt ?? null)}
-              </dd>
-            </dl>
+            <p className="text-sm">Show the cars on the track map</p>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                save(value);
+              }}
+              className="flex gap-2"
+            >
+              <input
+                aria-label="F1TV token"
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                placeholder={
+                  status?.sessionExpiresAt
+                    ? `Saved until ${new Date(status.sessionExpiresAt).toLocaleDateString("nb-NO")}`
+                    : status?.configured
+                      ? "Saved"
+                      : "Paste the login-session cookie value"
+                }
+                className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm placeholder:text-zinc-500"
+              />
+              <button
+                disabled={!value}
+                className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold disabled:opacity-40"
+              >
+                <Save aria-hidden="true" className="size-4" />
+                Save
+              </button>
+            </form>
             {soon && (
               <p className="text-sm text-yellow-300">
                 The F1TV login expires soon. Log in again and save a new token.
               </p>
             )}
-          </section>
-          <section className="bg-surface space-y-3 rounded-xl p-4 text-sm">
-            <h3 className="font-f1 font-bold">Set the token</h3>
-            <ol className="list-decimal space-y-1 pl-5 text-zinc-300">
-              <li>
-                <a
-                  href={LOGIN}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-semibold text-red-400 underline"
-                >
-                  Log in to F1TV
-                </a>
-                .
-              </li>
-              <li>
-                Open DevTools (⌥⌘I) → Application → Cookies →
-                https://www.formula1.com. Copy the value of{" "}
-                <code>login-session</code> and paste it in the box.
-              </li>
-            </ol>
-            <textarea
-              value={value}
-              onChange={(e) => setValue(e.target.value)}
-              placeholder="login-session cookie value, or the token itself"
-              className="h-24 w-full rounded-md bg-zinc-900 p-2 font-mono text-xs"
-            />
-            <button
-              onClick={() => save(value)}
-              disabled={!value}
-              className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 font-semibold disabled:opacity-40"
-            >
-              <Save aria-hidden="true" className="size-4" />
-              Save token
-            </button>
-            {message && <p className="text-zinc-300">{message}</p>}
+            {message && <p className="text-sm text-zinc-400">{message}</p>}
+            <GuideSheet title="Set the F1TV token" steps={TOKEN_STEPS}>
+              <p className="text-sm text-zinc-400">
+                You need an F1TV subscription. Only you see the cars from your
+                token. The app renews the token until the F1TV login expires,
+                which is after 30 days.
+              </p>
+            </GuideSheet>
           </section>
         </>
       )}
