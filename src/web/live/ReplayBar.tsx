@@ -64,8 +64,10 @@ export const ReplayBar = ({
     setDrag(null);
   };
   return (
-    <div className="glass-panel flex flex-wrap items-center gap-3 rounded-xl p-3 text-sm">
-      {title && <span className="font-semibold">{title}</span>}
+    <div className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm">
+      {title && (
+        <span className="basis-full font-semibold sm:basis-auto">{title}</span>
+      )}
       <button
         onClick={onToggle}
         aria-label={playing ? "Pause" : "Play"}
@@ -78,6 +80,51 @@ export const ReplayBar = ({
           <Play aria-hidden="true" className="size-4" />
         )}
       </button>
+      <div className="flex min-w-0 flex-1 basis-60 items-center gap-3 sm:order-1">
+        <div
+          className="glass-seek relative min-w-0 flex-1"
+          data-held={held}
+          data-disabled={max <= min}
+          style={{ "--progress": progress } as CSSProperties}
+        >
+          <span aria-hidden="true" className="glass-seek-track" />
+          <span aria-hidden="true" className="glass-seek-thumb" />
+          <input
+            type="range"
+            aria-label={laps ? "Seek to lap" : "Seek to time"}
+            aria-valuetext={readout}
+            min={min}
+            max={max}
+            disabled={max <= min}
+            step={laps ? 1 : 1000}
+            value={position}
+            onChange={(e) => setDrag(toT(Number(e.target.value)))}
+            onPointerDown={(e) => {
+              if (!e.isPrimary || e.button !== 0) return;
+              e.currentTarget.setPointerCapture(e.pointerId);
+              setHeld(true);
+              setDrag(toT(Number(e.currentTarget.value)));
+            }}
+            onPointerUp={(e) => {
+              if (!held) return;
+              onSeek(toT(Number(e.currentTarget.value)));
+              cancel();
+            }}
+            onPointerCancel={cancel}
+            onLostPointerCapture={cancel}
+            onKeyUp={() => {
+              if (drag !== null) onSeek(drag);
+              setDrag(null);
+            }}
+            onBlur={() => {
+              if (drag !== null) onSeek(drag);
+              cancel();
+            }}
+            className="glass-seek-input"
+          />
+        </div>
+        <span className="tabular font-mono text-zinc-300">{readout}</span>
+      </div>
       {onSpeed && (
         <select
           aria-label="Replay speed"
@@ -93,50 +140,11 @@ export const ReplayBar = ({
         </select>
       )}
       {race && <Tabs items={UNITS} value={unit} onChange={setUnit} small />}
-      <div
-        className="glass-seek relative min-w-24 flex-1"
-        data-held={held}
-        data-disabled={max <= min}
-        style={{ "--progress": progress } as CSSProperties}
-      >
-        <span aria-hidden="true" className="glass-seek-track" />
-        <span aria-hidden="true" className="glass-seek-thumb" />
-        <input
-          type="range"
-          aria-label={laps ? "Seek to lap" : "Seek to time"}
-          aria-valuetext={readout}
-          min={min}
-          max={max}
-          disabled={max <= min}
-          step={laps ? 1 : 1000}
-          value={position}
-          onChange={(e) => setDrag(toT(Number(e.target.value)))}
-          onPointerDown={(e) => {
-            if (!e.isPrimary || e.button !== 0) return;
-            e.currentTarget.setPointerCapture(e.pointerId);
-            setHeld(true);
-            setDrag(toT(Number(e.currentTarget.value)));
-          }}
-          onPointerUp={(e) => {
-            if (!held) return;
-            onSeek(toT(Number(e.currentTarget.value)));
-            cancel();
-          }}
-          onPointerCancel={cancel}
-          onLostPointerCapture={cancel}
-          onKeyUp={() => {
-            if (drag !== null) onSeek(drag);
-            setDrag(null);
-          }}
-          onBlur={() => {
-            if (drag !== null) onSeek(drag);
-            cancel();
-          }}
-          className="glass-seek-input"
-        />
-      </div>
-      <span className="tabular font-mono text-zinc-300">{readout}</span>
-      {children}
+      {children && (
+        <div className="ml-auto flex items-center gap-3 sm:order-2">
+          {children}
+        </div>
+      )}
     </div>
   );
 };
