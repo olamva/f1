@@ -61,6 +61,7 @@ const circuit = (key: number, date: string): Outline | null => {
         rotation: 0,
         corners: c.corners,
         sectors: c.sectors,
+        marshalSectors: [],
       }
     : null;
 };
@@ -92,6 +93,10 @@ export async function outlineFor(
           ...k.trackPosition,
         })),
         sectors: bundled?.sectors ?? [],
+        marshalSectors: (c.marshalSectors ?? []).map((k: any) => ({
+          number: k.number,
+          ...k.trackPosition,
+        })),
       };
     }
   }

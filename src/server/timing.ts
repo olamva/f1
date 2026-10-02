@@ -113,6 +113,7 @@ export class Session {
       rotation: 0,
       corners: [],
       sectors: [],
+      marshalSectors: [],
     };
   }
 }

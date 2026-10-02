@@ -1,0 +1,14 @@
+{
+  "id": "998c5877",
+  "ts": "2026-10-02T17:18:22+00:00",
+  "text": "T3 preview_snapshot fails on every call (automation snapshot failed on client) while evaluate and click work",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "24470475",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/highlight-yellow-flag-sectors"
+}

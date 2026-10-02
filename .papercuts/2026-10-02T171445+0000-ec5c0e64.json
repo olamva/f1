@@ -1,0 +1,14 @@
+{
+  "id": "ec5c0e64",
+  "ts": "2026-10-02T17:14:45+00:00",
+  "text": "live-replay skill points at recordings/ but no recording exists in the repo or the main checkout",
+  "tags": [
+    "docs",
+    "skills"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "24470475",
+  "where": ".claude/skills/live-replay/SKILL.md",
+  "branch": "t3code/highlight-yellow-flag-sectors"
+}
