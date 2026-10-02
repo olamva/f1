@@ -1,0 +1,13 @@
+{
+  "id": "9f3208fb",
+  "ts": "2026-10-02T08:20:58+00:00",
+  "text": "yt-dlp, uvx and pipx are all missing; needed python3 -m pip install yt-dlp to fetch a YouTube clip",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "13a700ca",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-931dffb9",
+  "branch": "t3code/fix-radio-chime-timing"
+}

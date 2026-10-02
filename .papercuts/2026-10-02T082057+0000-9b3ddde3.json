@@ -1,0 +1,14 @@
+{
+  "id": "9b3ddde3",
+  "ts": "2026-10-02T08:20:57+00:00",
+  "text": "T3 preview tab never advances media playback routed through Web Audio, even with open=true; preview reports visible:false",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "13a700ca",
+  "where": "mcp__t3-code__preview_open",
+  "branch": "t3code/fix-radio-chime-timing"
+}

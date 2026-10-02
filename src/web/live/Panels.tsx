@@ -228,23 +228,14 @@ const analyserOf = (el: HTMLAudioElement) => {
   return analysers.get(el)!;
 };
 
-const START = [1047, 784];
-const END = [1175, 988];
-
-const chirp = (a: AnalyserNode, notes: number[]) => {
-  const ctx = a.context;
-  void (ctx as AudioContext).resume();
-  notes.forEach((hz, i) => {
-    const t = ctx.currentTime + i * 0.1;
-    const gain = new GainNode(ctx, { gain: 0 });
-    gain.gain.setTargetAtTime(0.2, t, 0.005);
-    gain.gain.setTargetAtTime(0, t + 0.07, 0.01);
-    const osc = new OscillatorNode(ctx, { type: "triangle", frequency: hz });
-    osc.connect(gain).connect(a);
-    osc.start(t);
-    osc.stop(t + 0.12);
-  });
-  return new Promise((r) => setTimeout(r, notes.length * 100));
+const sfx = async (a: AnalyserNode, name: "in" | "out") => {
+  const ctx = a.context as AudioContext;
+  void ctx.resume();
+  const res = await fetch(`/radio-${name}.mp3`);
+  const buffer = await ctx.decodeAudioData(await res.arrayBuffer());
+  const src = new AudioBufferSourceNode(ctx, { buffer });
+  src.connect(a);
+  src.start();
 };
 
 const Bars = ({
@@ -310,13 +301,9 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
       setAt({ t: 0, d: 0 });
       a.src = `/api/radio/audio?url=${encodeURIComponent(r.url)}`;
     }
-    if (a.paused)
-      void (
-        a.currentTime && !a.ended
-          ? Promise.resolve()
-          : chirp(analyserOf(a), START)
-      ).then(() => a.play());
-    else a.pause();
+    if (!a.paused) return a.pause();
+    if (!a.currentTime || a.ended) void sfx(analyserOf(a), "in");
+    void a.play();
   };
   const newest = useRef(radios[0]?.url);
   useEffect(() => {
@@ -333,7 +320,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
         preload="none"
         onPlay={() => setPlaying(true)}
         onPause={() => setPlaying(false)}
-        onEnded={(e) => void chirp(analyserOf(e.currentTarget), END)}
+        onEnded={(e) => void sfx(analyserOf(e.currentTarget), "out")}
         onTimeUpdate={(e) =>
           setAt({
             t: e.currentTarget.currentTime,
