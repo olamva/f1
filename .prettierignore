@@ -1,2 +1,3 @@
 pnpm-lock.yaml
 .papercuts
+src/server/circuits.json

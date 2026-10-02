@@ -1,0 +1,13 @@
+{
+  "id": "e166a588",
+  "ts": "2026-10-02T08:48:34+00:00",
+  "text": "uvx is not installed; needed a manual venv to run UnityPy",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "8e175ba7",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-7a08284b",
+  "branch": "t3code/fetch-live-timing-track-maps"
+}
