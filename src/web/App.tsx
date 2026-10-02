@@ -93,7 +93,9 @@ export const App = () => {
             items={TABS}
             value={tab}
             onChange={go}
-            onReselect={() => scrollTo({ top: 0, behavior: "smooth" })}
+            onReselect={() =>
+              scrollY > 0 ? scrollTo({ top: 0, behavior: "smooth" }) : go(tab)
+            }
             icons={ICONS}
             labels={info.data?.live ? { Countdown: "Live" } : undefined}
             live={info.data?.live ? "Countdown" : undefined}

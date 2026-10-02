@@ -43,6 +43,7 @@ export const Tabs = <T extends string>({
     x: number | null;
   } | null>(null);
   const suppressClick = useRef(false);
+  const hold = useRef(0);
   const rest = useRef(0);
   const pull = useRef<number | null>(null);
   const [held, setHeld] = useState(false);
@@ -234,11 +235,19 @@ export const Tabs = <T extends string>({
     );
   };
 
+  const lift = () => {
+    clearTimeout(hold.current);
+    setHeld(true);
+    setMoving(false);
+    setSize(drag.current!.width);
+  };
+
   const cancelDrag = () => {
     if (!drag.current) return;
+    clearTimeout(hold.current);
     drag.current = null;
     setHeld(false);
-    setMoving(true);
+    setMoving(held);
     setSize(null);
   };
 
@@ -248,8 +257,13 @@ export const Tabs = <T extends string>({
       onPointerMove={(event) => {
         shine(event);
         if (drag.current?.pointerId !== event.pointerId) return;
-        if (Math.abs(event.clientX - drag.current.startX) > 3)
+        if (
+          !suppressClick.current &&
+          Math.abs(event.clientX - drag.current.startX) > 3
+        ) {
           suppressClick.current = true;
+          lift();
+        }
         if (suppressClick.current) drag.current.x = position(event);
       }}
       onPointerUp={(event) => {
@@ -269,7 +283,7 @@ export const Tabs = <T extends string>({
         const tapped = !suppressClick.current;
         suppressClick.current = true;
         cancelDrag();
-        setSize(button.offsetWidth);
+        if (held) setSize(button.offsetWidth);
         if (items[index] !== value) onChange(items[index]!);
         else if (tapped) onReselect?.();
       }}
@@ -317,9 +331,8 @@ export const Tabs = <T extends string>({
                 x: null,
               };
               button.setPointerCapture(event.pointerId);
-              setHeld(true);
-              setMoving(false);
-              setSize(button.offsetWidth);
+              if (i === value) hold.current = window.setTimeout(lift, 200);
+              else lift();
             }}
             onClick={(event) => {
               if (!suppressClick.current || event.detail === 0) {
