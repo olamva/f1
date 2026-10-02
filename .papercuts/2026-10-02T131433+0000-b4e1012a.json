@@ -1,0 +1,14 @@
+{
+  "id": "b4e1012a",
+  "ts": "2026-10-02T13:14:33+00:00",
+  "text": "live-replay skill points to recordings/ but no recordings directory exists in the repo or main checkout",
+  "tags": [
+    "docs",
+    "skills"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c4d79382",
+  "where": ".claude/skills/live-replay/SKILL.md",
+  "branch": "t3code/rotate-track-map-desktop-landscape"
+}

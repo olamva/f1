@@ -72,6 +72,19 @@ textarea {
   scrollbar-gutter: auto;
 }
 
+@media (pointer: coarse) and (orientation: portrait) {
+  .map-fullscreen > div {
+    position: absolute;
+    top: 0;
+    left: 100%;
+    width: 100dvh;
+    height: 100dvw;
+    padding: 0.5rem 0.5rem 0.5rem calc(env(safe-area-inset-top) + 0.5rem);
+    transform-origin: top left;
+    rotate: 90deg;
+  }
+}
+
 :root[data-tab="Countdown"]:has(.spotlight) {
   overflow: hidden;
   overscroll-behavior: none;

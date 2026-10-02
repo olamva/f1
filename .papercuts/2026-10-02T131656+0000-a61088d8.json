@@ -1,0 +1,14 @@
+{
+  "id": "a61088d8",
+  "ts": "2026-10-02T13:16:56+00:00",
+  "text": "T3 preview_snapshot screenshots of localhost Vite app come out heavily blurred at dpr 1",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c4d79382",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/rotate-track-map-desktop-landscape"
+}

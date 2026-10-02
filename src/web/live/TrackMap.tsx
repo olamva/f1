@@ -58,11 +58,16 @@ const projector = (outline: Outline, extra = 0) => {
   return { project, box };
 };
 
-const fitted = (outline: Outline, [width, height]: [number, number]) => {
-  const [upright, turned] = [0, 90].map((extra) => projector(outline, extra));
-  const scale = ({ box }: typeof upright) =>
-    Math.min(width / box[2], height / box[3]);
-  return scale(turned!) > scale(upright!) * 1.01 ? turned! : upright!;
+const fitted = (
+  outline: Outline,
+  [width, height]: [number, number],
+  turn: number,
+) => {
+  const scale = (extra: number) => {
+    const { box } = projector(outline, extra);
+    return Math.min(width / box[2], height / box[3]);
+  };
+  return projector(outline, (scale(90) > scale(0) * 1.01 ? 90 : 0) - 90 * turn);
 };
 
 const indexAt = (progress: number[], fraction: number) =>
@@ -235,6 +240,7 @@ export const TrackMap = ({
   const hovered = hover?.number ?? null;
   const card = rows.find((r) => r.number === hovered);
   const [size, setSize] = useState<[number, number]>([1, 1]);
+  const [turn, setTurn] = useState(0);
   useEffect(() => {
     const observer = new ResizeObserver(([entry]) =>
       setSize([entry!.contentRect.width, entry!.contentRect.height]),
@@ -245,9 +251,9 @@ export const TrackMap = ({
   const { project, box } = useMemo(
     () =>
       outline
-        ? fitted(outline, size)
+        ? fitted(outline, size, turn)
         : { project: null, box: [0, 0, SIZE, SIZE] as const },
-    [outline, size],
+    [outline, size, turn],
   );
   const cardX =
     hover && (hover.x > box[0] + box[2] / 2 ? hover.x - 260 : hover.x + 20);
@@ -284,7 +290,12 @@ export const TrackMap = ({
     : [];
   const shown = useRef(time);
   useEffect(() => void (shown.current = time), [time]);
-  const snap = speed > 1 || Math.abs(time - shown.current) > 2000;
+  const drawn = useRef(project);
+  useEffect(() => void (drawn.current = project), [project]);
+  const snap =
+    speed > 1 ||
+    Math.abs(time - shown.current) > 2000 ||
+    drawn.current !== project;
   useLayoutEffect(() => void (snap && svg.current?.getBoundingClientRect()));
   const place = (x: number, y: number) => ({
     transform: `translate(${x}px, ${y}px)`,
@@ -292,7 +303,7 @@ export const TrackMap = ({
   });
   useCarMotion(svg, project, { positions, positionTrail, time, speed, stream });
   return (
-    <MapFrame banner={banner}>
+    <MapFrame banner={banner} onRotate={() => setTurn((t) => (t + 1) % 4)}>
       {(full) => (
         <>
           <svg
