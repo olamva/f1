@@ -1,4 +1,4 @@
-import { ArrowDownToLine, ChevronLeft } from "lucide-react";
+import { ArrowDownToLine, ChevronLeft, Eye } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
@@ -28,7 +28,12 @@ import {
   trackStatus,
 } from "./view.ts";
 
-export type LiveInfo = { live: boolean; recent: boolean; positions: boolean };
+export type LiveInfo = {
+  live: boolean;
+  recent: boolean;
+  positions: boolean;
+  info: Record<string, any> | null;
+};
 
 interface LiveSessionProps {
   season: Loaded<Season>;
@@ -347,11 +352,39 @@ const Replay = ({ session, onClose }: ReplayProps) => {
 
 export const LiveSession = ({ season, info }: LiveSessionProps) => {
   const wasLive = useRef(false);
+  const [continued, setContinued] = useState(() =>
+    localStorage.getItem("continued"),
+  );
   if (info.data?.live) wasLive.current = true;
   if (!info.data || !season.data)
     return <Loading label="Loading…" error={info.error ?? season.error} />;
+  const key = String(info.data.info?.Key);
   if (info.data.live || info.data.recent || wasLive.current)
-    return <Live positions={info.data.positions} />;
+    return localStorage.getItem("spoilers") !== "0" && continued !== key ? (
+      <div className="to-surface space-y-3 rounded-xl bg-gradient-to-r from-red-700/40 p-4">
+        <div>
+          <h1 className="font-f1 text-lg font-bold">
+            <Flag country={info.data.info?.Meeting?.Country?.Name} />
+            {info.data.info?.Meeting?.Name} · {info.data.info?.Name}
+          </h1>
+          <p className="mt-1 text-sm text-zinc-300">
+            Spoiler mode hides the live timing for this session.
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            localStorage.setItem("continued", key);
+            setContinued(key);
+          }}
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
+        >
+          <Eye aria-hidden="true" className="size-4" />
+          Continue to live timing
+        </button>
+      </div>
+    ) : (
+      <Live positions={info.data.positions} />
+    );
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (
     <div className="to-surface rounded-xl bg-gradient-to-r from-red-700/40 p-4">

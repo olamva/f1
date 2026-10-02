@@ -34,6 +34,9 @@ export const Settings = () => {
   const [autoplay, setAutoplay] = useState(
     () => localStorage.getItem("autoplay") === "1",
   );
+  const [spoilers, setSpoilers] = useState(
+    () => localStorage.getItem("spoilers") !== "0",
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [push, setPush] = useState<PushState | null>(null);
   const [pushNote, setPushNote] = useState<string | null>(null);
@@ -68,6 +71,18 @@ export const Settings = () => {
     status.sessionExpiresAt - Date.now() < 3 * 24 * 3600_000;
   return (
     <div className="max-w-2xl space-y-4">
+      <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="font-f1 text-lg font-bold">Spoiler mode</h2>
+        <GlassSwitch
+          checked={spoilers}
+          onChange={(checked) => {
+            setSpoilers(checked);
+            localStorage.setItem("spoilers", checked ? "1" : "0");
+          }}
+        >
+          Ask before showing live timing for each session
+        </GlassSwitch>
+      </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Team radio</h2>
         <GlassSwitch
