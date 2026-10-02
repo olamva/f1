@@ -1,0 +1,14 @@
+{
+  "id": "c0519860",
+  "ts": "2026-10-02T14:58:09+00:00",
+  "text": "preview_snapshot fails every call: 'Preview automation snapshot failed on client'; preview tab stays visible:false",
+  "tags": [
+    "t3-preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b40ddaea",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-3bd3e9e9",
+  "branch": "t3code/implement-issue-264"
+}
