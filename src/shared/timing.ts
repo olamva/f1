@@ -15,6 +15,7 @@ export type Outline = {
   rotation: number;
   corners: { number: number; x: number; y: number }[];
   sectors: { x: number; y: number }[];
+  marshalSectors: { number: number; x: number; y: number }[];
 };
 
 export type SessionRef = {

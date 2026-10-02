@@ -181,6 +181,16 @@ export const messages = (state: Obj): Message[] =>
     }))
     .reverse();
 
+export const sectorFlags = (state: Obj): Map<number, string> => {
+  const flags = new Map<number, string>();
+  for (const m of values(state.RaceControlMessages?.Messages))
+    if (m.Scope === "Track") flags.clear();
+    else if (m.Scope === "Sector" && /YELLOW/.test(m.Flag))
+      flags.set(m.Sector, m.Flag);
+    else if (m.Scope === "Sector") flags.delete(m.Sector);
+  return flags;
+};
+
 export const sessionStart = (state: Obj): number | null => {
   const info = state.SessionInfo;
   const offset = String(info?.GmtOffset ?? "00:00");

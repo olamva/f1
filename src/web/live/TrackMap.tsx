@@ -5,6 +5,7 @@ import type { Outline } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import { useCarMotion } from "./useCarMotion.ts";
 import { MapCard } from "./MapCard.tsx";
+import { SectorFlags } from "./SectorFlags.tsx";
 import { sectorSplits, type Row, type SessionBests } from "./view.ts";
 
 const SIZE = 1000;
@@ -26,6 +27,7 @@ interface TrackMapProps {
   stream?: string;
   banner?: React.ReactNode;
   circuit?: number;
+  flags: Map<number, string>;
 }
 
 const projector = (outline: Outline, extra = 0) => {
@@ -159,6 +161,24 @@ const markers = (
             ),
           )
         : [],
+    marshal: outline.marshalSectors.map((s, k, all) => {
+      const from = nearest(s.x, s.y);
+      const next = all[(k + 1) % all.length]!;
+      const length = (nearest(next.x, next.y) - from + n) % n;
+      return {
+        number: s.number,
+        path: Array.from({ length: length + 1 }, (_, j) =>
+          at(from + j)
+            .map(Math.round)
+            .join(","),
+        ).join(" "),
+        at: beside(
+          from + Math.round(length / 2),
+          46,
+          [-1, 0, 1].map((j) => Math.round((j * length) / 4)),
+        ),
+      };
+    }),
   };
 };
 
@@ -230,6 +250,7 @@ export const TrackMap = ({
   stream,
   banner,
   circuit,
+  flags,
 }: TrackMapProps) => {
   const svg = useRef<SVGSVGElement>(null);
   const pointer = useRef("");
@@ -344,6 +365,7 @@ export const TrackMap = ({
               strokeLinejoin="round"
               strokeLinecap="round"
             />
+            {marks && <SectorFlags marshal={marks.marshal} flags={flags} />}
             {marks && <Markers {...marks} />}
             <g key={stream}>
               {cars.map(({ r, x, y, focus }) => (

@@ -15,6 +15,7 @@ import {
   radios,
   remaining,
   rows as towerRows,
+  sectorFlags,
   sessionBests,
   sessionStart,
   trackStatus,
@@ -155,6 +156,7 @@ export const Board = ({
               stream={feed.src}
               banner={banner}
               circuit={state.SessionInfo?.Meeting?.Circuit?.Key}
+              flags={sectorFlags(state)}
             />
             <RaceControl
               messages={messages(state)}
