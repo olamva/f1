@@ -1,4 +1,4 @@
-import { ChevronLeft, Eye, SkipBack } from "lucide-react";
+import { ChevronLeft, Eye, Settings, SkipBack } from "lucide-react";
 import {
   useEffect,
   useMemo,
@@ -9,6 +9,8 @@ import {
 import type { Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
+import { useDelay } from "../delay.ts";
+import { DelayInput } from "../DelayInput.tsx";
 import { Flag } from "../Flag.tsx";
 import { pathPart, setPathPart } from "../path.ts";
 import { useVisible } from "../visible.ts";
@@ -43,30 +45,6 @@ const useTick = (ms: number) => {
   return now;
 };
 
-interface DelayInputProps {
-  delay: number;
-  onDelay: (s: number) => void;
-  label?: string;
-}
-
-const DelayInput = ({ delay, onDelay, label }: DelayInputProps) => (
-  <label
-    title="Delay behind live, to match the F1TV stream"
-    className="tabular flex items-center text-xs text-zinc-500"
-  >
-    {label && <span className="mr-1.5">{label}</span>}−
-    <input
-      inputMode="numeric"
-      placeholder="0"
-      value={delay || ""}
-      maxLength={4}
-      onChange={(e) => onDelay(Number(e.target.value.replace(/\D/g, "")))}
-      className="w-8 bg-transparent text-right text-zinc-400 outline-none placeholder:text-zinc-600 focus:text-zinc-100"
-    />
-    s
-  </label>
-);
-
 interface DelayWaitProps {
   due: number;
   delay: number;
@@ -92,12 +70,12 @@ const DelayWait = ({ due, delay }: DelayWaitProps) => {
   );
 };
 
-type Rewind = { session: string; delay: number; pausedAt: number | null };
+type Rewind = { session: string; back: number; pausedAt: number | null };
 
-const rewind = (session: string, delay: number, pausedAt: number | null) =>
+const rewind = (session: string, back: number, pausedAt: number | null) =>
   localStorage.setItem(
     "rewind",
-    JSON.stringify({ session, delay, pausedAt } satisfies Rewind),
+    JSON.stringify({ session, back, pausedAt } satisfies Rewind),
   );
 
 interface GoLiveProps {
@@ -119,6 +97,30 @@ const GoLive = ({ behind, onClick }: GoLiveProps) => (
     />
     {behind < 1000 ? "LIVE" : `−${clip(behind / 1000)}`}
   </button>
+);
+
+const DelaySettings = () => (
+  <>
+    <button
+      popoverTarget="tv-delay"
+      aria-label="TV delay"
+      title="TV delay"
+      className="glass-control grid size-9 cursor-pointer place-items-center [anchor-name:--tv-delay]"
+    >
+      <Settings aria-hidden="true" className="size-4" />
+    </button>
+    <div
+      id="tv-delay"
+      popover="auto"
+      className="tv-delay bg-surface w-64 space-y-2 rounded-xl border border-white/10 p-4 text-sm text-zinc-100 shadow-lg"
+    >
+      <h2 className="font-f1 font-bold">TV delay</h2>
+      <p className="text-zinc-400">
+        Hold live timing back to match the F1TV stream, up to 60 seconds.
+      </p>
+      <DelayInput />
+    </div>
+  </>
 );
 
 interface LiveBarProps {
@@ -145,20 +147,18 @@ const LiveBar = ({ feed, laps, ...rest }: LiveBarProps) => {
 interface LiveProps {
   session: string;
   positions: boolean;
-  sync: number;
-  onSync: (s: number) => void;
 }
 
-const Live = ({ session, positions, sync, onSync }: LiveProps) => {
+const Live = ({ session, positions }: LiveProps) => {
+  const live = useDelay() * 1000;
   const [pos, setPos] = useState<Rewind>(() => {
     const saved = JSON.parse(localStorage.getItem("rewind") ?? "null");
-    if (saved?.session !== session)
-      return { session, delay: sync * 1000, pausedAt: null };
+    if (saved?.session !== session) return { session, back: 0, pausedAt: null };
     return saved.pausedAt === null
       ? saved
       : {
           session,
-          delay: saved.delay + Date.now() - saved.pausedAt,
+          back: saved.back + Date.now() - saved.pausedAt,
           pausedAt: Date.now(),
         };
   });
@@ -167,9 +167,9 @@ const Live = ({ session, positions, sync, onSync }: LiveProps) => {
   const visible = useVisible();
   const url =
     visible && (pos.pausedAt === null || loading)
-      ? `/api/live/stream?delay=${Math.round(pos.delay)}`
+      ? `/api/live/stream?delay=${Math.round(live + pos.back)}`
       : null;
-  const [feed, due] = useFeed(url, pos.delay);
+  const [feed, due] = useFeed(url, live + pos.back);
   if (loading && feed) setLoading(false);
   const waiting = !!due && due > Date.now() && feed?.src !== url;
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
@@ -177,27 +177,21 @@ const Live = ({ session, positions, sync, onSync }: LiveProps) => {
   const note = positions
     ? null
     : "Add an F1TV token in Settings to see the cars.";
-  const live = sync * 1000;
-  const delay = pos.delay + (pos.pausedAt === null ? 0 : now - pos.pausedAt);
+  const behind = pos.back + (pos.pausedAt === null ? 0 : now - pos.pausedAt);
   const rows = laps.data ?? {};
-  const move = (delay: number, pausedAt: number | null = null) => {
-    rewind(session, delay, pausedAt);
-    setPos({ session, delay, pausedAt });
-  };
-  const changeSync = (s: number) => {
-    onSync(s);
-    move(s * 1000);
+  const move = (back: number, pausedAt: number | null = null) => {
+    rewind(session, back, pausedAt);
+    setPos({ session, back, pausedAt });
   };
   const seek = (t: number) => {
-    const d = Date.now() - t;
-    move(d < live + 1000 ? live : d);
+    const back = Date.now() - t - live;
+    move(back < 1000 ? 0 : back);
   };
   const toggle = () =>
     pos.pausedAt === null
-      ? move(pos.delay, Date.now())
-      : move(pos.delay + Date.now() - pos.pausedAt);
-  const delayInput = <DelayInput delay={sync} onDelay={changeSync} />;
-  const goLive = <GoLive behind={delay - live} onClick={() => move(live)} />;
+      ? move(pos.back, Date.now())
+      : move(pos.back + Date.now() - pos.pausedAt);
+  const goLive = <GoLive behind={behind} onClick={() => move(0)} />;
   return (
     <div className="space-y-4">
       {feed && !waiting ? (
@@ -206,12 +200,13 @@ const Live = ({ session, positions, sync, onSync }: LiveProps) => {
             feed={feed}
             laps={rows}
             end={now - live}
-            at={now - delay}
+            at={now - live - behind}
             playing={pos.pausedAt === null}
             onToggle={toggle}
             onSeek={seek}
           >
             {goLive}
+            <DelaySettings />
           </LiveBar>
           <Board
             feed={feed}
@@ -219,22 +214,16 @@ const Live = ({ session, positions, sync, onSync }: LiveProps) => {
             outline={outline.data ?? null}
             positionsNote={note}
             paused={pos.pausedAt !== null}
-            utc={now - delay}
-            delayInput={delayInput}
+            utc={now - live - behind}
           />
         </>
+      ) : waiting ? (
+        <>
+          <div className="flex justify-end">{goLive}</div>
+          <DelayWait due={due} delay={live + pos.back} />
+        </>
       ) : (
-        <div className="space-y-4">
-          <div className="flex items-center justify-end gap-3">
-            {waiting && goLive}
-            {delayInput}
-          </div>
-          {waiting ? (
-            <DelayWait due={due} delay={pos.delay} />
-          ) : (
-            <Loading label="Connecting to live timing…" />
-          )}
-        </div>
+        <Loading label="Connecting to live timing…" />
       )}
     </div>
   );
@@ -323,20 +312,14 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   const [continued, setContinued] = useState(() =>
     localStorage.getItem("continued"),
   );
-  const [sync, setSync] = useState(
-    () => Number(localStorage.getItem("delay")) || 0,
-  );
+  const live = useDelay() * 1000;
   if (info.data?.live) wasLive.current = true;
   if (!info.data || !season.data)
     return <Loading label="Loading…" error={info.error ?? season.error} />;
   const key = String(info.data.info?.Key);
   const start = info.data.start;
-  const changeSync = (s: number) => {
-    localStorage.setItem("delay", String(s));
-    setSync(s);
-  };
-  const go = (delay: number) => {
-    rewind(key, delay, null);
+  const go = (back: number) => {
+    rewind(key, back, null);
     localStorage.setItem("continued", key);
     setContinued(key);
   };
@@ -354,7 +337,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
         </div>
         <div className="flex flex-wrap items-center gap-3">
           <button
-            onClick={() => go(sync * 1000)}
+            onClick={() => go(0)}
             className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
           >
             <Eye aria-hidden="true" className="size-4" />
@@ -362,24 +345,17 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
           </button>
           {start !== null && (
             <button
-              onClick={() => go(Date.now() - start)}
+              onClick={() => go(Math.max(0, Date.now() - start - live))}
               className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-4 py-1.5 text-sm font-semibold hover:bg-zinc-700"
             >
               <SkipBack aria-hidden="true" className="size-4" />
               From start
             </button>
           )}
-          <DelayInput delay={sync} onDelay={changeSync} label="Delay" />
         </div>
       </div>
     ) : (
-      <Live
-        key={key}
-        session={key}
-        positions={info.data.positions}
-        sync={sync}
-        onSync={changeSync}
-      />
+      <Live key={key} session={key} positions={info.data.positions} />
     );
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (

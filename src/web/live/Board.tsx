@@ -27,7 +27,6 @@ interface BoardProps {
   speed?: number;
   paused?: boolean;
   utc?: number;
-  delayInput?: React.ReactNode;
 }
 
 interface StatusProps {
@@ -36,10 +35,9 @@ interface StatusProps {
   part: string | null;
   banner: React.ReactNode;
   clock: string;
-  delay: React.ReactNode;
 }
 
-const Status = ({ ref, lap, part, banner, clock, delay }: StatusProps) => (
+const Status = ({ ref, lap, part, banner, clock }: StatusProps) => (
   <div ref={ref} className="flex scroll-mt-4 flex-wrap items-center gap-3">
     {lap && (
       <span className="tabular font-f1 text-2xl font-black">
@@ -58,10 +56,7 @@ const Status = ({ ref, lap, part, banner, clock, delay }: StatusProps) => (
         {banner}
       </div>
     )}
-    <div className="ml-auto flex items-center gap-2">
-      {delay}
-      <span className="tabular font-mono text-xl">{clock}</span>
-    </div>
+    <span className="tabular ml-auto font-mono text-xl">{clock}</span>
   </div>
 );
 
@@ -73,7 +68,6 @@ export const Board = ({
   speed,
   paused,
   utc = feedUtc(feed),
-  delayInput,
 }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const top = useRef<HTMLDivElement>(null);
@@ -122,7 +116,6 @@ export const Board = ({
         part={part}
         banner={banner}
         clock={remaining(state, utc)}
-        delay={delayInput}
       />
       <div
         className={`grid gap-4 ${race ? "lg:grid-cols-[auto_minmax(0,1fr)]" : "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]"}`}

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { LogIn, Save } from "lucide-react";
 import type { TokenStatus } from "../shared/token.ts";
+import { DelayInput } from "./DelayInput.tsx";
 import { GlassSwitch } from "./GlassSwitch.tsx";
 import { InstallSheet } from "./InstallSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
@@ -82,6 +83,15 @@ export const Settings = () => {
         >
           Ask before showing live timing for each session
         </GlassSwitch>
+      </section>
+      <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="font-f1 text-lg font-bold">TV delay</h2>
+        <p className="text-sm text-zinc-400">
+          Live timing is ahead of the F1TV stream. Hold it back by this many
+          seconds, up to 60, so that LIVE matches your stream. You can also
+          change it from the live timing.
+        </p>
+        <DelayInput />
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Team radio</h2>
