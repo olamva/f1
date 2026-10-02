@@ -125,33 +125,38 @@ const markers = (
     placed.push([x, y, width]);
     return [x, y];
   };
+  const nearest = (x: number, y: number) => {
+    const [cx, cy] = project(x, y);
+    return points.reduce(
+      (best, [x, y], j) =>
+        Math.hypot(x - cx, y - cy) <
+        Math.hypot(points[best]![0] - cx, points[best]![1] - cy)
+          ? j
+          : best,
+      0,
+    );
+  };
   let distance = 0;
   const progress = outline.time.length
     ? outline.time
     : points.map(([x, y], i) =>
         i ? (distance += Math.hypot(x - at(i - 1)[0], y - at(i - 1)[1])) : 0,
       );
-  const bounds = [0, ...fractions, 1];
+  const lines = outline.sectors.length
+    ? outline.sectors.map((s) => nearest(s.x, s.y))
+    : [0, ...fractions.map((f) => indexAt(progress, f))];
   return {
-    finish: across(0, 20),
-    splits: fractions.map((f) => across(indexAt(progress, f), 16)),
-    corners: outline.corners.map((c) => {
-      const [cx, cy] = project(c.x, c.y);
-      const i = points.reduce(
-        (best, [x, y], j) =>
-          Math.hypot(x - cx, y - cy) <
-          Math.hypot(points[best]![0] - cx, points[best]![1] - cy)
-            ? j
-            : best,
-        0,
-      );
-      return { number: c.number, at: beside(i, 11 * String(c.number).length) };
-    }),
+    finish: across(lines[0]!, 20),
+    splits: lines.slice(1).map((i) => across(i, 16)),
+    corners: outline.corners.map((c) => ({
+      number: c.number,
+      at: beside(nearest(c.x, c.y), 11 * String(c.number).length),
+    })),
     labels:
-      bounds.length > 2
-        ? bounds.slice(1).map((f, i) =>
+      lines.length > 1
+        ? lines.map((i, k) =>
             beside(
-              indexAt(progress, (bounds[i]! + f) / 2),
+              i + Math.round((((lines[k + 1] ?? lines[0]!) - i + n) % n) / 2),
               90,
               [-4, -3, -2, -1, 0, 1, 2, 3, 4].map((k) =>
                 Math.round((k * n) / 60),

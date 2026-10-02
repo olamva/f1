@@ -14,6 +14,7 @@ export type Outline = {
   time: number[];
   rotation: number;
   corners: { number: number; x: number; y: number }[];
+  sectors: { x: number; y: number }[];
 };
 
 export type SessionRef = {
