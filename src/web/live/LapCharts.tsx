@@ -9,7 +9,7 @@ interface LapChartsProps {
   laps: Record<string, LapRow[]>;
   rows: Row[];
   focus: string[];
-  until: number | null;
+  until: number;
   race: boolean;
 }
 
@@ -17,7 +17,7 @@ const seriesOf = (
   laps: Record<string, LapRow[]>,
   rows: Row[],
   focus: string[],
-  until: number | null,
+  until: number,
   value: (r: LapRow) => number | null,
 ): Series[] => {
   const by = new Map(rows.map((r) => [r.number, r]));
@@ -27,7 +27,7 @@ const seriesOf = (
     const team = d?.team ?? n;
     teams.set(team, (teams.get(team) ?? 0) + 1);
     const points = (laps[n] ?? [])
-      .filter((r) => until === null || r.t <= until)
+      .filter((r) => r.t <= until)
       .map((r) => [r.lap, value(r)] as [number, number | null])
       .filter((p): p is [number, number] => p[1] !== null);
     return {

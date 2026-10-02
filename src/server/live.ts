@@ -3,6 +3,7 @@ import type { Json } from "../shared/merge.ts";
 import type { Delta } from "../shared/timing.ts";
 import { F1_ORIGIN } from "./origin.ts";
 import {
+  History,
   inflate,
   positionEvents,
   Session,
@@ -19,7 +20,7 @@ const FRESH_MS = 2 * 60_000;
 const RETAIN_MS = 2 * 60 * 60_000;
 const MAX_LAG_MS = 60_000;
 
-type Listener = (batch: Delta[] | "reset") => void;
+type Listener = (reset: boolean) => void;
 
 async function cookie(): Promise<string> {
   const r = await fetch(`${URL}/negotiate`, { method: "OPTIONS" });
@@ -31,6 +32,7 @@ async function cookie(): Promise<string> {
 
 export class Feed {
   session = new Session();
+  history = new History();
   private info: unknown = null;
   private pending: Delta[] = [];
   private lag = 0;
@@ -67,12 +69,26 @@ export class Feed {
     if (infoKey !== undefined && infoKey !== this.info) {
       this.info = infoKey;
       this.session = new Session();
+      this.history = new History();
       this.pending = [];
       this.lag = 0;
-      this.listeners.forEach((fn) => fn("reset"));
+      this.listeners.forEach((fn) => fn(true));
     }
     for (const e of this.events(topic, data, Date.now()))
       if (this.session.apply(e)) this.pending.push([e.topic, e.data, e.t]);
+  }
+
+  private flush() {
+    if (!this.pending.length) return;
+    const batch = this.pending;
+    this.pending = [];
+    this.history.add(batch);
+    this.listeners.forEach((fn) => fn(false));
+  }
+
+  window(from: number) {
+    this.flush();
+    return this.history.window(from);
   }
 
   private async connect() {
@@ -116,12 +132,7 @@ export class Feed {
 
   start() {
     this.run();
-    setInterval(() => {
-      if (!this.pending.length) return;
-      const batch = this.pending;
-      this.pending = [];
-      this.listeners.forEach((fn) => fn(batch));
-    }, FLUSH_MS);
+    setInterval(() => this.flush(), FLUSH_MS);
     return this;
   }
 }

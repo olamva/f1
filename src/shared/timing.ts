@@ -27,6 +27,9 @@ export type SessionRef = {
 export type Snapshot = {
   mode: "live" | "replay";
   t: number;
+  now?: number;
+  since?: number;
+  start?: number;
   duration: number;
   state: Record<string, unknown>;
 };

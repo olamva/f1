@@ -182,7 +182,7 @@ interface TeamRadioProps {
   rows: Row[];
 }
 
-const clip = (s: number) =>
+export const clip = (s: number) =>
   `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
 
 const Transcript = ({ url, color }: { url: string; color: string }) => {
