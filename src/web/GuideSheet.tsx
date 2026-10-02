@@ -1,5 +1,5 @@
-import { useRef, type ReactNode } from "react";
 import { X, type LucideIcon } from "lucide-react";
+import { useRef, type ReactNode } from "react";
 
 interface GuideSheetProps {
   title: string;
@@ -14,7 +14,7 @@ export const GuideSheet = ({ title, steps, children }: GuideSheetProps) => {
       <button
         type="button"
         onClick={() => dialog.current?.showModal()}
-        className="text-sm font-semibold text-red-400 underline"
+        className="cursor-pointer text-sm font-semibold text-red-400 underline"
       >
         Show me how
       </button>
