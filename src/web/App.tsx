@@ -88,7 +88,7 @@ export const App = () => {
             PITWALL
           </span>
         </button>
-        <div className="fixed inset-x-[21px] bottom-[21px] z-10 flex justify-center sm:pointer-events-none sm:inset-x-4 sm:top-[calc(env(safe-area-inset-top)+1.5rem)] sm:bottom-auto sm:justify-end sm:in-has-[main:not([inert])_.board]:absolute xl:justify-center max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl sm:[&>nav]:pointer-events-auto max-sm:[&>nav>button]:flex-1">
+        <div className="fixed inset-x-[21px] bottom-[21px] z-20 flex justify-center sm:pointer-events-none sm:inset-x-4 sm:top-[calc(env(safe-area-inset-top)+1.5rem)] sm:bottom-auto sm:justify-end sm:in-has-[main:not([inert])_.board]:absolute xl:justify-center max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl sm:[&>nav]:pointer-events-auto max-sm:[&>nav>button]:flex-1">
           <Tabs
             items={TABS}
             value={tab}
