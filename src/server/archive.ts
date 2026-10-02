@@ -54,7 +54,14 @@ const circuit = (key: number, date: string): Outline | null => {
     (c) => c.key === key && c.from <= date && date <= c.to,
   );
   return c
-    ? { x: c.x, y: c.y, time: [], rotation: 0, corners: c.corners }
+    ? {
+        x: c.x,
+        y: c.y,
+        time: [],
+        rotation: 0,
+        corners: c.corners,
+        sectors: c.sectors,
+      }
     : null;
 };
 
@@ -65,6 +72,7 @@ export async function outlineFor(
   const key = info?.Meeting?.Circuit?.Key;
   const date = String(info?.StartDate ?? "").slice(0, 10);
   const year = Number(date.slice(0, 4));
+  const bundled = key ? circuit(key, date) : null;
   if (key && year) {
     const res = await fetch(
       `https://api.multiviewer.app/api/v1/circuits/${key}/${year}`,
@@ -83,10 +91,11 @@ export async function outlineFor(
           number: k.number,
           ...k.trackPosition,
         })),
+        sectors: bundled?.sectors ?? [],
       };
     }
   }
-  return (key && circuit(key, date)) || fallback();
+  return bundled ?? fallback();
 }
 
 async function load(path: string): Promise<Replay> {

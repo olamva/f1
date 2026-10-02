@@ -99,6 +99,25 @@ def circuit(bundle):
     if sum(b < a for a, b in zip(order, order[1:])) > len(order) / 2:
         line = line[:1] + line[1:][::-1]
     line = resample(line)
+    n = len(line)
+
+    def span(name):
+        mesh = next(f for f in filters if names[f.m_GameObject.path_id] == name)
+        handler = MeshHandler(objects[mesh.m_Mesh.path_id].read())
+        handler.process()
+        transform = transforms[mesh.m_GameObject.path_id]
+        index = sorted({
+            nearest(line, (p[0] * SCALE, p[2] * SCALE))
+            for p in (world(transform, v) for v in handler.m_Vertices)
+        })
+        end, start = max(zip(index, index[1:] + [index[0] + n]), key=lambda g: g[1] - g[0])
+        return start % n, end
+
+    spans = [span(f"S{k}") for k in (1, 2, 3)]
+    sectors = [
+        line[round(end + ((start - end + n // 2) % n - n // 2) / 2) % n]
+        for (_, end), (start, _) in zip(spans[-1:] + spans[:-1], spans)
+    ]
     date = lambda d: f"{d['Year']:04}-{d['Month']:02}-{d['Day']:02}"
     return {
         "key": asset["CircuitKey"],
@@ -110,6 +129,7 @@ def circuit(bundle):
             {"number": n, "x": round(p[0]), "y": round(p[1])}
             for n, p in sorted(corners.items())
         ],
+        "sectors": [{"x": round(p[0]), "y": round(p[1])} for p in sectors],
     }
 
 
