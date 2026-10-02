@@ -21,6 +21,7 @@ import * as token from "./token.ts";
 
 const DIST = process.env.DIST_DIR ?? "dist";
 const TICK_MS = 250;
+const LEAD_MS = 2_000;
 const KEEPALIVE_MS = 20_000;
 
 const app = new Hono();
@@ -118,6 +119,7 @@ app.get("/api/live", (c) =>
     live: live.isLive(),
     recent: live.hasRecentTiming(),
     positions: feed(c) !== live.shared || !!live.shared.session.state.Position,
+    start: feed(c).history.start ?? null,
     info: live.shared.session.state.SessionInfo ?? null,
   }),
 );
@@ -131,23 +133,38 @@ app.get("/api/live/outline", async (c) => {
 app.get("/api/live/stream", (c) =>
   streamSSE(c, async (s) => {
     const f = feed(c);
-    const snapshot = (): Snapshot => ({
-      mode: "live",
-      t: Date.now(),
-      duration: 0,
-      state: f.session.state,
-    });
-    await send(s, "snapshot", snapshot());
-    const off = f.subscribe((batch) =>
-      batch === "reset"
-        ? send(s, "snapshot", snapshot())
-        : send(s, "delta", batch),
-    );
+    const delay = Number(c.req.query("delay")) || 0;
+    let next = 0;
+    const step = () => {
+      const d = f.history.after(next, Date.now() - delay + LEAD_MS);
+      next = d.next;
+      if (d.json) void s.writeSSE({ event: "delta", data: d.json });
+    };
+    const open = () => {
+      const { t, state, next: first } = f.window(Date.now() - delay);
+      const { since, start } = f.history;
+      const snapshot: Snapshot = {
+        mode: "live",
+        t,
+        now: Date.now(),
+        since,
+        start,
+        duration: 0,
+        state,
+      };
+      next = first;
+      void send(s, "snapshot", snapshot);
+      step();
+    };
+    open();
+    const off = f.subscribe((reset) => (reset ? open() : step()));
+    const timer = setInterval(step, TICK_MS);
     const keepalive = setInterval(
       () => s.writeSSE({ event: "ping", data: "" }),
       KEEPALIVE_MS,
     );
     await new Promise<void>((done) => s.onAbort(done));
+    clearInterval(timer);
     clearInterval(keepalive);
     off();
   }),

@@ -45,18 +45,18 @@ test("a recorded session replays as live at the current time", (t) => {
   });
   process.env.LIVE_REPLAY = file;
   process.env.LIVE_REPLAY_FROM = "25";
-  const batches: Delta[][] = [];
-  shared.subscribe((b) => b !== "reset" && batches.push(b));
+  const sent = (): Delta[] =>
+    JSON.parse(shared.history.after(0, Infinity).json ?? "[]");
   start();
   assert.equal(isLive(), true);
   t.mock.timers.tick(250);
   assert.deepEqual(
-    batches.flat().find(([topic]) => topic === "Position"),
+    sent().find(([topic]) => topic === "Position"),
     ["Position", { "1": [1, 2] }, NOW - 1000],
   );
   assert.equal(shared.session.state.TimingData, undefined);
   t.mock.timers.tick(MINUTE);
-  assert.deepEqual(batches.flat().at(-1), [
+  assert.deepEqual(sent().at(-1), [
     "TimingData",
     { Lines: { "1": { Position: "1" } } },
     NOW + MINUTE - 1000,

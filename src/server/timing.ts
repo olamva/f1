@@ -1,6 +1,6 @@
 import { inflateRawSync } from "node:zlib";
 import { merge, type Json } from "../shared/merge.ts";
-import type { LapRow, Outline, Point } from "../shared/timing.ts";
+import type { Delta, LapRow, Outline, Point } from "../shared/timing.ts";
 import { seconds } from "./season.ts";
 
 export type Event = { t: number; topic: string; data: Json };
@@ -24,6 +24,7 @@ export const TOPICS = [
 ];
 
 const POSITION_SPACING_MS = 500;
+const CHECKPOINT_MS = 2 * 60_000;
 
 export const inflate = (b64: string): Json =>
   JSON.parse(inflateRawSync(Buffer.from(b64, "base64")).toString("utf8"));
@@ -112,6 +113,56 @@ export class Session {
       rotation: 0,
       corners: [],
     };
+  }
+}
+
+export class History {
+  since = Date.now();
+  start?: number;
+  private deltas: [t: number, json: string][] = [];
+  private checkpoints: { i: number; t: number; state: string }[] = [];
+  private state: State = {};
+  private latest = -Infinity;
+
+  add(batch: Delta[]) {
+    for (const d of batch) {
+      if (d[0] === "SessionStatus" && (d[1] as any)?.Status === "Started")
+        this.start ??= Math.max(d[2], this.since);
+      this.deltas.push([d[2], JSON.stringify(d)]);
+      this.state[d[0]] = merge(this.state[d[0]], d[1] as Json);
+      this.latest = Math.max(this.latest, d[2]);
+    }
+    if (
+      this.latest - (this.checkpoints.at(-1)?.t ?? this.since) >=
+      CHECKPOINT_MS
+    )
+      this.checkpoints.push({
+        i: this.deltas.length,
+        t: this.latest,
+        state: JSON.stringify(this.state),
+      });
+  }
+
+  window(from: number): { t: number; state: State; next: number } {
+    const t = Math.max(from, this.since);
+    const cp = this.checkpoints.findLast((c) => c.t <= t);
+    const state: State = cp ? JSON.parse(cp.state) : {};
+    let i = cp?.i ?? 0;
+    for (; i < this.deltas.length && this.deltas[i]![0] <= t; i++) {
+      const [topic, data] = JSON.parse(this.deltas[i]![1]) as Delta;
+      state[topic] = merge(state[topic], data as Json);
+    }
+    return { t, state, next: i };
+  }
+
+  after(next: number, until: number): { next: number; json: string | null } {
+    let i = next;
+    while (i < this.deltas.length && this.deltas[i]![0] <= until) i++;
+    const json = this.deltas
+      .slice(next, i)
+      .map((d) => d[1])
+      .join(",");
+    return { next: i, json: json ? `[${json}]` : null };
   }
 }
 

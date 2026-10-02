@@ -11,13 +11,18 @@ const lap = (lap: number, t: number): LapRow => ({
   gap: "",
 });
 
+const laps = {
+  "1": [lap(1, 190), lap(2, 280), lap(3, 370)],
+  "4": [lap(1, 200), lap(2, 285), lap(3, 372)],
+  "16": [lap(1, 195), lap(2, 290)],
+};
+
 test("each lap starts when the leader completes the lap before it", () => {
-  const laps = {
-    "1": [lap(1, 190), lap(2, 280), lap(3, 370)],
-    "4": [lap(1, 200), lap(2, 285), lap(3, 372)],
-    "16": [lap(1, 195), lap(2, 290)],
-  };
   assert.deepEqual(lapStarts(laps, 100), [100, 190, 280]);
+});
+
+test("a running race also starts the lap after the last completed lap", () => {
+  assert.deepEqual(lapStarts(laps, 100, true), [100, 190, 280, 370]);
 });
 
 test("a replay without completed laps only has the first lap", () => {

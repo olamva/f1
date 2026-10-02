@@ -326,9 +326,10 @@ export const sectorSplits = (bests: SessionBests): number[] => {
 export const lapStarts = (
   laps: Record<string, LapRow[]>,
   start: number,
+  running = false,
 ): number[] => {
   const ends: number[] = [];
   for (const r of Object.values(laps).flat())
     ends[r.lap] = Math.min(ends[r.lap] ?? Infinity, r.t);
-  return [start, ...ends.slice(1, -1)];
+  return [start, ...ends.slice(1, running ? undefined : -1)];
 };

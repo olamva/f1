@@ -432,6 +432,16 @@ textarea {
     box-shadow 180ms ease;
 }
 
+@supports (position-area: bottom) {
+  .tv-delay {
+    position-anchor: --tv-delay;
+    position-area: bottom span-left;
+    position-try-fallbacks: flip-inline, bottom;
+    inset: auto;
+    margin: 0.5rem 0 0;
+  }
+}
+
 .live-dot {
   display: inline-block;
   vertical-align: middle;
