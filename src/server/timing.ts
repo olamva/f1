@@ -1,6 +1,12 @@
 import { inflateRawSync } from "node:zlib";
 import { merge, type Json } from "../shared/merge.ts";
-import type { LapRow, Outline, Point } from "../shared/timing.ts";
+import {
+  MAX_DELAY_MS,
+  type Delta,
+  type LapRow,
+  type Outline,
+  type Point,
+} from "../shared/timing.ts";
 import { seconds } from "./season.ts";
 
 export type Event = { t: number; topic: string; data: Json };
@@ -112,6 +118,32 @@ export class Session {
       rotation: 0,
       corners: [],
     };
+  }
+}
+
+export class History {
+  private deltas: Delta[] = [];
+  private base: State = {};
+  private since = Date.now();
+
+  add(batch: Delta[]) {
+    const cut = Date.now() - MAX_DELAY_MS;
+    this.deltas.push(...batch);
+    while (this.deltas[0] && this.deltas[0][2] <= cut) {
+      const [topic, data, t] = this.deltas.shift()!;
+      this.base[topic] = merge(this.base[topic], data as Json);
+      this.since = Math.max(this.since, t);
+    }
+  }
+
+  window(from: number): { t: number; state: State; deltas: Delta[] } {
+    const t = Math.max(from, this.since);
+    const state = { ...this.base };
+    const deltas: Delta[] = [];
+    for (const d of this.deltas)
+      if (d[2] <= t) state[d[0]] = merge(state[d[0]], d[1] as Json);
+      else deltas.push(d);
+    return { t, state, deltas };
   }
 }
 

@@ -1,7 +1,18 @@
 import { ArrowDownToLine, ChevronLeft } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+} from "react";
 import type { Season } from "../../shared/season.ts";
-import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
+import {
+  MAX_DELAY_MS,
+  type LapRow,
+  type Outline,
+  type SessionRef,
+} from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { Flag } from "../Flag.tsx";
 import { pathPart, setPathPart } from "../path.ts";
@@ -10,7 +21,7 @@ import { Loading } from "../Loading.tsx";
 import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { LapCharts } from "./LapCharts.tsx";
-import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
+import { clip, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
@@ -63,7 +74,7 @@ interface DelayInputProps {
 
 const DelayInput = ({ delay, onDelay }: DelayInputProps) => (
   <label
-    title="Delay behind live, to match the F1TV stream"
+    title="Delay behind live, up to 10 minutes, to match the F1TV stream"
     className="tabular flex items-center text-xs text-zinc-500"
   >
     −
@@ -71,12 +82,44 @@ const DelayInput = ({ delay, onDelay }: DelayInputProps) => (
       inputMode="numeric"
       placeholder="0"
       value={delay || ""}
-      onChange={(e) => onDelay(Number(e.target.value.replace(/\D/g, "")))}
+      onChange={(e) =>
+        onDelay(
+          Math.min(
+            MAX_DELAY_MS / 1000,
+            Number(e.target.value.replace(/\D/g, "")),
+          ),
+        )
+      }
       className="w-7 bg-transparent text-right text-zinc-400 outline-none placeholder:text-zinc-600 focus:text-zinc-100"
     />
     s
   </label>
 );
+
+interface DelayWaitProps {
+  due: number;
+  delay: number;
+}
+
+const DelayWait = ({ due, delay }: DelayWaitProps) => {
+  const left = Math.max(0, due - useTick(1000));
+  return (
+    <div
+      role="status"
+      className="flex min-h-48 flex-col items-center justify-center gap-3 text-sm text-zinc-400"
+    >
+      <div
+        className="glass-seek relative w-64"
+        style={{ "--progress": 1 - left / delay } as CSSProperties}
+      >
+        <span aria-hidden="true" className="glass-seek-track" />
+      </div>
+      <p>
+        Connected. Live timing starts after your delay, in {clip(left / 1000)}.
+      </p>
+    </div>
+  );
+};
 
 interface StatusProps {
   ref: React.Ref<HTMLDivElement>;
@@ -222,7 +265,7 @@ const Board = ({
           laps={laps}
           rows={rows}
           focus={focus}
-          until={replay ? feed.t : null}
+          until={feed.t}
           race={race}
         />
       </div>
@@ -239,7 +282,9 @@ const Live = ({ positions }: LiveProps) => {
     () => Number(localStorage.getItem("delay")) || 0,
   );
   const visible = useVisible();
-  const feed = useFeed(visible ? "/api/live/stream" : null, delay * 1000);
+  const url = visible ? `/api/live/stream?delay=${delay}` : null;
+  const [feed, due] = useFeed(url, delay * 1000);
+  const waiting = !!due && due > Date.now() && feed?.src !== url;
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
   const outline = useJson<Outline | null>("/api/live/outline", 60_000);
   const note = positions
@@ -251,7 +296,7 @@ const Live = ({ positions }: LiveProps) => {
   };
   return (
     <div className="space-y-4">
-      {feed ? (
+      {feed && !waiting ? (
         <Board
           feed={feed}
           laps={laps.data ?? {}}
@@ -266,7 +311,11 @@ const Live = ({ positions }: LiveProps) => {
           <div className="flex justify-end">
             <DelayInput delay={delay} onDelay={change} />
           </div>
-          <Loading label="Connecting to live timing…" />
+          {waiting ? (
+            <DelayWait due={due} delay={delay * 1000} />
+          ) : (
+            <Loading label="Connecting to live timing…" />
+          )}
         </div>
       )}
     </div>
@@ -290,7 +339,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
     play.on && visible
       ? `/api/replay/stream?${q}&speed=${play.speed}${play.t === null ? "" : `&t=${play.t}`}`
       : null;
-  const feed = useFeed(url);
+  const [feed] = useFeed(url);
   useEffect(() => {
     if (!visible) setPlay((s) => ({ ...s, t: feed?.t ?? s.t }));
   }, [visible, feed?.t]);

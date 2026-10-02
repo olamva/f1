@@ -54,33 +54,26 @@ export const applyDelta = (f: Feed, batch: Delta[]): Feed => {
 
 type Update = (f: Feed | null) => Feed | null;
 
-const HISTORY = 600_000;
-
 export const buffer = () => {
   const queue: [number, Update][] = [];
-  const past: [number, Update, Feed | null][] = [];
+  let feed: Feed | null = null;
   return {
     push: (at: number, u: Update) =>
       void queue.splice(queue.findLastIndex(([t]) => t <= at) + 1, 0, [at, u]),
     flush: (cut: number) => {
-      const top = past.at(-1);
-      while (past.length > 1 && past.at(-1)![0] > cut) {
-        const [at, u] = past.pop()!;
-        queue.unshift([at, u]);
-      }
-      while (queue.length && queue[0][0] <= cut) {
-        const [at, u] = queue.shift()!;
-        past.push([at, u, u(past.at(-1)?.[2] ?? null)]);
-      }
-      const n = past.findIndex(([at]) => at >= cut - HISTORY);
-      past.splice(0, (n < 0 ? past.length : n) - 1);
-      return past.at(-1) === top ? undefined : (past.at(-1)?.[2] ?? null);
+      if (!(queue.length && queue[0][0] <= cut)) return undefined;
+      while (queue.length && queue[0][0] <= cut) feed = queue.shift()![1](feed);
+      return feed;
     },
   };
 };
 
-export function useFeed(url: string | null, delay = 0): Feed | null {
+export function useFeed(
+  url: string | null,
+  delay = 0,
+): [Feed | null, number | null] {
   const [feed, setFeed] = useState<Feed | null>(null);
+  const [due, setDue] = useState<number | null>(null);
   const lag = useRef(delay);
   lag.current = delay;
   useEffect(() => {
@@ -95,8 +88,10 @@ export function useFeed(url: string | null, delay = 0): Feed | null {
     const source = new EventSource(url);
     source.addEventListener("snapshot", (m) => {
       const snap = JSON.parse(m.data) as Feed;
-      skew = snap.mode === "live" ? Date.now() - snap.t : null;
-      b.push(Date.now(), () => ({ ...snap, beat: snap.t, src: url }));
+      skew = snap.now === undefined ? null : Date.now() - snap.now;
+      const at = skew === null ? Date.now() : snap.t + skew;
+      setDue(at + lag.current);
+      b.push(at, () => ({ ...snap, beat: snap.t, src: url }));
       flush();
     });
     source.addEventListener("delta", (m) => {
@@ -113,7 +108,7 @@ export function useFeed(url: string | null, delay = 0): Feed | null {
       clearInterval(timer);
     };
   }, [url]);
-  return feed;
+  return [feed, due];
 }
 
 export const feedUtc = (f: Feed): number => {

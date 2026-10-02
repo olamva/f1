@@ -131,17 +131,22 @@ app.get("/api/live/outline", async (c) => {
 app.get("/api/live/stream", (c) =>
   streamSSE(c, async (s) => {
     const f = feed(c);
-    const snapshot = (): Snapshot => ({
-      mode: "live",
-      t: Date.now(),
-      duration: 0,
-      state: f.session.state,
-    });
-    await send(s, "snapshot", snapshot());
+    const delay = (Number(c.req.query("delay")) || 0) * 1000;
+    const open = () => {
+      const { t, state, deltas } = f.window(Date.now() - delay);
+      const snapshot: Snapshot = {
+        mode: "live",
+        t,
+        now: Date.now(),
+        duration: 0,
+        state,
+      };
+      void send(s, "snapshot", snapshot);
+      if (deltas.length) void send(s, "delta", deltas);
+    };
+    open();
     const off = f.subscribe((batch) =>
-      batch === "reset"
-        ? send(s, "snapshot", snapshot())
-        : send(s, "delta", batch),
+      batch === "reset" ? open() : send(s, "delta", batch),
     );
     const keepalive = setInterval(
       () => s.writeSSE({ event: "ping", data: "" }),
