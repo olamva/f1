@@ -1,0 +1,14 @@
+{
+  "id": "600b6413",
+  "ts": "2026-10-02T14:56:22+00:00",
+  "text": "gh issue view --comments prints nothing; --json works",
+  "tags": [
+    "gh",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b40ddaea",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-3bd3e9e9",
+  "branch": "t3code/implement-issue-264"
+}

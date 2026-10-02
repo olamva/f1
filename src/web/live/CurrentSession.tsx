@@ -267,12 +267,6 @@ const Replay = ({ session, onClose }: ReplayProps) => {
         All replays
       </button>
       <ReplayBar
-        title={
-          <>
-            <Flag country={session.country} />
-            {session.meeting} · {session.name}
-          </>
-        }
         race={/^(Race|Sprint)$/.test(session.name)}
         starts={starts}
         start={feed?.start ?? 0}

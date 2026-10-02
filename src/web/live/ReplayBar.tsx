@@ -6,7 +6,6 @@ const SPEEDS = [1, 2, 4, 8, 16, 32];
 const UNITS = ["time", "laps"] as const;
 
 interface ReplayBarProps {
-  title?: ReactNode;
   race: boolean;
   starts: number[];
   start: number;
@@ -26,7 +25,6 @@ const clock = (ms: number) => {
 };
 
 export const ReplayBar = ({
-  title,
   race,
   starts,
   start,
@@ -65,9 +63,6 @@ export const ReplayBar = ({
   };
   return (
     <div className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm">
-      {title && (
-        <span className="basis-full font-semibold sm:basis-auto">{title}</span>
-      )}
       <button
         onClick={onToggle}
         aria-label={playing ? "Pause" : "Play"}
