@@ -241,3 +241,37 @@ test("relativeTo measures gap and interval toward the selected driver", () => {
   );
   assert.equal(relativeTo(tower, undefined), tower);
 });
+
+test("the fallback outline traces the fastest timed lap, not an in-lap", () => {
+  const session = new Session();
+  const laps: [number, number, string][] = [
+    [0, 1, ""],
+    [100_000, 2, "1:40.000"],
+    [400_000, 3, ""],
+    [490_000, 4, "1:30.000"],
+    [600_000, 5, "1:50.000"],
+  ];
+  [
+    ...laps.map(([t, lap, time]) => ({
+      t,
+      topic: "TimingData",
+      data: {
+        Lines: {
+          "1": {
+            NumberOfLaps: lap,
+            ...(time && { LastLapTime: { Value: time } }),
+          },
+        },
+      },
+    })),
+    ...Array.from({ length: 601 }, (_, s) => ({
+      t: s * 1000,
+      topic: "Position",
+      data: { "1": [s, 0] },
+    })),
+  ]
+    .sort((a, b) => a.t - b.t)
+    .forEach((e) => session.apply(e));
+  const { x } = session.outline()!;
+  assert.deepEqual([x[0], x.at(-1)], [400, 490]);
+});
