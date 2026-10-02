@@ -77,6 +77,9 @@ export const Settings = () => {
   const [spoilers, setSpoilers] = useState(
     () => localStorage.getItem("spoilers") !== "0",
   );
+  const [autoupdate, setAutoupdate] = useState(
+    () => localStorage.getItem("autoupdate") === "1",
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [push, setPush] = useState<PushState | null>(null);
   const [pushNote, setPushNote] = useState<string | null>(null);
@@ -142,6 +145,18 @@ export const Settings = () => {
           }}
         >
           Play new radio messages automatically
+        </GlassSwitch>
+      </section>
+      <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="font-f1 text-lg font-bold">App updates</h2>
+        <GlassSwitch
+          checked={autoupdate}
+          onChange={(checked) => {
+            setAutoupdate(checked);
+            localStorage.setItem("autoupdate", checked ? "1" : "0");
+          }}
+        >
+          Install new versions automatically
         </GlassSwitch>
       </section>
       {denied ? (

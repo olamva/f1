@@ -1,0 +1,13 @@
+{
+  "id": "7f6bc4e4",
+  "ts": "2026-10-02T14:57:39+00:00",
+  "text": "T3 preview_snapshot fails with 'Preview automation snapshot failed on client' while preview_click works on the same tab",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "121f3e49",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/implement-issue-263"
+}

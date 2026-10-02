@@ -1,5 +1,5 @@
 import { LoaderCircle } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRegisterSW } from "virtual:pwa-register/react";
 
 const reload = () => location.reload();
@@ -26,6 +26,13 @@ export const UpdateToast = () => {
       });
     },
   });
+  const start = () => {
+    setUpdating(true);
+    update();
+  };
+  useEffect(() => {
+    if (needRefresh && localStorage.getItem("autoupdate") === "1") start();
+  }, [needRefresh]);
   if (!needRefresh) return null;
   return (
     <div
@@ -34,16 +41,13 @@ export const UpdateToast = () => {
     >
       <span>A new version is available.</span>
       <button
-        onClick={() => {
-          setUpdating(true);
-          update();
-        }}
+        onClick={start}
         disabled={updating}
         className="flex cursor-pointer items-center gap-2 rounded-full bg-amber-500 px-4 py-1.5 font-semibold text-zinc-950 hover:bg-amber-400 disabled:cursor-default disabled:opacity-70 disabled:hover:bg-amber-500"
         type="button"
       >
         {updating && <LoaderCircle className="size-4 animate-spin" />}
-        Update
+        {updating ? "Updating..." : "Update"}
       </button>
     </div>
   );
