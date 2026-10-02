@@ -333,3 +333,23 @@ export const lapStarts = (
     ends[r.lap] = Math.min(ends[r.lap] ?? Infinity, r.t);
   return [start, ...ends.slice(1, running ? undefined : -1)];
 };
+
+export const lapTime = (starts: number[], lap: number) =>
+  starts[Math.min(Math.max(lap, 1), starts.length) - 1]!;
+
+export const clockSeconds = (text: string) => {
+  if (!text.includes(":")) {
+    const n = Number(text);
+    return (
+      Math.floor(n / 10000) * 3600 +
+      (Math.floor(n / 100) % 100) * 60 +
+      (n % 100)
+    );
+  }
+  const parts = text.split(":");
+  const skip = parts[0]!.length > 1 ? 1 : 0;
+  return parts.reduce(
+    (s, p, i) => s + Number(p) * ([3600, 60, 1][i + skip] ?? 0),
+    0,
+  );
+};

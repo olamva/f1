@@ -1,0 +1,14 @@
+{
+  "id": "ad813406",
+  "ts": "2026-10-02T16:38:27+00:00",
+  "text": "T3 preview_snapshot fails with 'Preview automation snapshot failed on client' while click and evaluate work on the same tab",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "ea9320eb",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/editable-lap-counter"
+}

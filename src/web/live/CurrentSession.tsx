@@ -21,7 +21,7 @@ import { Countdown, current } from "./Countdown.tsx";
 import { clip } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
 import { useFeed, type Feed } from "./useFeed.ts";
-import { lapStarts } from "./view.ts";
+import { lapStarts, lapTime } from "./view.ts";
 
 export type LiveInfo = {
   live: boolean;
@@ -123,26 +123,8 @@ const DelaySettings = () => (
   </>
 );
 
-interface LiveBarProps {
-  feed: Feed;
-  laps: Record<string, LapRow[]>;
-  at: number;
-  end: number;
-  playing: boolean;
-  onToggle: () => void;
-  onSeek: (t: number) => void;
-  children: React.ReactNode;
-}
-
-const LiveBar = ({ feed, laps, ...rest }: LiveBarProps) => {
-  const race = Boolean(feed.state.LapCount);
-  const start = Math.max(feed.since ?? 0, feed.start ?? 0);
-  const starts = useMemo(
-    () => (race ? lapStarts(laps, start, true) : []),
-    [race, laps, start],
-  );
-  return <ReplayBar race={race} starts={starts} start={start} {...rest} />;
-};
+const liveStart = (feed: Feed | null) =>
+  Math.max(feed?.since ?? 0, feed?.start ?? 0);
 
 interface LiveProps {
   session: string;
@@ -179,6 +161,12 @@ const Live = ({ session, positions }: LiveProps) => {
     : "Add an F1TV token in Settings to see the cars.";
   const behind = pos.back + (pos.pausedAt === null ? 0 : now - pos.pausedAt);
   const rows = laps.data ?? {};
+  const race = Boolean(feed?.state.LapCount);
+  const start = liveStart(feed);
+  const starts = useMemo(
+    () => (race ? lapStarts(rows, start, true) : []),
+    [race, rows, start],
+  );
   const move = (back: number, pausedAt: number | null = null) => {
     rewind(session, back, pausedAt);
     setPos({ session, back, pausedAt });
@@ -196,9 +184,10 @@ const Live = ({ session, positions }: LiveProps) => {
     <div className="space-y-4">
       {feed && !waiting ? (
         <>
-          <LiveBar
-            feed={feed}
-            laps={rows}
+          <ReplayBar
+            race={race}
+            starts={starts}
+            start={start}
             end={now - live}
             at={now - live - behind}
             playing={pos.pausedAt === null}
@@ -207,7 +196,7 @@ const Live = ({ session, positions }: LiveProps) => {
           >
             {goLive}
             <DelaySettings />
-          </LiveBar>
+          </ReplayBar>
           <Board
             feed={feed}
             laps={rows}
@@ -215,6 +204,7 @@ const Live = ({ session, positions }: LiveProps) => {
             positionsNote={note}
             paused={pos.pausedAt !== null}
             utc={now - live - behind}
+            onLap={(n) => seek(lapTime(starts, n))}
           />
         </>
       ) : waiting ? (
@@ -257,6 +247,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
     () => (race && feed?.start ? lapStarts(laps.data ?? {}, feed.start) : []),
     [race, laps.data, feed?.start],
   );
+  const seek = (t: number) => setPlay((s) => ({ ...s, t, on: true }));
   return (
     <div className="space-y-4">
       <button
@@ -280,7 +271,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
         onSpeed={(speed) =>
           setPlay((s) => ({ ...s, speed, t: feed?.t ?? s.t }))
         }
-        onSeek={(t) => setPlay((s) => ({ ...s, t, on: true }))}
+        onSeek={seek}
       />
       {!feed ? (
         <Loading
@@ -295,6 +286,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
           positionsNote={null}
           speed={play.speed}
           paused={!play.on}
+          onLap={(n) => seek(lapTime(starts, n))}
         />
       )}
     </div>

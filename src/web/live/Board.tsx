@@ -4,6 +4,7 @@ import type { LapRow, Outline } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
+import { StealthInput } from "./StealthInput.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, type Feed } from "./useFeed.ts";
@@ -27,6 +28,7 @@ interface BoardProps {
   speed?: number;
   paused?: boolean;
   utc?: number;
+  onLap: (lap: number) => void;
 }
 
 interface StatusProps {
@@ -35,14 +37,20 @@ interface StatusProps {
   part: string | null;
   banner: React.ReactNode;
   clock: string;
+  onLap: (lap: number) => void;
 }
 
-const Status = ({ ref, lap, part, banner, clock }: StatusProps) => (
+const Status = ({ ref, lap, part, banner, clock, onLap }: StatusProps) => (
   <div ref={ref} className="flex scroll-mt-4 flex-wrap items-center gap-3">
     {lap && (
       <span className="tabular font-f1 text-2xl font-black">
         <span className="font-f1-wide mr-2 text-sm text-zinc-400">LAP</span>
-        {lap.CurrentLap}
+        <StealthInput
+          label="Lap"
+          value={String(lap.CurrentLap)}
+          inputMode="numeric"
+          onCommit={(text) => onLap(Number(text))}
+        />
         <span className="text-zinc-500">/{lap.TotalLaps}</span>
       </span>
     )}
@@ -68,6 +76,7 @@ export const Board = ({
   speed,
   paused,
   utc = feedUtc(feed),
+  onLap,
 }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const top = useRef<HTMLDivElement>(null);
@@ -116,6 +125,7 @@ export const Board = ({
         part={part}
         banner={banner}
         clock={remaining(state, utc)}
+        onLap={onLap}
       />
       <div className="grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)]">
         <TimingTower
