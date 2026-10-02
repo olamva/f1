@@ -333,3 +333,6 @@ export const lapStarts = (
     ends[r.lap] = Math.min(ends[r.lap] ?? Infinity, r.t);
   return [start, ...ends.slice(1, running ? undefined : -1)];
 };
+
+export const lapTime = (starts: number[], lap: number) =>
+  starts[Math.min(Math.max(lap, 1), starts.length) - 1]!;
