@@ -2,7 +2,7 @@ import { useState, type CSSProperties, type ReactNode } from "react";
 import { Pause, Play } from "lucide-react";
 import { Tabs } from "../Tabs.tsx";
 import { StealthInput } from "./StealthInput.tsx";
-import { lapTime } from "./view.ts";
+import { clockSeconds, lapTime } from "./view.ts";
 
 const SPEEDS = [1, 2, 4, 8, 16, 32];
 const UNITS = ["time", "laps"] as const;
@@ -128,7 +128,7 @@ export const ReplayBar = ({
                 label="Lap"
                 value={String(lap + 1)}
                 inputMode="numeric"
-                onCommit={(n) => onSeek(lapTime(starts, n))}
+                onCommit={(text) => onSeek(lapTime(starts, Number(text)))}
               />
               /{starts.length}
             </>
@@ -136,7 +136,9 @@ export const ReplayBar = ({
             <StealthInput
               label="Time"
               value={clock(value - start)}
-              onCommit={(s) => onSeek(Math.min(end, start + s * 1000))}
+              onCommit={(text) =>
+                onSeek(Math.min(end, start + clockSeconds(text) * 1000))
+              }
             />
           )}
         </span>

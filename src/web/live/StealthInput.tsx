@@ -4,7 +4,7 @@ interface StealthInputProps {
   value: string;
   label: string;
   inputMode?: HTMLAttributes<HTMLInputElement>["inputMode"];
-  onCommit: (n: number) => void;
+  onCommit: (text: string) => void;
 }
 
 export const StealthInput = ({
@@ -22,15 +22,21 @@ export const StealthInput = ({
       placeholder={value}
       value={draft ?? value}
       onFocus={() => setDraft("")}
-      onChange={(e) => setDraft(e.target.value.replace(/[^\d:]/g, ""))}
+      onChange={(e) =>
+        setDraft(
+          e.target.value.replace(
+            inputMode === "numeric" ? /\D/g : /[^\d:]/g,
+            "",
+          ),
+        )
+      }
       onKeyDown={(e) => {
         if (e.key === "Escape") e.currentTarget.value = "";
         if (e.key === "Enter" || e.key === "Escape") e.currentTarget.blur();
       }}
       onBlur={(e) => {
         const text = e.currentTarget.value;
-        if (/\d/.test(text))
-          onCommit(text.split(":").reduce((n, p) => n * 60 + Number(p), 0));
+        if (/\d/.test(text)) onCommit(text);
         setDraft(null);
       }}
       style={{ width: `${(draft || value).length}ch` }}

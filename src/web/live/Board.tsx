@@ -49,7 +49,7 @@ const Status = ({ ref, lap, part, banner, clock, onLap }: StatusProps) => (
           label="Lap"
           value={String(lap.CurrentLap)}
           inputMode="numeric"
-          onCommit={onLap}
+          onCommit={(text) => onLap(Number(text))}
         />
         <span className="text-zinc-500">/{lap.TotalLaps}</span>
       </span>
