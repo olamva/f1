@@ -226,7 +226,7 @@ const TowerRow = ({
     </td>
     <td className="px-1 py-1 sm:px-2">
       <span className="flex w-max items-center gap-2">
-        <TeamLogo team={row.team} className="h-4 w-6" />
+        <TeamLogo team={row.team} className="hidden h-4 w-6 sm:block" />
         <span className="font-semibold" title={row.name}>
           {row.tla}
         </span>
