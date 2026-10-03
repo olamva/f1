@@ -1,0 +1,14 @@
+{
+  "id": "34cbc34b",
+  "ts": "2026-10-03T12:54:29+00:00",
+  "text": "livetiming.formula1.com/static/2025 returns AccessDenied for every RaceControlMessages stream; only 2026 sessions download",
+  "tags": [
+    "data",
+    "f1"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "85dd7ca5",
+  "where": "https://livetiming.formula1.com/static/2025/",
+  "branch": "t3code/issue-299"
+}

@@ -131,6 +131,22 @@ const SwapArrow = ({ swap }: { swap?: Swap }) => (
   </span>
 );
 
+interface CallProps {
+  title?: string;
+  tone: string;
+}
+
+const Call = ({ title, tone }: CallProps) =>
+  title ? (
+    <span
+      className={`flex size-4 items-center justify-center rounded-sm text-xs font-bold ${tone}`}
+      title={title}
+      aria-label={title}
+    >
+      !
+    </span>
+  ) : null;
+
 interface TowerRowProps {
   row: Row;
   race: boolean;
@@ -166,7 +182,7 @@ const TowerRow = ({
       </span>
     </td>
     <td className="px-1 py-1 sm:px-2">
-      <span className="flex items-center gap-2">
+      <span className="flex w-max items-center gap-2">
         <TeamLogo team={row.team} className="h-4 w-6" />
         <span className="font-semibold" title={row.name}>
           {row.tla}
@@ -180,6 +196,8 @@ const TowerRow = ({
             <Timer className="size-3" strokeWidth={2.5} />
           </span>
         )}
+        <Call title={row.investigation} tone="bg-yellow-400 text-black" />
+        <Call title={row.penalty} tone="bg-red-600 text-white" />
       </span>
     </td>
     {race && (
