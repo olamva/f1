@@ -1,0 +1,13 @@
+{
+  "id": "70afd534",
+  "ts": "2026-10-03T13:00:08+00:00",
+  "text": "pnpm rejects the -s (silent) flag: 'unexpected argument -s found'",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "85dd7ca5",
+  "where": "pnpm -s typecheck",
+  "branch": "t3code/issue-299"
+}
