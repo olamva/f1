@@ -1,9 +1,12 @@
 import { ArrowDownToLine } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import type { Round } from "../../shared/season.ts";
 import type { LapRow, Outline } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
+import { Championship } from "./Championship.tsx";
 import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
+import { prediction, titleOpen } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
@@ -29,6 +32,7 @@ interface BoardProps {
   feed: Feed;
   laps: Record<string, LapRow[]>;
   outline: Outline | null;
+  rounds: Round[];
   positionsNote: string | null;
   speed?: number;
   paused?: boolean;
@@ -77,6 +81,7 @@ export const Board = ({
   feed,
   laps,
   outline,
+  rounds,
   positionsNote,
   speed,
   paused,
@@ -179,7 +184,7 @@ export const Board = ({
           <Weather weather={state.WeatherData} trend={trackTemps(state)} />
         </div>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
+      <div className="@container grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
         <LapCharts
           laps={laps}
           rows={rows}
@@ -189,6 +194,9 @@ export const Board = ({
           until={feed.t}
           race={race}
         />
+        {race && titleOpen(state, rounds) && (
+          <Championship drivers={prediction(state)} />
+        )}
       </div>
     </div>
   );
