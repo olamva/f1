@@ -11,6 +11,7 @@ import { StealthInput } from "./StealthInput.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, type Feed } from "./useFeed.ts";
+import { rejoin } from "./rejoin.ts";
 import {
   deletedLaps,
   isQualifying,
@@ -99,6 +100,7 @@ export const Board = ({
   const toggle = (n: string) =>
     setSelected((s) => new Set(s.has(n) ? [] : [n]));
   const [driver] = selected;
+  const pit = race ? rejoin(state, rows, driver, outline?.pitLoss) : null;
   const focus = selected.size
     ? [...selected]
     : rows.slice(0, 5).map((r) => r.number);
@@ -145,6 +147,7 @@ export const Board = ({
             qualifying={qualifying}
             bests={bests}
             selected={selected}
+            pit={pit}
             onToggle={toggle}
           />
         </div>
@@ -158,6 +161,7 @@ export const Board = ({
             bests={bests}
             race={race}
             selected={selected}
+            pit={pit}
             onToggle={toggle}
             note={positionsNote}
             positionTrail={feed.positionTrail}

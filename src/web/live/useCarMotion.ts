@@ -12,12 +12,15 @@ interface Motion {
   time: number;
   speed: number;
   stream: string | undefined;
+  ghost: (
+    positions: Record<string, [number, number]>,
+  ) => Record<string, [number, number]>;
 }
 
 export const useCarMotion = (
   svg: RefObject<SVGSVGElement | null>,
   project: ((x: number, y: number) => [number, number]) | null,
-  { positions, positionTrail, time, speed, stream }: Motion,
+  { positions, positionTrail, time, speed, stream, ghost }: Motion,
 ) => {
   const motion = useRef({
     stream,
@@ -60,7 +63,7 @@ export const useCarMotion = (
         0,
         m.trail.findLastIndex(([t]) => t <= clock - SMOOTHING / 2),
       );
-      const taps = TAPS.map((k) => positionsAt(m.trail, clock + k));
+      const taps = TAPS.map((k) => ghost(positionsAt(m.trail, clock + k)));
       for (const car of svg.current!.querySelectorAll<SVGGElement>(
         "g[data-number]",
       )) {

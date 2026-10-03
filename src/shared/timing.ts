@@ -17,6 +17,8 @@ export type Period = {
 
 export type Point = [t: number, x: number, y: number];
 
+export type PitLoss = Record<"normal" | "sc" | "vsc", number>;
+
 export type Outline = {
   x: number[];
   y: number[];
@@ -25,6 +27,7 @@ export type Outline = {
   corners: { number: number; x: number; y: number }[];
   sectors: { x: number; y: number }[];
   marshalSectors: { number: number; x: number; y: number }[];
+  pitLoss?: PitLoss;
 };
 
 export type SessionRef = {

@@ -149,6 +149,11 @@ export async function outlineFor(
           number: k.number,
           ...k.trackPosition,
         })),
+        pitLoss:
+          c.pitLoss &&
+          Object.fromEntries(
+            Object.entries(c.pitLoss).map(([k, v]) => [k, Number(v)]),
+          ),
       };
     }
   }
