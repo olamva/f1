@@ -1,16 +1,19 @@
 import { ArrowDownToLine } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import type { Round } from "../../shared/season.ts";
 import type { LapRow, Outline } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 import { LapCharts } from "./LapCharts.tsx";
-import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
+import { Championship, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { StealthInput } from "./StealthInput.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, type Feed } from "./useFeed.ts";
 import {
   isQualifying,
+  isRace,
   messages,
+  prediction,
   qualifyingPart,
   radios,
   remaining,
@@ -18,6 +21,7 @@ import {
   sectorFlags,
   sessionBests,
   sessionStart,
+  titleOpen,
   trackStatus,
 } from "./view.ts";
 
@@ -25,6 +29,7 @@ interface BoardProps {
   feed: Feed;
   laps: Record<string, LapRow[]>;
   outline: Outline | null;
+  rounds: Round[];
   positionsNote: string | null;
   speed?: number;
   paused?: boolean;
@@ -73,6 +78,7 @@ export const Board = ({
   feed,
   laps,
   outline,
+  rounds,
   positionsNote,
   speed,
   paused,
@@ -84,9 +90,7 @@ export const Board = ({
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => towerRows(state), [state]);
   const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
-  const race =
-    /Race|Sprint$/.test(state.SessionInfo?.Type ?? "") ||
-    state.SessionInfo?.Name === "Sprint";
+  const race = isRace(state.SessionInfo);
   const qualifying = isQualifying(state.SessionInfo);
   const status = trackStatus(state);
   const part = qualifyingPart(state);
@@ -180,6 +184,9 @@ export const Board = ({
           until={feed.t}
           race={race}
         />
+        {race && titleOpen(state, rounds) && (
+          <Championship drivers={prediction(state)} />
+        )}
       </div>
     </div>
   );

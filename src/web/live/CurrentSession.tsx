@@ -6,7 +6,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import type { Season } from "../../shared/season.ts";
+import type { Round, Season } from "../../shared/season.ts";
 import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { useDelay } from "../delay.ts";
@@ -129,9 +129,10 @@ const liveStart = (feed: Feed | null) =>
 interface LiveProps {
   session: string;
   positions: boolean;
+  rounds: Round[];
 }
 
-const Live = ({ session, positions }: LiveProps) => {
+const Live = ({ session, positions, rounds }: LiveProps) => {
   const live = useDelay() * 1000;
   const [pos, setPos] = useState<Rewind>(() => {
     const saved = JSON.parse(localStorage.getItem("rewind") ?? "null");
@@ -202,6 +203,7 @@ const Live = ({ session, positions }: LiveProps) => {
             feed={feed}
             laps={rows}
             outline={outline.data ?? null}
+            rounds={rounds}
             positionsNote={note}
             paused={pos.pausedAt !== null}
             utc={now - live - behind}
@@ -222,6 +224,7 @@ const Live = ({ session, positions }: LiveProps) => {
 
 interface ReplayProps {
   session: SessionRef;
+  rounds: Round[];
   onClose: () => void;
 }
 
@@ -230,7 +233,7 @@ type Play = { t: number | null; speed: number; on: boolean | null };
 const streamUrl = (q: string, { t, speed }: Play) =>
   `/api/replay/stream?${q}&speed=${speed}${t === null ? "" : `&t=${t}`}`;
 
-const Replay = ({ session, onClose }: ReplayProps) => {
+const Replay = ({ session, rounds, onClose }: ReplayProps) => {
   const [play, setPlay] = useState<Play>(() => {
     const t = Number(new URLSearchParams(location.search).get("t")) * 1000;
     return { t: t || null, speed: 4, on: t ? null : true };
@@ -293,6 +296,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
           feed={feed}
           laps={laps.data ?? {}}
           outline={outline.data ?? null}
+          rounds={rounds}
           positionsNote={null}
           speed={play.speed}
           paused={!play.on}
@@ -351,7 +355,12 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
         </div>
       </div>
     ) : (
-      <Live key={key} session={key} positions={info.data.positions} />
+      <Live
+        key={key}
+        session={key}
+        positions={info.data.positions}
+        rounds={season.data.rounds}
+      />
     );
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (
@@ -396,7 +405,14 @@ export const Calendar = ({ season }: CalendarProps) => {
       />
     );
   if (chosen)
-    return <Replay key={chosen.path} session={chosen} onClose={close} />;
+    return (
+      <Replay
+        key={chosen.path}
+        session={chosen}
+        rounds={season.data.rounds}
+        onClose={close}
+      />
+    );
   return (
     <CalendarList
       sessions={sessions.data}

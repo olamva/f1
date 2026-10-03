@@ -21,6 +21,7 @@ export const TOPICS = [
   "ExtrapolatedClock",
   "TeamRadio",
   "PitStopSeries",
+  "ChampionshipPrediction",
   "Position.z",
 ];
 

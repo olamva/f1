@@ -1,0 +1,14 @@
+{
+  "id": "9b79bbb5",
+  "ts": "2026-10-03T13:33:45+00:00",
+  "text": "preview_wait_for disconnects every time (client disconnected during waitFor); preview_evaluate works",
+  "tags": [
+    "t3-preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "6809b8b7",
+  "where": "mcp__t3-code__preview_wait_for",
+  "branch": "t3code/issue-286"
+}
