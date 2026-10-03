@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parseStream } from "../src/server/timing.ts";
 import { merge, type Json } from "../src/shared/merge.ts";
-import { highlight, rows } from "../src/web/live/view.ts";
+import { highlight, messages, rows } from "../src/web/live/view.ts";
 
 test("race control messages split into toned tokens", () => {
   assert.deepEqual(
@@ -102,4 +102,27 @@ test("a black and white flag decides an investigation, and a noted penalty reaso
     "30 yellow: Under investigation",
   ]);
   assert.deepEqual(badges({ Messages: messages }), []);
+});
+
+test("a message is about the car in RacingNumber, else about each car named in the text", () => {
+  const cars = (...Messages: Json[]) =>
+    messages({ RaceControlMessages: { Messages } }).map((m) => m.cars);
+  assert.deepEqual(
+    cars(
+      {
+        RacingNumber: "44",
+        Message: "BLUE FLAG FOR CAR 44 (HAM) TIMED AT 14:02:11",
+      },
+      {
+        Message:
+          "FIA STEWARDS: TURN 1 INCIDENT INVOLVING CARS 16 (LEC) AND 55 (SAI) UNDER INVESTIGATION",
+      },
+      {
+        Message:
+          "CAR 23 (ALB) LAP DELETED - DOUBLE YELLOW AT TURN 14 LAP 9 16:16:55 (PIT)",
+      },
+      { Flag: "YELLOW", Message: "YELLOW IN TRACK SECTOR 7" },
+    ),
+    [[], ["23"], ["16", "55"], ["44"]],
+  );
 });
