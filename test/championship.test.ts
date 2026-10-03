@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import type { Round } from "../src/shared/season.ts";
-import { prediction, titleOpen } from "../src/web/live/view.ts";
+import { prediction, titleOpen } from "../src/web/live/prediction.ts";
 
 const finale: Round = {
   round: 24,

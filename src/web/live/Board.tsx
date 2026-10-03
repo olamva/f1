@@ -3,8 +3,10 @@ import { useMemo, useRef, useState } from "react";
 import type { Round } from "../../shared/season.ts";
 import type { LapRow, Outline } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
+import { Championship } from "./Championship.tsx";
 import { LapCharts } from "./LapCharts.tsx";
-import { Championship, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
+import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
+import { prediction, titleOpen } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
@@ -13,7 +15,6 @@ import {
   isQualifying,
   isRace,
   messages,
-  prediction,
   qualifyingPart,
   radios,
   remaining,
@@ -21,7 +22,6 @@ import {
   sectorFlags,
   sessionBests,
   sessionStart,
-  titleOpen,
   trackStatus,
   trackTemps,
 } from "./view.ts";
