@@ -1,0 +1,13 @@
+{
+  "id": "19a5bdf6",
+  "ts": "2026-10-03T12:49:04+00:00",
+  "text": "Docker daemon not running; cannot check Node heap limit in 1Gi container locally",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b90d8305",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-issue-319",
+  "branch": "t3code/issue-319"
+}
