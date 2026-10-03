@@ -193,7 +193,7 @@ const TowerRow = ({
             : "–"}
       </td>
     )}
-    <td className="px-1 py-1 text-right sm:px-2">
+    <td className="box-content min-w-[7ch] px-1 py-1 text-right sm:px-2">
       {row.position === 1 && race && !relative ? "Leader" : row.gap}
     </td>
     {race && (
