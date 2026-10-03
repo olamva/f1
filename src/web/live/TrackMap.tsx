@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { Crown } from "lucide-react";
 import { MapFrame } from "./MapFrame.tsx";
-import type { Outline } from "../../shared/timing.ts";
+import type { Outline, Telemetry } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import { useCarMotion } from "./useCarMotion.ts";
 import { MapCard } from "./MapCard.tsx";
@@ -19,6 +19,7 @@ type Positions = Record<string, [number, number]>;
 interface TrackMapProps {
   outline: Outline | null;
   positions: Positions | undefined;
+  telemetry: Record<string, Telemetry> | undefined;
   rows: Row[];
   bests: SessionBests;
   race: boolean;
@@ -128,6 +129,7 @@ const Markers = ({
 export const TrackMap = ({
   outline,
   positions,
+  telemetry,
   rows,
   bests,
   race,
@@ -400,7 +402,13 @@ export const TrackMap = ({
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => onToggle(card.number)}
                 />
-                <MapCard x={cardX!} y={hover.y} row={card} />
+                <MapCard
+                  x={cardX!}
+                  y={hover.y}
+                  box={box}
+                  row={card}
+                  telemetry={telemetry?.[card.number]}
+                />
               </>
             )}
           </svg>

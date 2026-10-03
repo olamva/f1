@@ -22,6 +22,20 @@ test("a recorded session replays as live at the current time", (t) => {
       ],
     }),
   ).toString("base64");
+  const cars = deflateRawSync(
+    JSON.stringify({
+      Entries: [
+        {
+          Utc: new Date(T0 + 25 * MINUTE - 1000).toISOString(),
+          Cars: {
+            "1": {
+              Channels: { "0": 11250, "2": 312, "3": 8, "4": 100, "5": 0 },
+            },
+          },
+        },
+      ],
+    }),
+  ).toString("base64");
   const lines = [
     [
       T0,
@@ -35,6 +49,7 @@ test("a recorded session replays as live at the current time", (t) => {
     ],
     [T0, "Heartbeat", { Utc: "2026-10-03T04:10:00.1234567Z" }],
     [T0 + 25 * MINUTE, "Position.z", positions],
+    [T0 + 25 * MINUTE, "CarData.z", cars],
     [T0 + 26 * MINUTE, "TimingData", { Lines: { "1": { Position: "1" } } }],
   ];
   const file = join(mkdtempSync(join(tmpdir(), "f1-replay-")), "s.jsonl.gz");
@@ -53,6 +68,10 @@ test("a recorded session replays as live at the current time", (t) => {
   assert.deepEqual(
     sent().find(([topic]) => topic === "Position"),
     ["Position", { "1": [1, 2] }, NOW - 1000],
+  );
+  assert.deepEqual(
+    sent().find(([topic]) => topic === "CarData"),
+    ["CarData", { "1": [312, 8, 100, 0] }, NOW - 1000],
   );
   assert.equal(shared.session.state.TimingData, undefined);
   t.mock.timers.tick(MINUTE);

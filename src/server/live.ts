@@ -7,6 +7,7 @@ import { play, read, type Line } from "./recording.ts";
 import {
   at,
   delays,
+  expand,
   History,
   inflate,
   positionEvents,
@@ -63,8 +64,7 @@ export class Feed {
       if (fresh < MAX_LAG_MS) this.lag = fresh;
       return positionEvents(now - this.lag, raw);
     }
-    if (topic.endsWith(".z")) return [];
-    return [{ t: now - this.lag, topic, data }];
+    return expand({ t: now - this.lag, topic, data });
   }
 
   protected handle(topic: string, data: Json, now = Date.now()) {

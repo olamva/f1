@@ -31,6 +31,7 @@ export const TOPICS = [
   "PitStopSeries",
   "ChampionshipPrediction",
   "Position.z",
+  "CarData.z",
 ];
 
 const PERIODS: Record<string, Period["kind"]> = {
@@ -70,6 +71,31 @@ export function positionEvents(t: number, raw: Json): Event[] {
     ),
   }));
 }
+
+type CarSample = {
+  Utc: string;
+  Cars: Record<string, { Channels: Record<string, number> }>;
+};
+
+const CHANNELS = ["2", "3", "4", "5"];
+
+function carEvents(t: number, raw: Json): Event[] {
+  const samples = (raw as { Entries?: CarSample[] }).Entries ?? [];
+  const last = Date.parse(samples.at(-1)?.Utc ?? "");
+  return samples.map((s) => ({
+    t: t + (Date.parse(s.Utc) - last || 0),
+    topic: "CarData",
+    data: Object.fromEntries(
+      Object.entries(s.Cars).map(([n, c]) => [
+        n,
+        CHANNELS.map((k) => c.Channels[k] ?? 0),
+      ]),
+    ),
+  }));
+}
+
+export const expand = (e: Event): Event[] =>
+  e.topic === "CarData.z" ? carEvents(e.t, inflate(e.data as string)) : [e];
 
 const sectors = (line: any): string[] =>
   Object.values<any>(line.Sectors ?? {}).map((s) => s.Value ?? "");
@@ -281,7 +307,7 @@ export function parseStream(text: string, topic: string): Event[] {
     if (!m) continue;
     const t = (Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])) * 1000;
     const raw = JSON.parse(m[4]!) as Json;
-    if (topic.endsWith(".z"))
+    if (topic === "Position.z")
       out.push(...positionEvents(t, inflate(raw as string)));
     else out.push({ t, topic, data: raw });
   }
