@@ -269,9 +269,11 @@ const TowerRow = ({
       {row.bestLap}
     </td>
     {!race && (
-      <td className={`px-1 py-1 sm:px-2 ${tyres ? "invisible" : ""}`}>
+      <td className="px-1 py-1 sm:px-2">
         {tyres && <Stints stints={row.stints} scale={scale} />}
-        <Sectors sectors={row.sectors} qualifying={qualifying} />
+        <div className={tyres ? "invisible" : undefined}>
+          <Sectors sectors={row.sectors} qualifying={qualifying} />
+        </div>
       </td>
     )}
     <TyreCells row={row} race={race} tyres={tyres} scale={scale} />

@@ -98,21 +98,17 @@ export const TyreCells = ({ row, race, tyres, scale }: TyreCellsProps) => {
   const cover = race && tyres ? "invisible" : "";
   return (
     <>
-      <td
-        className={`px-1 py-1 sm:table-cell sm:px-2 ${race ? "" : "hidden"} ${cover}`}
-      >
+      <td className={`px-1 py-1 sm:table-cell sm:px-2 ${race ? "" : "hidden"}`}>
         {cover && <Stints stints={row.stints} scale={scale} />}
-        <Tyre compound={set?.compound ?? ""} age={set?.age ?? null} />
+        <div className={cover}>
+          <Tyre compound={set?.compound ?? ""} age={set?.age ?? null} />
+        </div>
       </td>
-      <td
-        className={`hidden px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2 ${cover}`}
-      >
-        {row.pits || ""}
+      <td className="hidden px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
+        <span className={cover}>{row.pits || ""}</span>
       </td>
-      <td
-        className={`box-content hidden min-w-[5ch] px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2 ${cover}`}
-      >
-        {row.pitTime && `${row.pitTime}s`}
+      <td className="box-content hidden min-w-[5ch] px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
+        <span className={cover}>{row.pitTime && `${row.pitTime}s`}</span>
       </td>
     </>
   );
