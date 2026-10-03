@@ -38,6 +38,8 @@ Use the minute as `LIVE_REPLAY_FROM`. Start one or two minutes early, so that th
 
 ## Record a session
 
+Use the `/record-session` command to schedule a recording that does not depend on a T3 worktree.
+
 ```sh
 pnpm record recordings/<year>-<event>-<session>.jsonl <end time in ISO format>
 ```
