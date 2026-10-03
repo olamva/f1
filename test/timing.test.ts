@@ -300,3 +300,20 @@ test("the fallback outline traces the fastest timed lap, not an in-lap", () => {
   const { x } = session.outline()!;
   assert.deepEqual([x[0], x.at(-1)], [400, 490]);
 });
+
+test("the tower shows the stationary time of the last pit stop from the stream", () => {
+  const stream = [
+    '01:09:34.998{"PitTimes":{"1":[{"PitStop":{"PitStopTime":"4.1","Lap":"7"}}]}}',
+    '01:48:12.307{"PitTimes":{"1":{"1":{"PitStop":{"PitStopTime":"2.5","Lap":"32"}}}}}',
+  ].join("\n");
+  const PitStopSeries = parseStream(stream, "PitStopSeries").reduce<Json>(
+    (s, e) => merge(s, e.data),
+    {},
+  );
+  const [row] = rows({
+    PitStopSeries,
+    DriverList: { "1": {} },
+    TimingData: { Lines: { "1": { Position: "1" } } },
+  });
+  assert.equal(row!.pitTime, "2.5");
+});
