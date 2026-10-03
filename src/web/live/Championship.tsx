@@ -8,7 +8,7 @@ interface ChampionshipProps {
 
 export const Championship = ({ drivers }: ChampionshipProps) => (
   <Panel title="Live drivers' championship" className="flex flex-col">
-    <div className="min-h-72 grow basis-0 overflow-y-auto">
+    <div className="@min-[74rem]:grow @min-[74rem]:basis-0 @min-[74rem]:overflow-y-auto">
       <table className="tabular w-full font-mono text-sm">
         <thead className="text-left text-xs text-zinc-500">
           <tr>

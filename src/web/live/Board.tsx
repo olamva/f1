@@ -180,7 +180,7 @@ export const Board = ({
           <Weather weather={state.WeatherData} trend={trackTemps(state)} />
         </div>
       </div>
-      <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
+      <div className="@container grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
         <LapCharts
           laps={laps}
           rows={rows}
