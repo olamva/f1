@@ -384,12 +384,11 @@ export function remaining(state: Obj, utcNow: number): string {
   return `${Math.floor(total / 3600)}:${pad(Math.floor(total / 60) % 60)}:${pad(total % 60)}`;
 }
 
-export const gapSeconds = (gap: string): number | null =>
-  /^LAP|^$/.test(gap)
-    ? 0
-    : /L/.test(gap)
-      ? null
-      : lapSeconds(gap.replace("+", ""));
+export const gapSeconds = (gap: string): number | null => {
+  if (/^LAP|^$/.test(gap)) return 0;
+  const seconds = /L/.test(gap) ? null : lapSeconds(gap.replace(/^[+-]/, ""));
+  return seconds !== null && gap.startsWith("-") ? -seconds : seconds;
+};
 
 const signed = (n: number, unit: (a: number) => string) =>
   `${n < 0 ? "-" : "+"}${unit(Math.abs(n))}`;
