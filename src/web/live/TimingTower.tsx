@@ -33,7 +33,7 @@ interface TyreProps {
   age: number | null;
 }
 
-const Tyre = ({ compound, age }: TyreProps) =>
+export const Tyre = ({ compound, age }: TyreProps) =>
   compound ? (
     <span className="flex items-center gap-1">
       <Compound compound={compound} />

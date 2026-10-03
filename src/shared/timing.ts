@@ -4,6 +4,9 @@ export type LapRow = {
   time: string;
   position: string;
   gap: string;
+  sectors: string[];
+  compound: string;
+  pit?: "in" | "out";
 };
 
 export type Period = {

@@ -89,7 +89,19 @@ test("no delay push after the session has started, even between qualifying parts
   assert.equal(delays(session(info), delayed).length, 1);
   assert.deepEqual(delays(session(info, "Started"), delayed), []);
   const paused = session(info);
-  paused.laps = { "1": [{ lap: 3, t: 0, time: "", position: "1", gap: "" }] };
+  paused.laps = {
+    "1": [
+      {
+        lap: 3,
+        t: 0,
+        time: "",
+        position: "1",
+        gap: "",
+        sectors: [],
+        compound: "",
+      },
+    ],
+  };
   assert.deepEqual(delays(paused, delayed), []);
   assert.deepEqual(
     delays(
