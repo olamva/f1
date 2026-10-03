@@ -1,0 +1,14 @@
+{
+  "id": "7ce38eee",
+  "ts": "2026-10-03T08:39:31+00:00",
+  "text": "T3 preview_snapshot fails with 'Preview automation snapshot failed on client' while preview_evaluate works and visible=false",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "9f88b413",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/tablet-space-layout"
+}

@@ -104,6 +104,31 @@ test("timing rows count lapped cars without reading the leader lap counter as a 
   );
 });
 
+test("qualifying rows read diffs from the stats of the current part", () => {
+  const stats = (q1: string, q2: string) => [
+    { TimeDiffToFastest: q1, TimeDifftoPositionAhead: q1 },
+    { TimeDiffToFastest: q2, TimeDifftoPositionAhead: q2 },
+    { TimeDiffToFastest: "", TimeDifftoPositionAhead: "" },
+  ];
+  const result = rows({
+    DriverList: { "1": {}, "2": {} },
+    TimingData: {
+      SessionPart: 2,
+      Lines: {
+        "1": { Position: "1", Stats: stats("+0.516", "") },
+        "2": { Position: "2", Stats: stats("", "+0.501") },
+      },
+    },
+  });
+  assert.deepEqual(
+    result.map(({ gap, interval }) => ({ gap, interval })),
+    [
+      { gap: "", interval: "" },
+      { gap: "+0.501", interval: "+0.501" },
+    ],
+  );
+});
+
 test("race rows count the places each car gained or lost from its grid slot", () => {
   const result = rows({
     DriverList: { "1": {}, "2": {}, "3": {} },

@@ -86,13 +86,30 @@ const gained = (app: Obj | undefined, position: number): number | null => {
   return grid ? grid - position : null;
 };
 
+const diffs = (line: Obj, part: number) => {
+  const stats: Obj = line.Stats?.[part - 1] ?? {};
+  return {
+    gap:
+      line.GapToLeader ??
+      line.TimeDiffToFastest ??
+      stats.TimeDiffToFastest ??
+      "",
+    interval:
+      line.IntervalToPositionAhead?.Value ??
+      line.TimeDiffToPositionAhead ??
+      stats.TimeDifftoPositionAhead ??
+      "",
+  };
+};
+
 function row(
   number: string,
   line: Obj,
   driver: Obj,
   app: Obj | undefined,
+  part: number,
 ): Row {
-  const gap = line.GapToLeader ?? line.TimeDiffToFastest ?? "";
+  const { gap, interval } = diffs(line, part);
   const position = Number(line.Position ?? driver.Line ?? 99);
   return {
     number,
@@ -105,8 +122,7 @@ function row(
     gained: gained(app, position),
     gap,
     lapsBehind: lapGap(gap),
-    interval:
-      line.IntervalToPositionAhead?.Value ?? line.TimeDiffToPositionAhead ?? "",
+    interval,
     lastLap: line.LastLapTime?.Value ?? "",
     lastMark: mark(line.LastLapTime),
     bestLap: line.BestLapTime?.Value ?? "",
@@ -127,7 +143,9 @@ export function rows(state: Obj): Row[] {
   const apps: Obj = state.TimingAppData?.Lines ?? {};
   return Object.entries(lines)
     .filter(([n]) => drivers[n])
-    .map(([n, line]) => row(n, line, drivers[n], apps[n]))
+    .map(([n, line]) =>
+      row(n, line, drivers[n], apps[n], state.TimingData.SessionPart ?? 1),
+    )
     .sort((a, b) => a.position - b.position);
 }
 
