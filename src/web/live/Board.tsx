@@ -12,6 +12,7 @@ import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, type Feed } from "./useFeed.ts";
 import {
+  deletedLaps,
   isQualifying,
   isRace,
   messages,
@@ -97,6 +98,7 @@ export const Board = ({
   const part = qualifyingPart(state);
   const toggle = (n: string) =>
     setSelected((s) => new Set(s.has(n) ? [] : [n]));
+  const [driver] = selected;
   const focus = selected.size
     ? [...selected]
     : rows.slice(0, 5).map((r) => r.number);
@@ -183,6 +185,8 @@ export const Board = ({
           laps={laps}
           rows={rows}
           focus={focus}
+          driver={driver}
+          deleted={deletedLaps(state, driver)}
           until={feed.t}
           race={race}
         />

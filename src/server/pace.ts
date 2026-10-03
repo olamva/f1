@@ -1,6 +1,6 @@
 import { DefaultAzureCredential } from "@azure/identity";
 import type { Pace } from "../shared/season.ts";
-import { seasonSessions } from "./archive.ts";
+import { sessionPath } from "./archive.ts";
 import { get } from "./jolpica.ts";
 import { F1_ORIGIN } from "./origin.ts";
 import { racePace, seconds } from "./season.ts";
@@ -66,22 +66,9 @@ export function sprintPace(
 }
 
 async function loadSprint(year: number, round: number): Promise<Pace> {
-  const calendar = await get(`${year}/${round}.json`);
-  const sprint = calendar.RaceTable.Races[0]?.Sprint;
-  if (!sprint) throw new Error("Sprint is not available for this round");
-  const start = Date.parse(`${sprint.date}T${sprint.time ?? "00:00:00Z"}`);
-  const sessions = await seasonSessions(year);
-  const match = sessions
-    .filter((s) => /^Sprint(?: Race)?$/.test(s.name) && s.path)
-    .sort(
-      (a, b) =>
-        Math.abs(Date.parse(a.start) - start) -
-        Math.abs(Date.parse(b.start) - start),
-    )[0];
-  if (!match || Math.abs(Date.parse(match.start) - start) > 24 * 60 * 60_000)
-    throw new Error("Sprint timing is not available yet");
+  const path = await sessionPath(year, round, "sprint");
   const [timing, results] = await Promise.all([
-    archiveText(match.path, "TimingData"),
+    archiveText(path, "TimingData"),
     get(`${year}/${round}/sprint.json?limit=100`),
   ]);
   const drivers =

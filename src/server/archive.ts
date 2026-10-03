@@ -1,6 +1,8 @@
 import { merge } from "../shared/merge.ts";
+import type { Stints } from "../shared/season.ts";
 import type { Outline, SessionRef } from "../shared/timing.ts";
 import circuits from "./circuits.json" with { type: "json" };
+import { get } from "./jolpica.ts";
 import { F1_ORIGIN } from "./origin.ts";
 import {
   parseStream,
@@ -35,9 +37,59 @@ export async function seasonSessions(year: number): Promise<SessionRef[]> {
       path: s.Path ?? "",
       meeting: m.Name,
       country: m.Country?.Name ?? "",
-      name: s.Name.replace(/^Practice /, "FP"),
+      name: (s.Name ?? s.Type).replace(/^Practice /, "FP"),
       start: local(s.StartDate, s.GmtOffset),
     })),
+  );
+}
+
+export async function sessionPath(
+  year: number,
+  round: number,
+  kind: "race" | "sprint",
+): Promise<string> {
+  const label = kind === "race" ? "Race" : "Sprint";
+  const race = (await get(`${year}/${round}.json`)).RaceTable.Races[0];
+  const event = kind === "race" ? race : race?.Sprint;
+  if (!event) throw new Error(`${label} is not available for this round`);
+  const start = Date.parse(`${event.date}T${event.time ?? "00:00:00Z"}`);
+  const name = kind === "race" ? /^Race$/ : /^Sprint(?: Race)?$/;
+  const away = (s: SessionRef) => Math.abs(Date.parse(s.start) - start);
+  const match = (await seasonSessions(year))
+    .filter((s) => name.test(s.name) && s.path)
+    .sort((a, b) => away(a) - away(b))[0];
+  if (!match || away(match) > 24 * 60 * 60_000)
+    throw new Error(`${label} timing is not available yet`);
+  return match.path;
+}
+
+export async function stints(
+  year: number,
+  round: number,
+  kind: "race" | "sprint",
+): Promise<Stints> {
+  const path = await sessionPath(year, round, kind);
+  const data = await json(`${BASE}${path}TyreStintSeries.json`);
+  return Object.fromEntries(
+    Object.entries(data.Stints ?? {}).map(([number, list]) => {
+      let lap = 0;
+      return [
+        number,
+        Object.values(list as any[]).flatMap((s) => {
+          const laps = s.TotalLaps - s.StartLaps;
+          if (!(laps > 0)) return [];
+          lap += laps;
+          return [
+            {
+              compound: s.Compound,
+              new: s.New === "true",
+              from: lap - laps + 1,
+              to: lap,
+            },
+          ];
+        }),
+      ];
+    }),
   );
 }
 

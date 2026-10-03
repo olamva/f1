@@ -1,0 +1,14 @@
+{
+  "id": "fed58d1a",
+  "ts": "2026-10-03T13:32:43+00:00",
+  "text": "T3 preview automation client disconnected mid-waitFor; resize and snapshot then failed with no host",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "e1d0a06e",
+  "where": "mcp__t3-code__preview_wait_for",
+  "branch": "t3code/issue-285"
+}
