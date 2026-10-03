@@ -12,6 +12,7 @@ import { useJson } from "../api.ts";
 import { slug, TeamNumber } from "../stats/TeamNumber.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import {
+  compass,
   elapsed,
   highlight,
   type Message,
@@ -61,6 +62,7 @@ export const Panel = ({ title, className = "", children }: PanelProps) => (
 interface RaceControlProps {
   messages: Message[];
   rows: Row[];
+  selected: Set<string>;
   start: number | null;
 }
 
@@ -71,17 +73,25 @@ const TONE: Record<Exclude<Tone, "car">, string> = {
   time: "tabular font-mono text-zinc-100",
 };
 
-export const RaceControl = ({ messages, rows, start }: RaceControlProps) => (
+export const RaceControl = ({
+  messages,
+  rows,
+  selected,
+  start,
+}: RaceControlProps) => (
   <Panel title="Race control" className="flex grow flex-col">
     <ul
-      className="min-h-72 grow basis-0 space-y-2 overflow-y-auto text-sm"
+      className="min-h-72 grow basis-0 space-y-1 overflow-y-auto text-sm"
       aria-live="polite"
     >
       {messages.length === 0 && (
-        <li className="text-zinc-500">No messages yet.</li>
+        <li className="px-1.5 text-zinc-500">No messages yet.</li>
       )}
       {messages.map((m, i) => (
-        <li key={i} className="flex gap-2">
+        <li
+          key={i}
+          className={`flex gap-2 rounded px-1.5 py-0.5 ${m.cars.some((n) => selected.has(n)) ? "bg-zinc-800" : ""}`}
+        >
           <span className="group tabular grid shrink-0 font-mono text-xs text-zinc-500 *:col-start-1 *:row-start-1 *:transition-[opacity,filter] *:duration-200">
             <span
               className={
@@ -133,6 +143,7 @@ export const RaceControl = ({ messages, rows, start }: RaceControlProps) => (
 
 interface WeatherProps {
   weather: Record<string, string> | undefined;
+  trend: number[];
 }
 
 const WEATHER: [key: string, label: string, unit: string, Icon: LucideIcon][] =
@@ -151,7 +162,31 @@ const DROPS = Array.from({ length: 48 }, () => ({
   animationDelay: `${-Math.random()}s`,
 }));
 
-export const Weather = ({ weather }: WeatherProps) => (
+const Sparkline = ({ values }: { values: number[] }) => {
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  return (
+    <svg
+      viewBox={`0 0 ${values.length - 1} 1`}
+      preserveAspectRatio="none"
+      className="block h-4 w-full overflow-visible text-orange-400"
+      role="img"
+      aria-label={`Track temperature ${lo}–${hi} °C`}
+    >
+      <polyline
+        points={values
+          .map((v, i) => `${i},${hi === lo ? 0.5 : (hi - v) / (hi - lo)}`)
+          .join(" ")}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+};
+
+export const Weather = ({ weather, trend }: WeatherProps) => (
   <Panel
     title={weather?.Rainfall === "1" ? "Weather · Rain" : "Weather"}
     className={weather?.Rainfall === "1" ? "rain" : ""}
@@ -169,6 +204,16 @@ export const Weather = ({ weather }: WeatherProps) => (
               {weather?.[k] ? unit : ""}
             </span>
           </dd>
+          {k === "WindSpeed" && weather?.WindDirection && (
+            <dd className="text-xs leading-4 font-semibold text-zinc-400">
+              {compass(weather.WindDirection)}
+            </dd>
+          )}
+          {k === "TrackTemp" && trend.length > 1 && (
+            <dd>
+              <Sparkline values={trend} />
+            </dd>
+          )}
         </div>
       ))}
     </dl>
