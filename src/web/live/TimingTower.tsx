@@ -227,7 +227,7 @@ const TowerRow = ({
                 {s.segments.map((m, j) => (
                   <span
                     key={j}
-                    className={`h-1 min-w-0 flex-1 sm:w-1.5 sm:flex-none ${BAR[m]}`}
+                    className={`h-1 min-w-0 flex-1 sm:min-w-1.5 ${BAR[m]}`}
                   />
                 ))}
               </span>
