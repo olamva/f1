@@ -61,7 +61,7 @@ const expired = (e: any) => {
   return false;
 };
 
-export async function notify(messages: Message[]) {
+export async function notify(messages: Message[], owner?: string) {
   if (!container || !process.env.VAPID_PRIVATE_KEY || !messages.length) return;
   const key = createPrivateKey(process.env.VAPID_PRIVATE_KEY).export({
     format: "jwk",
@@ -71,7 +71,9 @@ export async function notify(messages: Message[]) {
     publicKey: point(key),
     privateKey: key.d!,
   };
-  for await (const { name } of container.listBlobsFlat()) {
+  for await (const { name } of container.listBlobsFlat({
+    prefix: owner && `${owner}/`,
+  })) {
     const item = container.getBlockBlobClient(name);
     const s = JSON.parse((await item.downloadToBuffer()).toString("utf8"));
     const gone = await messages.reduce<Promise<boolean>>(
