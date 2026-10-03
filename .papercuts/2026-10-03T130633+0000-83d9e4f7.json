@@ -1,0 +1,14 @@
+{
+  "id": "83d9e4f7",
+  "ts": "2026-10-03T13:06:33+00:00",
+  "text": "f1-wake job console output is not kept: the container app environment has no Log Analytics workspace, so a finished run's log is empty and only a live --follow stream shows errors",
+  "tags": [
+    "infra",
+    "logs"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "0320da37",
+  "where": "az containerapp job logs show",
+  "branch": ""
+}
