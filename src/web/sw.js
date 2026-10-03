@@ -17,7 +17,7 @@ registerRoute(
 
 registerRoute(
   ({ url }) =>
-    /^\/api\/(season|results\/|standings\/|drivers\/|pace\/)/.test(
+    /^\/api\/(season|results\/|standings\/|drivers\/|facts\/|pace\/)/.test(
       url.pathname,
     ),
   new StaleWhileRevalidate({ cacheName: "api" }),
@@ -26,7 +26,9 @@ registerRoute(
 precacheAndRoute(self.__WB_MANIFEST);
 
 self.addEventListener("push", (event) => {
-  const { title, ...options } = event.data.json();
+  const { title, start, ...options } = event.data.json();
+  if (start)
+    options.body = `Start delayed to ${new Date(start).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}.`;
   event.waitUntil(
     self.registration.showNotification(title, {
       icon: "/icon-192.png",

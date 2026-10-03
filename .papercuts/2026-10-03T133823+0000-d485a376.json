@@ -1,0 +1,14 @@
+{
+  "id": "d485a376",
+  "ts": "2026-10-03T13:38:23+00:00",
+  "text": "preview_evaluate and preview_snapshot timed out after a click, then the preview host became unavailable for the thread",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "9cd1996d",
+  "where": "mcp__t3-code__preview_evaluate",
+  "branch": "t3code/issue-287"
+}

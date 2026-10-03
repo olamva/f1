@@ -7,7 +7,12 @@ import {
   type CSSProperties,
 } from "react";
 import type { Season } from "../../shared/season.ts";
-import type { LapRow, Outline, SessionRef } from "../../shared/timing.ts";
+import type {
+  LapRow,
+  Outline,
+  Period,
+  SessionRef,
+} from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { useDelay } from "../delay.ts";
 import { DelayInput } from "../DelayInput.tsx";
@@ -157,6 +162,7 @@ const Live = ({ session, positions }: LiveProps) => {
   const waiting = !!due && due > Date.now() && feed?.src !== url;
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
   const outline = useJson<Outline | null>("/api/live/outline", 60_000);
+  const periods = useJson<Period[]>("/api/live/periods", 15_000);
   const note = positions
     ? null
     : "Add an F1TV token in Settings to see the cars.";
@@ -191,6 +197,7 @@ const Live = ({ session, positions }: LiveProps) => {
             start={start}
             end={now - live}
             at={now - live - behind}
+            periods={periods.data}
             playing={pos.pausedAt === null}
             onToggle={toggle}
             onSeek={seek}
@@ -246,6 +253,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
   }, [visible, feed?.t]);
   const laps = useJson<Record<string, LapRow[]>>(`/api/replay/laps?${q}`);
   const outline = useJson<Outline | null>(`/api/replay/outline?${q}`);
+  const periods = useJson<Period[]>(`/api/replay/periods?${q}`);
   const race = Boolean(feed?.state.LapCount);
   const starts = useMemo(
     () => (race && feed?.start ? lapStarts(laps.data ?? {}, feed.start) : []),
@@ -272,6 +280,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
         start={feed?.start ?? 0}
         end={feed?.duration ?? 0}
         at={(feed?.src === url ? null : play.t) ?? feed?.t ?? 0}
+        periods={periods.data}
         playing={!!play.on}
         speed={play.speed}
         onToggle={() => {

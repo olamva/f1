@@ -7,12 +7,8 @@ import { useCarMotion } from "./useCarMotion.ts";
 import { MapCard } from "./MapCard.tsx";
 import { SectorFlags } from "./SectorFlags.tsx";
 import { markers, nearest } from "./outline.ts";
-import {
-  sectorSplits,
-  type Rejoin,
-  type Row,
-  type SessionBests,
-} from "./view.ts";
+import type { Rejoin } from "./rejoin.ts";
+import { sectorSplits, type Row, type SessionBests } from "./view.ts";
 
 const SIZE = 1000;
 const PAD = 60;

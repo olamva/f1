@@ -8,19 +8,21 @@ import { StealthInput } from "./StealthInput.tsx";
 import { TimingTower } from "./TimingTower.tsx";
 import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, type Feed } from "./useFeed.ts";
+import { rejoin } from "./rejoin.ts";
 import {
+  deletedLaps,
   isQualifying,
   isRace,
   messages,
   qualifyingPart,
   radios,
-  rejoin,
   remaining,
   rows as towerRows,
   sectorFlags,
   sessionBests,
   sessionStart,
   trackStatus,
+  trackTemps,
 } from "./view.ts";
 
 interface BoardProps {
@@ -92,9 +94,8 @@ export const Board = ({
   const part = qualifyingPart(state);
   const toggle = (n: string) =>
     setSelected((s) => new Set(s.has(n) ? [] : [n]));
-  const pit = race
-    ? rejoin(state, rows, [...selected][0], outline?.pitLoss)
-    : null;
+  const [driver] = selected;
+  const pit = race ? rejoin(state, rows, driver, outline?.pitLoss) : null;
   const focus = selected.size
     ? [...selected]
     : rows.slice(0, 5).map((r) => r.number);
@@ -169,12 +170,13 @@ export const Board = ({
           <RaceControl
             messages={messages(state)}
             rows={rows}
+            selected={selected}
             start={sessionStart(state)}
           />
         </div>
         <div className="flex flex-col gap-4">
           <TeamRadio radios={radios(state)} rows={rows} selected={selected} />
-          <Weather weather={state.WeatherData} />
+          <Weather weather={state.WeatherData} trend={trackTemps(state)} />
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
@@ -182,6 +184,8 @@ export const Board = ({
           laps={laps}
           rows={rows}
           focus={focus}
+          driver={driver}
+          deleted={deletedLaps(state, driver)}
           until={feed.t}
           race={race}
         />

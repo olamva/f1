@@ -1,4 +1,4 @@
-import { lapSeconds, type LapRow, type PitLoss } from "../../shared/timing.ts";
+import { lapSeconds, type LapRow } from "../../shared/timing.ts";
 
 type Obj = Record<string, any>;
 
@@ -205,6 +205,7 @@ export type Message = {
   category: string;
   flag: string;
   text: string;
+  cars: string[];
 };
 
 export const messages = (state: Obj): Message[] =>
@@ -214,8 +215,46 @@ export const messages = (state: Obj): Message[] =>
       category: m.Category,
       flag: m.Flag ?? "",
       text: m.Message,
+      cars: m.RacingNumber
+        ? [m.RacingNumber]
+        : [
+            ...String(m.Message ?? "").matchAll(
+              /(?<![:.])\b(\d{1,2}) \([A-Z]{3}\)/g,
+            ),
+          ].map((c) => c[1]!),
     }))
     .reverse();
+
+export const deletedLaps = (
+  state: Obj,
+  number: string | undefined,
+): Set<number> =>
+  new Set(
+    values(state.RaceControlMessages?.Messages).flatMap((m) => {
+      const hit = /^CAR (\d+) .*DELETED.* LAP (\d+)/.exec(m.Message ?? "");
+      return hit && hit[1] === number ? [Number(hit[2])] : [];
+    }),
+  );
+
+export const theoreticalBest = (
+  number: string,
+  laps: LapRow[],
+  deleted: Set<number>,
+  rows: Row[],
+): { seconds: number; position: number } | null => {
+  const valid = laps.filter((l) => !deleted.has(l.lap));
+  const seconds = [0, 1, 2]
+    .map((i) =>
+      Math.min(...valid.map((l) => lapSeconds(l.sectors[i] ?? "") ?? Infinity)),
+    )
+    .reduce((a, b) => a + b, 0);
+  const faster = rows.filter(
+    (r) => r.number !== number && (lapSeconds(r.bestLap) ?? Infinity) < seconds,
+  );
+  return Number.isFinite(seconds)
+    ? { seconds, position: faster.length + 1 }
+    : null;
+};
 
 export const sectorFlags = (state: Obj): Map<number, string> => {
   const flags = new Map<number, string>();
@@ -286,6 +325,16 @@ export const elapsed = (utc: string, start: number): string => {
 };
 
 export type Radio = { utc: string; number: string; url: string };
+
+export const trackTemps = (state: Obj): number[] =>
+  values(state.WeatherDataSeries?.Series)
+    .map((s) => Number(s.Weather?.TrackTemp))
+    .filter((t) => t > 0);
+
+const COMPASS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+
+export const compass = (degrees: string): string =>
+  COMPASS[Math.round(Number(degrees) / 45) % 8]!;
 
 export const radios = (state: Obj): Radio[] =>
   values(state.TeamRadio?.Captures)
@@ -368,47 +417,6 @@ export const relativeTo = (rows: Row[], number: string | undefined): Row[] => {
   }));
 };
 
-const PIT_LOSS: Record<string, keyof PitLoss> = {
-  "4": "sc",
-  "6": "vsc",
-  "7": "vsc",
-};
-
-export type Rejoin = {
-  before: number;
-  label: string;
-  color: string;
-  anchor: string;
-  back: number | null;
-};
-
-export const rejoin = (
-  state: Obj,
-  rows: Row[],
-  number: string | undefined,
-  losses: PitLoss | undefined,
-): Rejoin | null => {
-  const seconds = (r: Row) =>
-    (r.status === "OUT" ? null : gapSeconds(r.gap)) ?? Infinity;
-  const loss = losses?.[PIT_LOSS[state.TrackStatus?.Status] ?? "normal"];
-  const me = rows.find((r) => r.number === number);
-  if (!loss || !me || me.status === "PIT" || seconds(me) === Infinity)
-    return null;
-  const gap = seconds(me) + loss;
-  const at = rows.findIndex((r) => r !== me && seconds(r) > gap);
-  const above = at < 0 ? rows : rows.slice(0, at);
-  const ahead = above.findLast((r) => r !== me);
-  const anchor = above.at(-1) ?? me;
-  const lap = lapSeconds(anchor.lastLap);
-  return {
-    before: at < 0 ? rows.length : at,
-    label: `${me.tla} · pit · ${ahead ? `+${(gap - seconds(ahead)).toFixed(1)}` : "Leader"}`,
-    color: me.color,
-    anchor: anchor.number,
-    back: lap && (gap - seconds(anchor)) / lap,
-  };
-};
-
 export type Tone = "car" | "bad" | "warn" | "good" | "time";
 
 const TONES: [Tone, string][] = [
@@ -460,6 +468,14 @@ export const lapStarts = (
 
 export const lapTime = (starts: number[], lap: number) =>
   starts[Math.min(Math.max(lap, 1), starts.length) - 1]!;
+
+export const lapPosition = (starts: number[], t: number) => {
+  const i = starts.findLastIndex((s) => s <= t);
+  const from = starts[i];
+  const to = starts[i + 1];
+  if (from === undefined) return 0;
+  return to === undefined ? i : i + (t - from) / (to - from);
+};
 
 export const clockSeconds = (text: string) => {
   if (!text.includes(":")) {

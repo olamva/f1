@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { RaceArchive, Season } from "../shared/season.ts";
+import type { RaceArchive, Season, Stints } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { FAVOURITE_ROW, useFavourite } from "./favourite.ts";
@@ -8,11 +8,13 @@ import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { Standings } from "./Standings.tsx";
+import { Strategy } from "./Strategy.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
 
 const SESSIONS = ["sprint", "race"] as const;
+const VIEWS = ["results", "tyres"] as const;
 const PARTS = ["Races", "Standings"] as const;
 type Part = (typeof PARTS)[number];
 
@@ -88,6 +90,67 @@ const ResultsTable = ({ rows, favourite }: ResultsTableProps) => (
     </tbody>
   </table>
 );
+
+const Classification = ({ rows, favourite }: ResultsTableProps) => (
+  <>
+    {rows.length >= 3 && (
+      <Podium
+        entries={rows.map((result) => ({
+          id: result.driver,
+          name: result.name,
+          color: teamColor(result.team),
+          value: `${result.points} pts`,
+          detail: result.teamName,
+        }))}
+        crowned
+        onSelect={openDriver}
+      />
+    )}
+    <ResultsTable rows={rows} favourite={favourite} />
+  </>
+);
+
+interface RaceBodyProps extends ResultsTableProps {
+  year: string;
+  round: number;
+  kind: "race" | "sprint";
+}
+
+const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
+  const [view, setView] = useState<(typeof VIEWS)[number]>("results");
+  const archived = Number(year) >= 2018;
+  const tyres = archived && view === "tyres";
+  const strategy = useJson<Stints>(
+    tyres ? `/api/stints/${year}/${round}/${kind}` : null,
+  );
+  return (
+    <>
+      {archived && (
+        <div className="mb-4">
+          <Tabs items={VIEWS} value={view} onChange={setView} small />
+        </div>
+      )}
+      {tyres ? (
+        strategy.data ? (
+          <Strategy rows={rows} stints={strategy.data} favourite={favourite} />
+        ) : (
+          <Loading
+            label="Loading tyre strategy…"
+            error={
+              strategy.error && "Tyre data is not available for this session."
+            }
+          />
+        )
+      ) : (
+        <Classification
+          key={`${round}:${kind}`}
+          rows={rows}
+          favourite={favourite}
+        />
+      )}
+    </>
+  );
+};
 
 const resultsPath = (year: string, part: Part, round: number) =>
   `/results/${year}${part === "Standings" ? "/standings" : round ? `/${round}` : ""}`;
@@ -179,21 +242,13 @@ const Races = ({ year, round, onRound }: RacesProps) => {
             </div>
           )}
         </div>
-        {rows.length >= 3 && (
-          <Podium
-            key={`${race.round}:${shown}`}
-            entries={rows.map((result) => ({
-              id: result.driver,
-              name: result.name,
-              color: teamColor(result.team),
-              value: `${result.points} pts`,
-              detail: result.teamName,
-            }))}
-            crowned
-            onSelect={openDriver}
-          />
-        )}
-        <ResultsTable rows={rows} favourite={favourite?.id} />
+        <RaceBody
+          year={year}
+          round={race.round}
+          kind={shown}
+          rows={rows}
+          favourite={favourite?.id}
+        />
       </section>
     </div>
   );

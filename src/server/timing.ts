@@ -1,6 +1,13 @@
 import { inflateRawSync } from "node:zlib";
 import { merge, type Json } from "../shared/merge.ts";
-import type { Delta, LapRow, Outline, Point } from "../shared/timing.ts";
+import type {
+  Delta,
+  LapRow,
+  Outline,
+  Period,
+  Point,
+} from "../shared/timing.ts";
+import type { Message } from "./push.ts";
 import { seconds } from "./season.ts";
 
 export type Event = { t: number; topic: string; data: Json };
@@ -16,6 +23,7 @@ export const TOPICS = [
   "TimingStats",
   "RaceControlMessages",
   "WeatherData",
+  "WeatherDataSeries",
   "TrackStatus",
   "LapCount",
   "ExtrapolatedClock",
@@ -24,8 +32,23 @@ export const TOPICS = [
   "Position.z",
 ];
 
+const PERIODS: Record<string, Period["kind"]> = {
+  "4": "sc",
+  "5": "red",
+  "6": "vsc",
+  "7": "vsc",
+};
+
 const POSITION_SPACING_MS = 500;
 const CHECKPOINT_MS = 2 * 60_000;
+const DAY_MS = 24 * 60 * 60_000;
+
+export const at = (date: unknown, offset: unknown) =>
+  Date.parse(
+    `${date}${String(offset ?? "00:00")
+      .replace(/^(?!-)/, "+")
+      .slice(0, 6)}`,
+  );
 
 export const inflate = (b64: string): Json =>
   JSON.parse(inflateRawSync(Buffer.from(b64, "base64")).toString("utf8"));
@@ -47,11 +70,27 @@ export function positionEvents(t: number, raw: Json): Event[] {
   }));
 }
 
+const sectors = (line: any): string[] =>
+  Object.values<any>(line.Sectors ?? {}).map((s) => s.Value ?? "");
+
+const lapNumber = (
+  counted: number,
+  delta: any,
+  line: any,
+  last: LapRow | undefined,
+): number =>
+  delta.NumberOfLaps === undefined &&
+  ((delta.LastLapTime?.Value && line.InPit) || last?.lap === counted + 1)
+    ? counted + 1
+    : counted;
+
 export class Session {
   state: State = {};
   laps: Record<string, LapRow[]> = {};
   track: Record<string, Point[]> = {};
+  periods: Period[] = [];
   private lastPosition = -Infinity;
+  private outLaps = new Set<string>();
 
   apply(e: Event): Event | null {
     if (e.topic === "Position") {
@@ -64,7 +103,18 @@ export class Session {
     }
     this.state[e.topic] = merge(this.state[e.topic], e.data);
     if (e.topic === "TimingData") this.trackLaps(e);
+    if (e.topic === "TrackStatus") this.trackStatus(e.t);
     return e;
+  }
+
+  private trackStatus(t: number) {
+    const kind = PERIODS[(this.state.TrackStatus as any)?.Status];
+    const open = this.periods.at(-1);
+    if (open?.to === null) {
+      if (open.kind === kind) return;
+      open.to = t;
+    }
+    if (kind) this.periods.push({ kind, from: t, to: null });
   }
 
   private trackLaps(e: Event) {
@@ -75,21 +125,33 @@ export class Session {
     >;
     for (const [n, delta] of Object.entries(lines)) {
       const line = all[n];
-      const lap = Number(line?.NumberOfLaps);
-      if (!lap) continue;
+      const counted = Number(line?.NumberOfLaps);
+      if (!counted) continue;
       const rows = (this.laps[n] ??= []);
-      let row = rows.at(-1);
-      if (row?.lap !== lap) {
-        row = { lap, t: e.t, time: "", position: line.Position ?? "", gap: "" };
-        rows.push(row);
+      const lap = lapNumber(counted, delta, line, rows.at(-1));
+      if (rows.at(-1)?.lap !== lap) rows.push(this.startLap(n, lap, line, e.t));
+      if (line.PitOut) this.outLaps.add(n);
+      const row = rows.at(-1)!;
+      if (delta.LastLapTime?.Value) {
+        row.time = delta.LastLapTime.Value;
+        row.sectors = sectors(line);
       }
-      if (delta.NumberOfLaps !== undefined) {
-        row.t = e.t;
-        row.position = line.Position ?? row.position;
-        row.gap = line.GapToLeader ?? line.TimeDiffToFastest ?? "";
-      }
-      if (delta.LastLapTime?.Value) row.time = delta.LastLapTime.Value;
     }
+  }
+
+  private startLap(n: string, lap: number, line: any, t: number): LapRow {
+    const stints = (this.state.TimingAppData as any)?.Lines?.[n]?.Stints;
+    const out = this.outLaps.delete(n);
+    return {
+      lap,
+      t,
+      time: "",
+      position: line.Position ?? "",
+      gap: line.GapToLeader ?? line.TimeDiffToFastest ?? "",
+      sectors: sectors(line),
+      compound: Object.values<any>(stints ?? {}).at(-1)?.Compound ?? "",
+      pit: line.InPit || line.PitOut ? "in" : out ? "out" : undefined,
+    };
   }
 
   outline(): Outline | null {
@@ -117,6 +179,48 @@ export class Session {
       marshalSectors: [],
     };
   }
+}
+
+export function delays(session: Session, data: Json): Message[] {
+  const info = session.state.SessionInfo as Record<string, any> | undefined;
+  const status = (
+    session.state.SessionStatus as { Status?: string } | undefined
+  )?.Status;
+  if (
+    !info ||
+    (status && status !== "Inactive") ||
+    Object.keys(session.laps).length
+  )
+    return [];
+  const scheduled = at(info.StartDate, info.GmtOffset);
+  const messages =
+    (data as { Messages?: Record<string, { Utc?: string; Message?: string }> })
+      .Messages ?? {};
+  return Object.values(messages).flatMap(({ Utc, Message: text = "" }) => {
+    const clock = /(?:START AT|DELAYED TO) (\d{1,2}):(\d{2})/.exec(text);
+    const by = /DELAYED BY (\d+) MINUTES/.exec(text);
+    const local = clock
+      ? at(
+          `${String(info.StartDate).slice(0, 11)}${clock[1]!.padStart(2, "0")}:${clock[2]}:00`,
+          info.GmtOffset,
+        )
+      : scheduled + Number(by?.[1]) * 60_000;
+    const start = local < scheduled - DAY_MS / 2 ? local + DAY_MS : local;
+    if (
+      /\bS?Q[23]\b/.test(text) ||
+      !(start > scheduled || /DELAY|SUSPENDED/.test(text))
+    )
+      return [];
+    return [
+      {
+        title: `${info.Meeting?.Name} · ${info.Name}`,
+        body: "Start delayed.",
+        tag: `delay-${info.Key}-${Utc}`,
+        ttl: 30 * 60,
+        ...(start > scheduled && { start }),
+      },
+    ];
+  });
 }
 
 export class History {

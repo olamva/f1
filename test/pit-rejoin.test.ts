@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { rejoin, rows } from "../src/web/live/view.ts";
+import { rejoin } from "../src/web/live/rejoin.ts";
+import { rows } from "../src/web/live/view.ts";
 
 const LOSS = { normal: 22, sc: 13, vsc: 16 };
 

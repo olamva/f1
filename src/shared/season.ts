@@ -21,6 +21,7 @@ export type Round = {
   round: number;
   name: string;
   circuit: string;
+  circuitId: string;
   country: string;
   sessions: Record<
     | "fp1"
@@ -57,6 +58,15 @@ export type Season = {
 
 export type Pace = Record<string, number[]>;
 
+export type Stint = {
+  compound: string;
+  new: boolean;
+  from: number;
+  to: number;
+};
+
+export type Stints = Record<string, Stint[]>;
+
 export type RaceArchive = {
   year: number;
   races: {
@@ -67,6 +77,7 @@ export type RaceArchive = {
     results: {
       driver: string;
       name: string;
+      code: string;
       number: string;
       team: string;
       teamName: string;
@@ -117,3 +128,5 @@ export type SeasonStandings = {
   drivers: StandingRow[];
   constructors: StandingRow[];
 };
+
+export type Fact = { text: string; sessions: ("qualifying" | "race")[] };
