@@ -59,7 +59,7 @@ export const LapCharts = ({
     points: s.points.filter((p) => p[1] <= fastest * 1.08),
   }));
   const gaps = seriesOf(laps, rows, focus, until, (r) => gapSeconds(r.gap));
-  const hint = "Click drivers in the timing tower to compare them.";
+  const hint = "No lap times yet.";
   return (
     <>
       <Panel title="Lap times (last 15, within 108% of the fastest)">
