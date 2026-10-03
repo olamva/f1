@@ -160,7 +160,7 @@ const TowerRow = ({
     className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
   >
     <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
-      <span className="inline-flex items-center gap-1">
+      <span className="flex items-center justify-between gap-1">
         <SwapArrow swap={swap} />
         {row.position}
       </span>
