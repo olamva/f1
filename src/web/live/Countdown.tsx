@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import type { Round } from "../../shared/season.ts";
+import type { Fact, Round } from "../../shared/season.ts";
+import { useJson } from "../api.ts";
 import { Flag } from "../Flag.tsx";
 
 export const LABEL: Record<string, string> = {
@@ -20,6 +21,12 @@ const MINUTES: Record<string, number> = {
   qualifying: 60,
   race: 120,
 };
+const KIND: Record<string, Fact["sessions"][number]> = {
+  sprintQualifying: "qualifying",
+  qualifying: "qualifying",
+  sprint: "race",
+  race: "race",
+};
 
 interface CountdownProps {
   rounds: Round[];
@@ -32,6 +39,7 @@ const next = (rounds: Round[], now: number) =>
         .filter((e): e is [string, string] => e[1] !== null)
         .map(([k, at]) => ({
           round: r,
+          session: k,
           label: LABEL[k] ?? k,
           at: Date.parse(at),
         })),
@@ -102,6 +110,29 @@ const SessionTitle = ({ round, label }: SessionTitleProps) => {
   );
 };
 
+interface FactsProps {
+  circuit: string;
+  year: number;
+  session: string;
+}
+
+const Facts = ({ circuit, year, session }: FactsProps) => {
+  const { data } = useJson<Fact[]>(`/api/facts/${circuit}/${year}`);
+  const [index, setIndex] = useState(0);
+  const matching = data?.filter((f) => f.sessions.includes(KIND[session]));
+  const facts = matching?.length ? matching : (data ?? []);
+  const fact = facts[index % facts.length];
+  if (!fact) return null;
+  return (
+    <span
+      onAnimationIteration={() => setIndex((i) => i + 1)}
+      className={`absolute top-full left-1/2 mt-3 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 text-sm xl:mt-[1vw] xl:text-[1vw] ${facts.length > 1 ? "animate-fact" : ""}`}
+    >
+      {fact.text}
+    </span>
+  );
+};
+
 export const Countdown = ({ rounds }: CountdownProps) => {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -120,7 +151,7 @@ export const Countdown = ({ rounds }: CountdownProps) => {
       <span className="tabular font-f1 text-[11vw] font-bold whitespace-nowrap md:text-8xl xl:text-[10vw]">
         {span(s.at - now)}
       </span>
-      <span className="text-zinc-400 xl:text-[1.4vw]">
+      <div className="relative text-zinc-400 xl:text-[1.4vw]">
         {new Date(s.at).toLocaleString([], {
           weekday: "long",
           day: "numeric",
@@ -129,7 +160,12 @@ export const Countdown = ({ rounds }: CountdownProps) => {
           hour: "2-digit",
           minute: "2-digit",
         })}
-      </span>
+        <Facts
+          circuit={s.round.circuitId}
+          year={new Date(s.at).getUTCFullYear()}
+          session={s.session}
+        />
+      </div>
     </section>
   );
 };

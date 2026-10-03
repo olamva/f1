@@ -21,6 +21,7 @@ export type Round = {
   round: number;
   name: string;
   circuit: string;
+  circuitId: string;
   country: string;
   sessions: Record<
     | "fp1"
@@ -117,3 +118,5 @@ export type SeasonStandings = {
   drivers: StandingRow[];
   constructors: StandingRow[];
 };
+
+export type Fact = { text: string; sessions: ("qualifying" | "race")[] };

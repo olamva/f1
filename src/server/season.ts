@@ -97,6 +97,7 @@ const schedule = (r: any): Round => ({
   round: Number(r.round),
   name: r.raceName,
   circuit: r.Circuit.circuitName,
+  circuitId: r.Circuit.circuitId,
   country: r.Circuit.Location.country,
   sessions: {
     fp1: when(r.FirstPractice),

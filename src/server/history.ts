@@ -1,9 +1,11 @@
 import type {
   DriverProfile,
+  Fact,
   RaceArchive,
   SeasonStandings,
 } from "../shared/season.ts";
 import { all, get, total } from "./jolpica.ts";
+import { seconds } from "./season.ts";
 
 const DAY = 24 * 60 * 60_000;
 const NON_START = new Set([
@@ -142,4 +144,64 @@ export async function driverProfile(id: string): Promise<DriverProfile | null> {
     poles: (seasons.at(-1)?.year ?? 0) < 1994 ? null : poles,
     seasons,
   };
+}
+
+const driver = (race: any) =>
+  `${race.Results[0].Driver.givenName} ${race.Results[0].Driver.familyName}`;
+const grid = (race: any) => Number(race.Results[0].grid);
+const lap = (race: any) => race.Results[0].FastestLap?.Time.time;
+const list = new Intl.ListFormat("en");
+
+const most = (label: string, races: any[]) => {
+  const counts = [...Map.groupBy(races, driver)];
+  const top = Math.max(0, ...counts.map(([, group]) => group.length));
+  const leaders = counts.filter(([, group]) => group.length === top);
+  return top > 1
+    ? `Most ${label} here: ${list.format(leaders.map(([name]) => name))} (${top})`
+    : null;
+};
+
+const fact = (
+  text: string | false | null | undefined,
+  ...sessions: Fact["sessions"]
+): Fact[] => (text ? [{ text, sessions }] : []);
+
+export async function circuitFacts(
+  circuit: string,
+  year: number,
+): Promise<Fact[]> {
+  const past = (data: any): any[] =>
+    data.RaceTable.Races.filter((race: any) => Number(race.season) < year);
+  const [wins, poles, laps] = await Promise.all(
+    ["results/1", "grid/1/results", "fastest/1/results"].map((path) =>
+      all(`circuits/${circuit}/${path}.json`, past, DAY),
+    ),
+  );
+  const back = wins
+    .filter((race) => grid(race) > 0)
+    .toSorted((a, b) => grid(b) - grid(a))[0];
+  const fastest = laps
+    .filter(lap)
+    .toSorted((a, b) => seconds(lap(a)) - seconds(lap(b)))[0];
+  const since = Number(wins[0]?.season) < 2004 ? " since 2004" : "";
+  return [
+    ...fact(most("wins", wins), "race"),
+    ...fact(most("poles", poles), "qualifying"),
+    ...fact(
+      wins.length > 0 &&
+        `Pole sitter won ${wins.filter((race) => grid(race) === 1).length} of ${wins.length} races here`,
+      "qualifying",
+      "race",
+    ),
+    ...fact(
+      back &&
+        `Furthest back to win here: ${driver(back)} from P${grid(back)} (${back.season})`,
+      "race",
+    ),
+    ...fact(
+      fastest &&
+        `Fastest race lap here${since}: ${lap(fastest)} by ${driver(fastest)} (${fastest.season})`,
+      "race",
+    ),
+  ];
 }

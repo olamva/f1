@@ -12,7 +12,12 @@ import {
 } from "./archive.ts";
 import { requireGoogle, user } from "./auth.ts";
 import * as live from "./live.ts";
-import { driverProfile, raceArchive, standings } from "./history.ts";
+import {
+  circuitFacts,
+  driverProfile,
+  raceArchive,
+  standings,
+} from "./history.ts";
 import { audio, transcript } from "./radio.ts";
 import { pace, type PaceKind } from "./pace.ts";
 import * as push from "./push.ts";
@@ -76,6 +81,14 @@ app.get("/api/drivers/:id", async (c) => {
     return c.json({ error: "Invalid driver." }, 400);
   const profile = await driverProfile(id);
   return profile ? c.json(profile) : c.notFound();
+});
+
+app.get("/api/facts/:circuit/:year", async (c) => {
+  const circuit = c.req.param("circuit");
+  const year = Number(c.req.param("year"));
+  if (!/^[a-z0-9_]+$/.test(circuit) || !Number.isInteger(year))
+    return c.json({ error: "Invalid circuit." }, 400);
+  return c.json(await circuitFacts(circuit, year));
 });
 
 app.get("/api/token", (c) => c.json(token.status(key(c)!)));
