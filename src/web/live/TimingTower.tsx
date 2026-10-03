@@ -1,5 +1,6 @@
 import { ArrowDown, ArrowUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
+import { FAVOURITE_ROW, useFavourite } from "../favourite.ts";
 import { TeamLogo } from "../TeamLogo.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
@@ -153,6 +154,7 @@ interface TowerRowProps {
   qualifying: boolean;
   lapOwner: boolean;
   selected: boolean;
+  favourite: boolean;
   relative: boolean;
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
@@ -165,6 +167,7 @@ const TowerRow = ({
   qualifying,
   lapOwner,
   selected,
+  favourite,
   relative,
   swap,
   bind,
@@ -173,7 +176,7 @@ const TowerRow = ({
   <tr
     ref={bind}
     onClick={onToggle}
-    className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
+    className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : favourite ? FAVOURITE_ROW : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
   >
     <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
       <span className="flex items-center justify-between gap-1">
@@ -260,6 +263,9 @@ const TowerRow = ({
     <td className="hidden px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
       {row.pits || ""}
     </td>
+    <td className="box-content hidden min-w-[5ch] px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
+      {row.pitTime && `${row.pitTime}s`}
+    </td>
     <td className="px-1 py-1 text-xs text-zinc-400 sm:px-2">{row.status}</td>
   </tr>
 );
@@ -273,6 +279,7 @@ export const TimingTower = ({
   onToggle,
 }: TimingTowerProps) => {
   const { swaps, bind } = useSwaps(rows);
+  const favourite = useFavourite();
   const relative = relativeTo(rows, [...selected][0]);
   return (
     <div className="bg-surface overflow-x-auto rounded-xl">
@@ -324,7 +331,13 @@ export const TimingTower = ({
               Tyre
             </th>
             <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
-              Pit
+              Pits
+            </th>
+            <th
+              className="hidden px-1 py-2 text-right sm:table-cell sm:px-2"
+              title="Stationary time of the last pit stop"
+            >
+              Stop
             </th>
             <th className="px-1 py-2 sm:px-2" />
           </tr>
@@ -338,6 +351,7 @@ export const TimingTower = ({
               qualifying={qualifying}
               lapOwner={bests.lap?.number === r.number}
               selected={selected.has(r.number)}
+              favourite={r.tla === favourite?.code}
               relative={relative !== rows}
               swap={swaps[r.number]}
               bind={bind(r.number)}

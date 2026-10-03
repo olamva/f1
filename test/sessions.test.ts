@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  loginReminders,
   reminders,
   schedule,
   shouldWake,
@@ -94,4 +95,17 @@ test("each session gets one reminder 15 minutes and one 5 minutes before it star
     ["13:50", "Test Grand Prix · Race", "Starts in 15 minutes."],
     ["14:00", "Test Grand Prix · Race", "Starts in 5 minutes."],
   ]);
+});
+
+test("each F1TV login gets one reminder one day before it expires", () => {
+  const expires = at("2026-10-05T14:03:20Z");
+  const sent = [];
+  for (
+    let slot = at("2026-10-03T14:00:00Z");
+    slot < expires;
+    slot += 5 * 60_000
+  )
+    for (const message of loginReminders(expires, slot + 50_000))
+      sent.push([new Date(slot).toISOString().slice(0, 16), message.title]);
+  assert.deepEqual(sent, [["2026-10-04T14:05", "F1TV login expires tomorrow"]]);
 });

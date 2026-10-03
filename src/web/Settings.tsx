@@ -10,8 +10,10 @@ import {
   SquarePlus,
   SquareTerminal,
 } from "lucide-react";
+import type { DriverInfo } from "../shared/season.ts";
 import type { TokenStatus } from "../shared/token.ts";
 import { DelayInput } from "./DelayInput.tsx";
+import { setFavourite, useFavourite } from "./favourite.ts";
 import { GlassSwitch } from "./GlassSwitch.tsx";
 import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
@@ -67,7 +69,12 @@ async function post(value: string): Promise<TokenStatus> {
   return body;
 }
 
-export const Settings = () => {
+interface SettingsProps {
+  drivers: DriverInfo[];
+}
+
+export const Settings = ({ drivers }: SettingsProps) => {
+  const favourite = useFavourite();
   const [status, setStatus] = useState<TokenStatus | null>(null);
   const [denied, setDenied] = useState<number | null>(null);
   const [value, setValue] = useState("");
@@ -125,6 +132,27 @@ export const Settings = () => {
         >
           Ask before showing live timing for each session
         </GlassSwitch>
+      </section>
+      <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="font-f1 text-lg font-bold">Favourite driver</h2>
+        <p className="text-sm text-zinc-400">
+          Highlight this driver in the timing tower and in Results.
+        </p>
+        <select
+          aria-label="Favourite driver"
+          value={favourite?.id ?? ""}
+          onChange={(e) =>
+            setFavourite(drivers.find((d) => d.id === e.target.value) ?? null)
+          }
+          className="rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm"
+        >
+          <option value="">None</option>
+          {drivers.map((d) => (
+            <option key={d.id} value={d.id}>
+              {d.name}
+            </option>
+          ))}
+        </select>
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">TV delay</h2>

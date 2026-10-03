@@ -202,6 +202,10 @@ resource "azurerm_container_app_job" "wake" {
         value = azurerm_user_assigned_identity.app.client_id
       }
       env {
+        name  = "KEY_VAULT_NAME"
+        value = azurerm_key_vault.f1.name
+      }
+      env {
         name  = "PUSH_STORE"
         value = local.push_store
       }

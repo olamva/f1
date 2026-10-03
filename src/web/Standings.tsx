@@ -3,6 +3,7 @@ import type { Championship } from "../shared/clinch.ts";
 import type { Season, SeasonStandings, StandingRow } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
+import { FAVOURITE_ROW, useFavourite } from "./favourite.ts";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
 import { Podium } from "./Podium.tsx";
@@ -26,6 +27,7 @@ const StandingsTable = ({
   crowned,
   onSelect,
 }: StandingsTableProps) => {
+  const favourite = useFavourite();
   const lead = rows[0]?.points ?? 0;
   const start = rows.length >= 3 ? 3 : 0;
   return (
@@ -58,7 +60,7 @@ const StandingsTable = ({
             return (
               <tr
                 key={row.id}
-                className={`border-t border-zinc-800 ${onSelect ? "relative hover:bg-zinc-800/50" : ""}`}
+                className={`border-t border-zinc-800 ${onSelect ? "relative hover:bg-zinc-800/50" : ""} ${row.id === favourite?.id ? FAVOURITE_ROW : ""}`}
               >
                 <td className="w-8 py-1 text-right text-zinc-500">
                   {["🥇", "🥈", "🥉"][i] ?? i + 1}

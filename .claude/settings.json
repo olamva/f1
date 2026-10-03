@@ -22,6 +22,11 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm dev:*)",
       "Bash(pnpm worktree:cleanup:*)",
+      "Bash(git checkout --detach origin/main)",
+      "Bash(terraform -chdir=infra init:*)",
+      "Bash(terraform -chdir=infra plan:*)",
+      "Bash(terraform -chdir=infra apply:*)",
+      "Bash(rm infra/tfplan)",
       "mcp__t3-code__link_pull_request",
       "mcp__t3-code__list_thread_pull_requests"
     ],
@@ -39,7 +44,11 @@
       "Bash(gh pr merge * --admin*)",
       "Bash(gh stack merge:*)",
       "Bash(git worktree remove --force:*)",
-      "Bash(git worktree remove -f:*)"
+      "Bash(git worktree remove -f:*)",
+      "Bash(terraform destroy:*)",
+      "Bash(terraform *destroy*)",
+      "Bash(terraform force-unlock:*)",
+      "Bash(terraform *force-unlock*)"
     ]
   }
 }
