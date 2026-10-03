@@ -60,6 +60,7 @@ export const Panel = ({ title, className = "", children }: PanelProps) => (
 interface RaceControlProps {
   messages: Message[];
   rows: Row[];
+  selected: Set<string>;
   start: number | null;
 }
 
@@ -70,17 +71,25 @@ const TONE: Record<Exclude<Tone, "car">, string> = {
   time: "tabular font-mono text-zinc-100",
 };
 
-export const RaceControl = ({ messages, rows, start }: RaceControlProps) => (
+export const RaceControl = ({
+  messages,
+  rows,
+  selected,
+  start,
+}: RaceControlProps) => (
   <Panel title="Race control" className="flex grow flex-col">
     <ul
-      className="min-h-72 grow basis-0 space-y-2 overflow-y-auto text-sm"
+      className="min-h-72 grow basis-0 space-y-1 overflow-y-auto text-sm"
       aria-live="polite"
     >
       {messages.length === 0 && (
-        <li className="text-zinc-500">No messages yet.</li>
+        <li className="px-1.5 text-zinc-500">No messages yet.</li>
       )}
       {messages.map((m, i) => (
-        <li key={i} className="flex gap-2">
+        <li
+          key={i}
+          className={`flex gap-2 rounded px-1.5 py-0.5 ${m.cars.some((n) => selected.has(n)) ? "bg-zinc-800" : ""}`}
+        >
           <span className="group tabular grid shrink-0 font-mono text-xs text-zinc-500 *:col-start-1 *:row-start-1 *:transition-[opacity,filter] *:duration-200">
             <span
               className={

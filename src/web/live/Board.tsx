@@ -165,6 +165,7 @@ export const Board = ({
           <RaceControl
             messages={messages(state)}
             rows={rows}
+            selected={selected}
             start={sessionStart(state)}
           />
         </div>

@@ -202,6 +202,7 @@ export type Message = {
   category: string;
   flag: string;
   text: string;
+  cars: string[];
 };
 
 export const messages = (state: Obj): Message[] =>
@@ -211,6 +212,13 @@ export const messages = (state: Obj): Message[] =>
       category: m.Category,
       flag: m.Flag ?? "",
       text: m.Message,
+      cars: m.RacingNumber
+        ? [m.RacingNumber]
+        : [
+            ...String(m.Message ?? "").matchAll(
+              /(?<![:.])\b(\d{1,2}) \([A-Z]{3}\)/g,
+            ),
+          ].map((c) => c[1]!),
     }))
     .reverse();
 
