@@ -65,4 +65,4 @@ If F1 blocks Azure egress, set `f1_origin` in the ignored `infra/terraform.tfvar
 
 ## Notifications
 
-Signed-in users can turn on session reminders in Settings. On iOS, the app must be on the Home Screen. The wake job sends a Web Push notification 15 minutes and 5 minutes before each session. It removes subscriptions that the push service reports as expired. The app stores subscriptions in the `push` blob container. Terraform generates the VAPID key. A new key makes current subscriptions invalid, so users must turn notifications on again.
+Signed-in users can turn on session reminders in Settings. On iOS, the app must be on the Home Screen. The wake job sends a Web Push notification 15 minutes and 5 minutes before each session. It also sends a notification to a user one day before the F1TV login of that user expires. It removes subscriptions that the push service reports as expired. The app stores subscriptions in the `push` blob container. Terraform generates the VAPID key. A new key makes current subscriptions invalid, so users must turn notifications on again.
