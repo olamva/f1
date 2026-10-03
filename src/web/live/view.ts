@@ -194,9 +194,6 @@ export const sessionBests = (state: Obj, drivers: Row[]): SessionBests => {
   };
 };
 
-export const isRace = (info: Obj | undefined): boolean =>
-  /Race|Sprint$/.test(info?.Type ?? "") || info?.Name === "Sprint";
-
 export const isQualifying = (info: Obj | undefined): boolean =>
   /Qualifying|Shootout/i.test(info?.Name ?? "");
 
