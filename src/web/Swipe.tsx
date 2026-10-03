@@ -33,6 +33,8 @@ let pending: (() => void) | null = null;
 let last = { at: -Infinity, depth: 0 };
 const levels = new Set<{ depth: number; move: (step: number) => boolean }>();
 
+export const useActive = () => useContext(Level).active;
+
 const locked = (depth: number) =>
   depth > 0 && !last.depth && performance.now() - last.at < 1000;
 

@@ -7,6 +7,7 @@ import { Flag } from "./Flag.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
+import { Spoiler } from "./Spoiler.tsx";
 import { Standings } from "./Standings.tsx";
 import { Strategy } from "./Strategy.tsx";
 import { Swipe } from "./Swipe.tsx";
@@ -157,11 +158,12 @@ const resultsPath = (year: string, part: Part, round: number) =>
 
 interface RacesProps {
   year: string;
+  season: Season | null;
   round: number;
   onRound: (round: number) => void;
 }
 
-const Races = ({ year, round, onRound }: RacesProps) => {
+const Races = ({ year, season, round, onRound }: RacesProps) => {
   const [session, setSession] = useState<"race" | "sprint">("race");
   const favourite = useFavourite();
   const archive = useJson<RaceArchive>(`/api/results/${year}`);
@@ -242,13 +244,20 @@ const Races = ({ year, round, onRound }: RacesProps) => {
             </div>
           )}
         </div>
-        <RaceBody
-          year={year}
+        <Spoiler
+          season={season}
+          year={Number(year)}
+          kinds={[shown]}
           round={race.round}
-          kind={shown}
-          rows={rows}
-          favourite={favourite?.id}
-        />
+        >
+          <RaceBody
+            year={year}
+            round={race.round}
+            kind={shown}
+            rows={rows}
+            favourite={favourite?.id}
+          />
+        </Spoiler>
       </section>
     </div>
   );
@@ -303,11 +312,19 @@ export const Results = ({ season }: ResultsProps) => {
         drive={blob}
         render={(p) =>
           p === "Standings" ? (
-            <Standings key={year} year={year} season={season} />
+            <Spoiler
+              key={year}
+              season={season}
+              year={Number(year)}
+              kinds={["sprint", "race"]}
+            >
+              <Standings year={year} season={season} />
+            </Spoiler>
           ) : (
             <Races
               key={year}
               year={year}
+              season={season}
               round={round}
               onRound={(nextRound) => show(year, "Races", nextRound)}
             />
