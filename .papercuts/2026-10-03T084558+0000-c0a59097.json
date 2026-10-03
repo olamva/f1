@@ -1,0 +1,13 @@
+{
+  "id": "c0a59097",
+  "ts": "2026-10-03T08:45:58+00:00",
+  "text": "preview_snapshot fails on every call for the T3 preview tab; screenshots need a separate Playwright install",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "ac289008",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": ""
+}
