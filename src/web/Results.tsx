@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import type { RaceArchive, Season } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
+import { FAVOURITE_ROW, useFavourite } from "./favourite.ts";
 import { Flag } from "./Flag.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
@@ -31,9 +32,10 @@ const years = Array.from({ length: currentYear - 1949 }, (_, index) =>
 
 interface ResultsTableProps {
   rows: RaceArchive["races"][number]["results"];
+  favourite?: string;
 }
 
-const ResultsTable = ({ rows }: ResultsTableProps) => (
+const ResultsTable = ({ rows, favourite }: ResultsTableProps) => (
   <table className="tabular w-full text-xs sm:text-sm">
     <thead className="text-left text-xs text-zinc-500">
       <tr>
@@ -51,7 +53,7 @@ const ResultsTable = ({ rows }: ResultsTableProps) => (
         return (
           <tr
             key={`${result.driver}:${index}`}
-            className="relative border-t border-zinc-800 hover:bg-zinc-800/50"
+            className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${result.driver === favourite ? FAVOURITE_ROW : ""}`}
           >
             <td className="py-2 font-semibold">{result.positionText}</td>
             <td className="py-2">
@@ -98,6 +100,7 @@ interface RacesProps {
 
 const Races = ({ year, round, onRound }: RacesProps) => {
   const [session, setSession] = useState<"race" | "sprint">("race");
+  const favourite = useFavourite();
   const archive = useJson<RaceArchive>(`/api/results/${year}`);
   const races = archive.data?.year === Number(year) ? archive.data.races : [];
   const race = races.find((entry) => entry.round === round) ?? races[0];
@@ -190,7 +193,7 @@ const Races = ({ year, round, onRound }: RacesProps) => {
             onSelect={openDriver}
           />
         )}
-        <ResultsTable rows={rows} />
+        <ResultsTable rows={rows} favourite={favourite?.id} />
       </section>
     </div>
   );
