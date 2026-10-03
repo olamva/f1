@@ -1,0 +1,14 @@
+{
+  "id": "7c1efa80",
+  "ts": "2026-10-03T18:10:29+00:00",
+  "text": "T3 preview host disconnects mid-evaluate; later calls fail with no automation host, so before shots needed shell Playwright",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "9668b520",
+  "where": "mcp__t3-code__preview_evaluate",
+  "branch": "t3code/issue-300"
+}

@@ -9,6 +9,8 @@ const lap = (lap: number, t: number): LapRow => ({
   time: "",
   position: "",
   gap: "",
+  sectors: [],
+  compound: "",
 });
 
 const laps = {

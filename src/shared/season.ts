@@ -58,6 +58,15 @@ export type Season = {
 
 export type Pace = Record<string, number[]>;
 
+export type Stint = {
+  compound: string;
+  new: boolean;
+  from: number;
+  to: number;
+};
+
+export type Stints = Record<string, Stint[]>;
+
 export type RaceArchive = {
   year: number;
   races: {
@@ -68,6 +77,7 @@ export type RaceArchive = {
     results: {
       driver: string;
       name: string;
+      code: string;
       number: string;
       team: string;
       teamName: string;
