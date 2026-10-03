@@ -1,9 +1,10 @@
 import { ArrowDown, ArrowUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FAVOURITE_ROW, useFavourite } from "../favourite.ts";
+import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
-import { Compound } from "../Tyre.tsx";
 import type { Rejoin } from "./rejoin.ts";
+import { Cover, Stints, TyreCells, useCover } from "./TowerTyres.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
@@ -30,18 +31,7 @@ interface TimingTowerProps {
   onToggle: (number: string) => void;
 }
 
-interface TyreProps {
-  compound: string;
-  age: number | null;
-}
-
-export const Tyre = ({ compound, age }: TyreProps) =>
-  compound ? (
-    <span className="flex items-center gap-1">
-      <Compound compound={compound} />
-      <span className="text-zinc-400">{age ?? ""}</span>
-    </span>
-  ) : null;
+const VIEWS = ["Timing", "Tyres"] as const;
 
 interface Swap {
   up: boolean;
@@ -159,6 +149,37 @@ const PitLine = ({ label, color, last }: PitLineProps) => (
   </span>
 );
 
+interface SectorsProps {
+  sectors: Row["sectors"];
+  qualifying: boolean;
+}
+
+const Sectors = ({ sectors, qualifying }: SectorsProps) => (
+  <span className="flex gap-1 sm:gap-1.5">
+    {sectors.map((s, i) => (
+      <span
+        key={i}
+        title={s.value}
+        className={`flex w-5 min-w-5 flex-col gap-0.5 sm:w-auto ${qualifying ? "sm:min-w-17" : ""}`}
+      >
+        <span
+          className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}
+        >
+          {qualifying && <span className="hidden sm:inline">{s.value}</span>}
+        </span>
+        <span className="flex sm:gap-px">
+          {s.segments.map((m, j) => (
+            <span
+              key={j}
+              className={`h-1 min-w-0 flex-1 sm:min-w-1.5 ${BAR[m]}`}
+            />
+          ))}
+        </span>
+      </span>
+    ))}
+  </span>
+);
+
 interface TowerRowProps {
   row: Row;
   race: boolean;
@@ -167,6 +188,8 @@ interface TowerRowProps {
   selected: boolean;
   favourite: boolean;
   relative: boolean;
+  tyres: boolean;
+  scale: number;
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
   onToggle: () => void;
@@ -181,6 +204,8 @@ const TowerRow = ({
   selected,
   favourite,
   relative,
+  tyres,
+  scale,
   swap,
   bind,
   onToggle,
@@ -243,43 +268,12 @@ const TowerRow = ({
       {row.bestLap}
     </td>
     {!race && (
-      <td className="px-1 py-1 sm:px-2">
-        <span className="flex gap-1 sm:gap-1.5">
-          {row.sectors.map((s, i) => (
-            <span
-              key={i}
-              title={s.value}
-              className={`flex w-5 min-w-5 flex-col gap-0.5 sm:w-auto ${qualifying ? "sm:min-w-17" : ""}`}
-            >
-              <span
-                className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}
-              >
-                {qualifying && (
-                  <span className="hidden sm:inline">{s.value}</span>
-                )}
-              </span>
-              <span className="flex sm:gap-px">
-                {s.segments.map((m, j) => (
-                  <span
-                    key={j}
-                    className={`h-1 min-w-0 flex-1 sm:min-w-1.5 ${BAR[m]}`}
-                  />
-                ))}
-              </span>
-            </span>
-          ))}
-        </span>
+      <td className={`px-1 py-1 sm:px-2 ${tyres ? "invisible" : ""}`}>
+        {tyres && <Stints stints={row.stints} scale={scale} />}
+        <Sectors sectors={row.sectors} qualifying={qualifying} />
       </td>
     )}
-    <td className={`px-1 py-1 sm:table-cell sm:px-2 ${race ? "" : "hidden"}`}>
-      <Tyre compound={row.tyre} age={row.tyreAge} />
-    </td>
-    <td className="hidden px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
-      {row.pits || ""}
-    </td>
-    <td className="box-content hidden min-w-[5ch] px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
-      {row.pitTime && `${row.pitTime}s`}
-    </td>
+    <TyreCells row={row} race={race} tyres={tyres} scale={scale} />
     <td className="px-1 py-1 text-xs text-zinc-400 sm:px-2">{row.status}</td>
   </tr>
 );
@@ -296,14 +290,22 @@ export const TimingTower = ({
   const { swaps, bind } = useSwaps(rows);
   const favourite = useFavourite();
   const relative = relativeTo(rows, [...selected][0]);
+  const [view, setView] = useState<(typeof VIEWS)[number]>("Timing");
+  const tyres = view === "Tyres";
+  const table = useCover();
+  const scale = Math.max(
+    1,
+    ...rows.map((r) => r.stints.reduce((total, s) => total + s.laps, 0)),
+  );
   return (
     <div className="bg-surface overflow-x-auto rounded-xl pb-1.5">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-3 py-2 text-xs">
+        <Tabs items={VIEWS} value={view} onChange={setView} small />
         <span className="font-f1 tracking-wider text-zinc-500 uppercase">
           Session best
         </span>
         {[...bests.sectors, bests.lap].map((best, i) => (
-          <span key={i} className="flex items-center gap-1.5">
+          <span key={i} className="flex items-center gap-1.5 font-mono">
             <span className="text-zinc-500">
               {i === 3 ? "Lap" : `S${i + 1}`}
             </span>
@@ -318,9 +320,12 @@ export const TimingTower = ({
           </span>
         ))}
       </div>
-      <table className="tabular w-full font-mono text-xs sm:text-sm">
+      <table
+        ref={table}
+        className="tabular w-full font-mono text-xs sm:text-sm"
+      >
         <thead className="text-left text-xs text-zinc-500">
-          <tr>
+          <tr className="relative">
             <th className="px-1 py-2 text-right sm:px-2">P</th>
             <th className="px-1 py-2 sm:px-2">Driver</th>
             {race && (
@@ -339,17 +344,31 @@ export const TimingTower = ({
             <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
               Best
             </th>
-            {!race && <th className="px-1 py-2 sm:px-2">Sectors</th>}
+            {!race && (
+              <th
+                data-tyres
+                className={`px-1 py-2 sm:px-2 ${tyres ? "invisible" : ""}`}
+              >
+                {tyres && <Cover>Stints</Cover>}
+                Sectors
+              </th>
+            )}
             <th
-              className={`px-1 py-2 sm:table-cell sm:px-2 ${race ? "" : "hidden"}`}
+              data-tyres={race || undefined}
+              className={`px-1 py-2 sm:table-cell sm:px-2 ${race ? "" : "hidden"} ${race && tyres ? "invisible" : ""}`}
             >
+              {race && tyres && <Cover>Stints</Cover>}
               Tyre
             </th>
-            <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
+            <th
+              data-tyres={race || undefined}
+              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${race && tyres ? "invisible" : ""}`}
+            >
               Pits
             </th>
             <th
-              className="hidden px-1 py-2 text-right sm:table-cell sm:px-2"
+              data-tyres={race || undefined}
+              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${race && tyres ? "invisible" : ""}`}
               title="Stationary time of the last pit stop"
             >
               Stop
@@ -368,6 +387,8 @@ export const TimingTower = ({
               selected={selected.has(r.number)}
               favourite={r.tla === favourite?.code}
               relative={relative !== rows}
+              tyres={tyres}
+              scale={scale}
               swap={swaps[r.number]}
               bind={bind(r.number)}
               onToggle={() => onToggle(r.number)}

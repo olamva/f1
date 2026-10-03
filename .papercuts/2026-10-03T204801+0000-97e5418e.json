@@ -1,0 +1,13 @@
+{
+  "id": "97e5418e",
+  "ts": "2026-10-03T20:48:01+00:00",
+  "text": "pnpm rejects -s flag (pnpm -s prettier fails with unexpected argument)",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c95d7532",
+  "where": "pnpm",
+  "branch": "t3code/issue-284"
+}
