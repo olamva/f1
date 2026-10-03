@@ -1,4 +1,4 @@
-import { useSyncExternalStore } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 const subscribe = (change: () => void) => {
   document.addEventListener("visibilitychange", change);
@@ -7,3 +7,12 @@ const subscribe = (change: () => void) => {
 
 export const useVisible = () =>
   useSyncExternalStore(subscribe, () => !document.hidden);
+
+export const useAwake = () => {
+  const visible = useVisible();
+  useEffect(() => {
+    if (!visible) return;
+    const lock = navigator.wakeLock?.request("screen").catch(() => null);
+    return () => void lock?.then((l) => l?.release());
+  }, [visible]);
+};
