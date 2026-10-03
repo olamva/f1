@@ -20,8 +20,7 @@ export type Row = {
   lastMark: Mark;
   bestLap: string;
   sectors: { value: string; mark: Mark; segments: Mark[] }[];
-  tyre: string;
-  tyreAge: number | null;
+  stints: { compound: string; age: number; laps: number; new: boolean }[];
   pits: number;
   pitTime: string;
   status: string;
@@ -73,11 +72,6 @@ const statusOf = (l: Obj): string =>
         : l.PitOut
           ? "OUT LAP"
           : "";
-
-function tyre(app: Obj | undefined): { tyre: string; tyreAge: number | null } {
-  const stint = values(app?.Stints).at(-1);
-  return { tyre: stint?.Compound ?? "", tyreAge: stint?.TotalLaps ?? null };
-}
 
 const lapGap = (gap: string): number | null => {
   const laps = /^\+?(\d+) ?L(?:APS?)?$/i.exec(gap)?.[1];
@@ -135,7 +129,12 @@ function row(
       mark: mark(s),
       segments: values(s.Segments).map((g) => SEGMENT[g.Status] ?? "none"),
     })),
-    ...tyre(app),
+    stints: values(app?.Stints).map((s) => ({
+      compound: s.Compound ?? "",
+      age: s.TotalLaps ?? 0,
+      laps: Math.max(0, (s.TotalLaps ?? 0) - (s.StartLaps ?? 0)),
+      new: s.New === "true",
+    })),
     pits: Number(line.NumberOfPitStops ?? 0),
     pitTime: values(stops).at(-1)?.PitStop?.PitStopTime ?? "",
     status: statusOf(line),

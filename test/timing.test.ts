@@ -150,6 +150,34 @@ test("race rows count the places each car gained or lost from its grid slot", ()
   );
 });
 
+test("tower stints count the laps on each set since it was fitted", () => {
+  const [row] = rows({
+    DriverList: { "1": {} },
+    TimingData: { Lines: { "1": { Position: "1" } } },
+    TimingAppData: {
+      Lines: {
+        "1": {
+          Stints: {
+            "0": { Compound: "SOFT", New: "true", TotalLaps: 6, StartLaps: 0 },
+            "1": {
+              Compound: "SOFT",
+              New: "false",
+              TotalLaps: 15,
+              StartLaps: 3,
+            },
+            "2": { Compound: "HARD", New: "true", StartLaps: 0 },
+          },
+        },
+      },
+    },
+  });
+  assert.deepEqual(row!.stints, [
+    { compound: "SOFT", age: 6, laps: 6, new: true },
+    { compound: "SOFT", age: 15, laps: 12, new: false },
+    { compound: "HARD", age: 0, laps: 0, new: true },
+  ]);
+});
+
 test("session best owners use personal records instead of the latest sectors", () => {
   const state = {
     DriverList: {

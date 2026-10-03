@@ -1,6 +1,6 @@
 import { lapTime } from "../charts/summary.ts";
 import type { LapRow } from "../../shared/timing.ts";
-import { Tyre } from "./TimingTower.tsx";
+import { Tyre } from "./TowerTyres.tsx";
 import { theoreticalBest, type Row } from "./view.ts";
 
 interface LapListProps {
