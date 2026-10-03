@@ -1,0 +1,14 @@
+{
+  "id": "f6087455",
+  "ts": "2026-10-03T18:12:25+00:00",
+  "text": "T3 preview_open reports available:true, then wait_for times out and preview_snapshot says no automation host is available",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "6ed07364",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/issue-283"
+}

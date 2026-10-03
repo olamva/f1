@@ -2,7 +2,13 @@ import { ArrowDown, ArrowUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FAVOURITE_ROW, useFavourite } from "../favourite.ts";
 import { TeamLogo } from "../TeamLogo.tsx";
-import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
+import {
+  relativeTo,
+  type Mark,
+  type Rejoin,
+  type Row,
+  type SessionBests,
+} from "./view.ts";
 
 const MARK: Record<Mark, string> = {
   overall: "text-purple",
@@ -32,6 +38,7 @@ interface TimingTowerProps {
   qualifying: boolean;
   bests: SessionBests;
   selected: Set<string>;
+  pit: Rejoin | null;
   onToggle: (number: string) => void;
 }
 
@@ -148,6 +155,26 @@ const Call = ({ title, tone }: CallProps) =>
     </span>
   ) : null;
 
+interface PitLineProps {
+  label: string;
+  color: string;
+  last: boolean;
+}
+
+const PitLine = ({ label, color, last }: PitLineProps) => (
+  <span
+    className={`pointer-events-none absolute inset-x-0 h-px ${last ? "bottom-0" : "top-0"}`}
+    style={{ backgroundColor: color }}
+  >
+    <span
+      className="bg-surface absolute top-1/2 left-2 -translate-y-1/2 rounded-sm border px-1 text-[10px] leading-2.5 font-semibold"
+      style={{ borderColor: color, color }}
+    >
+      {label}
+    </span>
+  </span>
+);
+
 interface TowerRowProps {
   row: Row;
   race: boolean;
@@ -159,6 +186,7 @@ interface TowerRowProps {
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
   onToggle: () => void;
+  children?: React.ReactNode;
 }
 
 const TowerRow = ({
@@ -172,6 +200,7 @@ const TowerRow = ({
   swap,
   bind,
   onToggle,
+  children,
 }: TowerRowProps) => (
   <tr
     ref={bind}
@@ -179,6 +208,7 @@ const TowerRow = ({
     className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : favourite ? FAVOURITE_ROW : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
   >
     <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
+      {children}
       <span className="flex items-center justify-between gap-1">
         <SwapArrow swap={swap} />
         {row.position}
@@ -276,13 +306,14 @@ export const TimingTower = ({
   qualifying,
   bests,
   selected,
+  pit,
   onToggle,
 }: TimingTowerProps) => {
   const { swaps, bind } = useSwaps(rows);
   const favourite = useFavourite();
   const relative = relativeTo(rows, [...selected][0]);
   return (
-    <div className="bg-surface overflow-x-auto rounded-xl">
+    <div className="bg-surface overflow-x-auto rounded-xl pb-1.5">
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-3 py-2 font-mono text-xs">
         <span className="font-f1 tracking-wider text-zinc-500 uppercase">
           Session best
@@ -343,7 +374,7 @@ export const TimingTower = ({
           </tr>
         </thead>
         <tbody>
-          {relative.map((r) => (
+          {relative.map((r, i) => (
             <TowerRow
               key={r.number}
               row={r}
@@ -356,7 +387,15 @@ export const TimingTower = ({
               swap={swaps[r.number]}
               bind={bind(r.number)}
               onToggle={() => onToggle(r.number)}
-            />
+            >
+              {pit && i === Math.min(pit.before, rows.length - 1) && (
+                <PitLine
+                  label={pit.label}
+                  color={pit.color}
+                  last={pit.before === rows.length}
+                />
+              )}
+            </TowerRow>
           ))}
         </tbody>
       </table>

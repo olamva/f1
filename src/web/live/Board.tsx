@@ -10,9 +10,11 @@ import { TrackMap } from "./TrackMap.tsx";
 import { feedUtc, type Feed } from "./useFeed.ts";
 import {
   isQualifying,
+  isRace,
   messages,
   qualifyingPart,
   radios,
+  rejoin,
   remaining,
   rows as towerRows,
   sectorFlags,
@@ -84,14 +86,15 @@ export const Board = ({
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => towerRows(state), [state]);
   const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
-  const race =
-    /Race|Sprint$/.test(state.SessionInfo?.Type ?? "") ||
-    state.SessionInfo?.Name === "Sprint";
+  const race = isRace(state.SessionInfo);
   const qualifying = isQualifying(state.SessionInfo);
   const status = trackStatus(state);
   const part = qualifyingPart(state);
   const toggle = (n: string) =>
     setSelected((s) => new Set(s.has(n) ? [] : [n]));
+  const pit = race
+    ? rejoin(state, rows, [...selected][0], outline?.pitLoss)
+    : null;
   const focus = selected.size
     ? [...selected]
     : rows.slice(0, 5).map((r) => r.number);
@@ -138,6 +141,7 @@ export const Board = ({
             qualifying={qualifying}
             bests={bests}
             selected={selected}
+            pit={pit}
             onToggle={toggle}
           />
         </div>
@@ -151,6 +155,7 @@ export const Board = ({
             bests={bests}
             race={race}
             selected={selected}
+            pit={pit}
             onToggle={toggle}
             note={positionsNote}
             positionTrail={feed.positionTrail}
