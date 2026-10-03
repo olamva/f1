@@ -3,7 +3,13 @@ import { DefaultAzureCredential } from "@azure/identity";
 import { ContainerClient } from "@azure/storage-blob";
 import webpush, { type PushSubscription } from "web-push";
 
-export type Message = { title: string; body: string; tag: string; ttl: number };
+export type Message = {
+  title: string;
+  body: string;
+  tag: string;
+  ttl: number;
+  start?: number;
+};
 
 const container = process.env.PUSH_STORE
   ? new ContainerClient(

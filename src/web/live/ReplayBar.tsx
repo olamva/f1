@@ -1,11 +1,23 @@
-import { useState, type CSSProperties, type ReactNode } from "react";
-import { Pause, Play } from "lucide-react";
+import {
+  useRef,
+  useState,
+  type CSSProperties,
+  type PointerEvent,
+  type ReactNode,
+} from "react";
+import { Flag, Pause, Play } from "lucide-react";
+import type { Period } from "../../shared/timing.ts";
 import { Tabs } from "../Tabs.tsx";
 import { StealthInput } from "./StealthInput.tsx";
-import { clockSeconds, lapTime } from "./view.ts";
+import { clockSeconds, lapPosition, lapTime } from "./view.ts";
 
 const SPEEDS = [1, 2, 4, 8, 16, 32];
 const UNITS = ["time", "laps"] as const;
+const TONES: Record<Period["kind"], string> = {
+  sc: "bg-yellow-400",
+  vsc: "bg-yellow-400/50",
+  red: "bg-red-500",
+};
 
 interface ReplayBarProps {
   race: boolean;
@@ -13,6 +25,7 @@ interface ReplayBarProps {
   start: number;
   end: number;
   at: number;
+  periods: Period[] | null;
   playing: boolean;
   speed?: number;
   onToggle: () => void;
@@ -32,6 +45,7 @@ export const ReplayBar = ({
   start,
   end,
   at,
+  periods,
   playing,
   speed,
   onToggle,
@@ -42,6 +56,8 @@ export const ReplayBar = ({
   const [drag, setDrag] = useState<number | null>(null);
   const [held, setHeld] = useState(false);
   const [unit, setUnit] = useState<(typeof UNITS)[number]>("time");
+  const [flags, setFlags] = useState(false);
+  const down = useRef(0);
   const laps = unit === "laps" && starts.length > 1;
   const value = drag ?? at;
   const lap = Math.max(
@@ -56,6 +72,34 @@ export const ReplayBar = ({
     0,
     Math.min(1, (position - min) / Math.max(1, max - min)),
   );
+  const place = (t: number) =>
+    Math.max(
+      0,
+      Math.min(
+        1,
+        ((laps ? lapPosition(starts, t) : t) - min) / Math.max(1, max - min),
+      ),
+    );
+  const bands = flags
+    ? (periods ?? [])
+        .filter((p) => p.from <= end && (p.to ?? end) >= start)
+        .map((p) => ({
+          ...p,
+          left: place(p.from),
+          width: place(Math.min(p.to ?? end, end)) - place(p.from),
+        }))
+    : [];
+  const tapped = (e: PointerEvent<HTMLInputElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - box.left - 14) / (box.width - 28);
+    const slop = 4 / (box.width - 28);
+    return Math.abs(e.clientX - down.current) < 4
+      ? bands.find(
+          (b) =>
+            x >= b.left - slop && x <= b.left + Math.max(b.width, slop) + slop,
+        )
+      : undefined;
+  };
   const readout = laps
     ? `Lap ${lap + 1}/${starts.length}`
     : clock(value - start);
@@ -84,6 +128,17 @@ export const ReplayBar = ({
           data-disabled={max <= min}
           style={{ "--progress": progress } as CSSProperties}
         >
+          {bands.map((b) => (
+            <span
+              key={b.from}
+              aria-hidden="true"
+              className={`absolute top-[28px] h-1 rounded-full ${TONES[b.kind]}`}
+              style={{
+                left: `calc(14px + (100% - 28px) * ${b.left})`,
+                width: `max(4px, calc((100% - 28px) * ${b.width}))`,
+              }}
+            />
+          ))}
           <span aria-hidden="true" className="glass-seek-track" />
           <span aria-hidden="true" className="glass-seek-thumb" />
           <input
@@ -99,12 +154,13 @@ export const ReplayBar = ({
             onPointerDown={(e) => {
               if (!e.isPrimary || e.button !== 0) return;
               e.currentTarget.setPointerCapture(e.pointerId);
+              down.current = e.clientX;
               setHeld(true);
               setDrag(toT(Number(e.currentTarget.value)));
             }}
             onPointerUp={(e) => {
               if (!held) return;
-              onSeek(toT(Number(e.currentTarget.value)));
+              onSeek(tapped(e)?.from ?? toT(Number(e.currentTarget.value)));
               cancel();
             }}
             onPointerCancel={cancel}
@@ -143,6 +199,18 @@ export const ReplayBar = ({
           )}
         </span>
       </div>
+      <button
+        onClick={() => setFlags(!flags)}
+        aria-pressed={flags}
+        aria-label="Flag periods"
+        title={flags ? "Hide flag periods" : "Show flag periods"}
+        className="glass-control grid size-9 cursor-pointer place-items-center"
+      >
+        <Flag
+          aria-hidden="true"
+          className={`size-4 ${flags ? "fill-yellow-400 text-yellow-400" : ""}`}
+        />
+      </button>
       {onSpeed && (
         <select
           aria-label="Replay speed"

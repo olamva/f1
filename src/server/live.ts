@@ -2,8 +2,11 @@ import * as signalR from "@microsoft/signalr";
 import type { Json } from "../shared/merge.ts";
 import type { Delta } from "../shared/timing.ts";
 import { F1_ORIGIN } from "./origin.ts";
+import { notify } from "./push.ts";
 import { play, read, type Line } from "./recording.ts";
 import {
+  at,
+  delays,
   History,
   inflate,
   positionEvents,
@@ -102,7 +105,13 @@ export class Feed {
       })
       .configureLogging(signalR.LogLevel.Warning)
       .build();
-    conn.on("feed", (topic: string, data: Json) => this.handle(topic, data));
+    conn.on("feed", (topic: string, data: Json) => {
+      this.handle(topic, data);
+      if (!this.key && topic === "RaceControlMessages")
+        notify(delays(this.session, data)).catch((e) =>
+          console.error("delay push:", e.message),
+        );
+    });
     conn.onclose(() => {
       if (this.connection === conn) setTimeout(() => this.run(), RETRY_MS);
     });
@@ -168,11 +177,6 @@ export function start() {
 
 export const feed = (key: string | null): Feed =>
   (key && token.current(key) && feeds.get(key)) || shared;
-
-const at = (date: unknown, offset: unknown) =>
-  Date.parse(
-    `${date}${String(offset ?? "00:00").startsWith("-") ? "" : "+"}${String(offset ?? "00:00").slice(0, 5)}`,
-  );
 
 export function isLive(): boolean {
   const { state } = shared.session;
