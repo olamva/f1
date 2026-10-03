@@ -7,6 +7,7 @@ const finale: Round = {
   round: 24,
   name: "Abu Dhabi Grand Prix",
   circuit: "Yas Marina Circuit",
+  circuitId: "yas_marina",
   country: "UAE",
   sessions: {
     fp1: null,
