@@ -160,7 +160,7 @@ const TowerRow = ({
     className={`relative cursor-pointer border-t border-zinc-800 hover:bg-zinc-800/60 ${selected ? "bg-zinc-800" : ""} ${row.status === "OUT" ? "opacity-40" : ""}`}
   >
     <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
-      <span className="inline-flex items-center gap-1">
+      <span className="flex items-center justify-between gap-1">
         <SwapArrow swap={swap} />
         {row.position}
       </span>
@@ -227,7 +227,7 @@ const TowerRow = ({
                 {s.segments.map((m, j) => (
                   <span
                     key={j}
-                    className={`h-1 min-w-0 flex-1 sm:w-1.5 sm:flex-none ${BAR[m]}`}
+                    className={`h-1 min-w-0 flex-1 sm:min-w-1.5 ${BAR[m]}`}
                   />
                 ))}
               </span>

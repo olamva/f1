@@ -13,7 +13,7 @@ import { useDelay } from "../delay.ts";
 import { DelayInput } from "../DelayInput.tsx";
 import { Flag } from "../Flag.tsx";
 import { navigate, pathPart, setPathPart, standalone } from "../path.ts";
-import { useVisible } from "../visible.ts";
+import { useAwake, useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
 import { Board } from "./Board.tsx";
 import { CalendarList } from "./CalendarList.tsx";
@@ -147,6 +147,7 @@ const Live = ({ session, positions }: LiveProps) => {
   const [loading, setLoading] = useState(pos.pausedAt !== null);
   const now = useTick(1000);
   const visible = useVisible();
+  useAwake();
   const url =
     visible && (pos.pausedAt === null || loading)
       ? `/api/live/stream?delay=${Math.round(live + pos.back)}`
@@ -231,6 +232,7 @@ const Replay = ({ session, onClose }: ReplayProps) => {
     on: boolean;
   }>({ t: null, speed: 4, on: true });
   const visible = useVisible();
+  useAwake();
   const q = `path=${encodeURIComponent(session.path)}`;
   const url =
     play.on && visible

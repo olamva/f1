@@ -1,0 +1,14 @@
+{
+  "id": "f6163bdf",
+  "ts": "2026-10-03T08:22:19+00:00",
+  "text": "T3 preview_open reports available, then preview_wait_for times out and later calls say no automation host is available",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "a5569335",
+  "where": "mcp__t3-code__preview_wait_for",
+  "branch": "t3code/keep-session-device-awake"
+}
