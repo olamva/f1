@@ -168,7 +168,7 @@ export const Board = ({
           />
         </div>
         <div className="flex flex-col gap-4">
-          <TeamRadio radios={radios(state)} rows={rows} />
+          <TeamRadio radios={radios(state)} rows={rows} selected={selected} />
           <Weather weather={state.WeatherData} />
         </div>
       </div>

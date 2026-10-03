@@ -1,0 +1,14 @@
+{
+  "id": "afa9f70d",
+  "ts": "2026-10-03T12:51:21+00:00",
+  "text": "T3 preview automation host disconnected mid-click and stayed unavailable",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "f728300f",
+  "where": "mcp__t3-code__preview_click",
+  "branch": "t3code/issue-305"
+}
