@@ -1,0 +1,14 @@
+{
+  "id": "88a80e54",
+  "ts": "2026-10-03T13:37:33+00:00",
+  "text": "terraform init timed out fetching azapi SHA256SUMS from GitHub; second try worked",
+  "tags": [
+    "network",
+    "terraform"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "1013bc28",
+  "where": "infra",
+  "branch": "t3code/issue-312"
+}
