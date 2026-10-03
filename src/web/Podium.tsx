@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties } from "react";
 import { Trophy } from "lucide-react";
 
 export interface PodiumEntry {
@@ -7,7 +7,6 @@ export interface PodiumEntry {
   color: string;
   value: string;
   detail?: string;
-  extra?: ReactNode;
 }
 
 interface PodiumProps {
@@ -59,7 +58,6 @@ export const Podium = ({ entries, crowned, onSelect }: PodiumProps) => (
                   {e.detail}
                 </span>
               )}
-              {e.extra && <div className="mt-2 w-full">{e.extra}</div>}
             </div>
             <div
               className={`podium-block relative flex flex-col items-center justify-center rounded-t-lg ${HEIGHTS[i]}`}

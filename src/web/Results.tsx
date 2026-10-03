@@ -8,13 +8,13 @@ import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { Standings } from "./Standings.tsx";
-import { LapAxis, Strategy, UsedSet } from "./Strategy.tsx";
-import { useStints } from "./stints.ts";
+import { Strategy } from "./Strategy.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
 
 const SESSIONS = ["sprint", "race"] as const;
+const VIEWS = ["results", "tyres"] as const;
 const PARTS = ["Races", "Standings"] as const;
 type Part = (typeof PARTS)[number];
 
@@ -35,11 +35,9 @@ const years = Array.from({ length: currentYear - 1949 }, (_, index) =>
 interface ResultsTableProps {
   rows: RaceArchive["races"][number]["results"];
   favourite?: string;
-  stints: Stints | null;
-  laps: number;
 }
 
-const ResultsTable = ({ rows, favourite, stints, laps }: ResultsTableProps) => (
+const ResultsTable = ({ rows, favourite }: ResultsTableProps) => (
   <table className="tabular w-full text-xs sm:text-sm">
     <thead className="text-left text-xs text-zinc-500">
       <tr>
@@ -50,23 +48,15 @@ const ResultsTable = ({ rows, favourite, stints, laps }: ResultsTableProps) => (
         <th className="pb-2 pl-2 text-right">Status</th>
         <th className="pb-2 pl-2 text-right">Pts</th>
       </tr>
-      {stints && (
-        <tr>
-          <th />
-          <th colSpan={5} className="pb-1">
-            <LapAxis laps={laps} />
-          </th>
-        </tr>
-      )}
     </thead>
-    {(rows.length >= 3 ? rows.slice(3) : rows).map((result, index) => {
-      const status = result.status === "Finished" ? "" : result.status;
-      return (
-        <tbody
-          key={`${result.driver}:${index}`}
-          className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${result.driver === favourite ? FAVOURITE_ROW : ""}`}
-        >
-          <tr>
+    <tbody>
+      {(rows.length >= 3 ? rows.slice(3) : rows).map((result, index) => {
+        const status = result.status === "Finished" ? "" : result.status;
+        return (
+          <tr
+            key={`${result.driver}:${index}`}
+            className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${result.driver === favourite ? FAVOURITE_ROW : ""}`}
+          >
             <td className="py-2 font-semibold">{result.positionText}</td>
             <td className="py-2">
               <button
@@ -95,19 +85,72 @@ const ResultsTable = ({ rows, favourite, stints, laps }: ResultsTableProps) => (
               {result.points || "–"}
             </td>
           </tr>
-          {stints && (
-            <tr>
-              <td />
-              <td colSpan={5} className="pb-2.5">
-                <Strategy stints={stints[result.number] ?? []} laps={laps} />
-              </td>
-            </tr>
-          )}
-        </tbody>
-      );
-    })}
+        );
+      })}
+    </tbody>
   </table>
 );
+
+const Classification = ({ rows, favourite }: ResultsTableProps) => (
+  <>
+    {rows.length >= 3 && (
+      <Podium
+        entries={rows.map((result) => ({
+          id: result.driver,
+          name: result.name,
+          color: teamColor(result.team),
+          value: `${result.points} pts`,
+          detail: result.teamName,
+        }))}
+        crowned
+        onSelect={openDriver}
+      />
+    )}
+    <ResultsTable rows={rows} favourite={favourite} />
+  </>
+);
+
+interface RaceBodyProps extends ResultsTableProps {
+  year: string;
+  round: number;
+  kind: "race" | "sprint";
+}
+
+const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
+  const [view, setView] = useState<(typeof VIEWS)[number]>("results");
+  const archived = Number(year) >= 2018;
+  const tyres = archived && view === "tyres";
+  const strategy = useJson<Stints>(
+    tyres ? `/api/stints/${year}/${round}/${kind}` : null,
+  );
+  return (
+    <>
+      {archived && (
+        <div className="mb-4">
+          <Tabs items={VIEWS} value={view} onChange={setView} small />
+        </div>
+      )}
+      {tyres ? (
+        strategy.data ? (
+          <Strategy rows={rows} stints={strategy.data} favourite={favourite} />
+        ) : (
+          <Loading
+            label="Loading tyre strategy…"
+            error={
+              strategy.error && "Tyre data is not available for this session."
+            }
+          />
+        )
+      ) : (
+        <Classification
+          key={`${round}:${kind}`}
+          rows={rows}
+          favourite={favourite}
+        />
+      )}
+    </>
+  );
+};
 
 const resultsPath = (year: string, part: Part, round: number) =>
   `/results/${year}${part === "Standings" ? "/standings" : round ? `/${round}` : ""}`;
@@ -126,7 +169,6 @@ const Races = ({ year, round, onRound }: RacesProps) => {
   const race = races.find((entry) => entry.round === round) ?? races[0];
   const shown = race?.results.length ? session : "sprint";
   const rows = (shown === "sprint" ? race?.sprint : race?.results) ?? [];
-  const { stints, laps } = useStints(year, race?.round, shown);
   const choose = (nextRound: number) => {
     setSession("race");
     onRound(nextRound);
@@ -200,30 +242,13 @@ const Races = ({ year, round, onRound }: RacesProps) => {
             </div>
           )}
         </div>
-        {rows.length >= 3 && (
-          <Podium
-            key={`${race.round}:${shown}`}
-            entries={rows.map((result) => ({
-              id: result.driver,
-              name: result.name,
-              color: teamColor(result.team),
-              value: `${result.points} pts`,
-              detail: result.teamName,
-              extra: stints && (
-                <Strategy stints={stints[result.number] ?? []} laps={laps} />
-              ),
-            }))}
-            crowned
-            onSelect={openDriver}
-          />
-        )}
-        <ResultsTable
+        <RaceBody
+          year={year}
+          round={race.round}
+          kind={shown}
           rows={rows}
           favourite={favourite?.id}
-          stints={stints}
-          laps={laps}
         />
-        {stints && <UsedSet stints={stints} />}
       </section>
     </div>
   );
