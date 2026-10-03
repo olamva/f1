@@ -23,7 +23,7 @@ The job must not depend on a T3 worktree, a T3 thread, or this agent. Use the re
 
 ## 2. Prepare the recorder checkout
 
-Run `pgrep -f scripts/record.ts`. Do not change the checkout during a recording. Skip to step 3 if a recording runs.
+Run `pgrep -f scripts/record-job.sh`. Do not change the checkout while a job runs. Skip to step 3 if a job runs.
 
 If `checkout/` does not exist, run `git worktree add --detach "$HOME/Library/Application Support/f1-recorder/checkout" origin/main` from this worktree.
 
@@ -55,7 +55,6 @@ Write `~/Library/LaunchAgents/$LABEL.plist`:
 <plist version="1.0">
 <dict>
   <key>Label</key><string>LABEL</string>
-  <key>WorkingDirectory</key><string>DIR/checkout</string>
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
@@ -64,8 +63,10 @@ Write `~/Library/LaunchAgents/$LABEL.plist`:
   <key>ProgramArguments</key>
   <array>
     <string>/bin/zsh</string>
-    <string>-c</string>
-    <string>rm -f ~/Library/LaunchAgents/LABEL.plist; date -u; caffeinate -i node scripts/record.ts "DIR/recordings/NAME.jsonl" UNTIL; date -u; launchctl bootout gui/$(id -u)/LABEL</string>
+    <string>DIR/checkout/scripts/record-job.sh</string>
+    <string>NAME</string>
+    <string>UNTIL</string>
+    <string>LABEL</string>
   </array>
   <key>StartCalendarInterval</key>
   <dict>
@@ -86,6 +87,8 @@ Write `~/Library/LaunchAgents/$LABEL.plist`:
 - Run `launchctl bootstrap gui/$(id -u) <plist>`.
 - Run `launchctl print gui/$(id -u)/$LABEL` and confirm that the job is loaded.
 
+`scripts/record-job.sh` removes the plist and records the session. Then it opens a pull request with the file and enables auto-merge. It unloads the job at the end.
+
 ## 5. Report
 
 Tell the user:
@@ -95,5 +98,5 @@ Tell the user:
 - the log file `DIR/NAME.log` and the output file `DIR/recordings/NAME.jsonl.gz`
 - that the Mac must be awake at the start time. `caffeinate` keeps it awake during the recording. launchd starts a missed job after the Mac wakes.
 - that the T3 worktree and thread can now be removed
-- to publish the file, start a new T3 task. The task copies the file to `recordings/` and opens a pull request.
+- that the job opens a pull request with auto-merge after the recording
 - to cancel, run `launchctl bootout gui/$(id -u)/$LABEL` and delete the plist
