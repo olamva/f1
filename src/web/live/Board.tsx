@@ -128,46 +128,48 @@ export const Board = ({
         clock={remaining(state, utc)}
         onLap={onLap}
       />
-      <div className="grid gap-4 lg:grid-cols-[auto_minmax(0,1fr)]">
-        <TimingTower
-          rows={rows}
-          race={race}
-          qualifying={qualifying}
-          bests={bests}
-          selected={selected}
-          onToggle={toggle}
-        />
+      <div
+        className={`grid grid-rows-[auto_1fr] gap-4 md:grid-cols-2 lg:grid-cols-[auto_minmax(0,1fr)] ${race ? "xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] xl:grid-rows-none" : "2xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] 2xl:grid-rows-none"}`}
+      >
+        <div className="grid min-w-0 md:col-span-2 lg:col-span-1">
+          <TimingTower
+            rows={rows}
+            race={race}
+            qualifying={qualifying}
+            bests={bests}
+            selected={selected}
+            onToggle={toggle}
+          />
+        </div>
         <div
-          className={`grid content-start gap-4 ${race ? "xl:grid-cols-2 xl:content-stretch" : "2xl:grid-cols-2 2xl:content-stretch"}`}
+          className={`flex flex-col gap-4 lg:row-span-2 ${race ? "xl:row-span-1" : "2xl:row-span-1"}`}
         >
-          <div className="flex flex-col gap-4">
-            <TrackMap
-              outline={outline}
-              positions={state.Position}
-              rows={rows}
-              bests={bests}
-              race={race}
-              selected={selected}
-              onToggle={toggle}
-              note={positionsNote}
-              positionTrail={feed.positionTrail}
-              time={feed.t}
-              speed={speed}
-              stream={feed.src}
-              banner={banner}
-              circuit={state.SessionInfo?.Meeting?.Circuit?.Key}
-              flags={sectorFlags(state)}
-            />
-            <RaceControl
-              messages={messages(state)}
-              rows={rows}
-              start={sessionStart(state)}
-            />
-          </div>
-          <div className="flex flex-col gap-4">
-            <TeamRadio radios={radios(state)} rows={rows} />
-            <Weather weather={state.WeatherData} />
-          </div>
+          <TrackMap
+            outline={outline}
+            positions={state.Position}
+            rows={rows}
+            bests={bests}
+            race={race}
+            selected={selected}
+            onToggle={toggle}
+            note={positionsNote}
+            positionTrail={feed.positionTrail}
+            time={feed.t}
+            speed={speed}
+            stream={feed.src}
+            banner={banner}
+            circuit={state.SessionInfo?.Meeting?.Circuit?.Key}
+            flags={sectorFlags(state)}
+          />
+          <RaceControl
+            messages={messages(state)}
+            rows={rows}
+            start={sessionStart(state)}
+          />
+        </div>
+        <div className="flex flex-col gap-4">
+          <TeamRadio radios={radios(state)} rows={rows} />
+          <Weather weather={state.WeatherData} />
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">
