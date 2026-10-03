@@ -76,7 +76,6 @@ export type RaceArchive = {
     results: {
       driver: string;
       name: string;
-      code: string;
       number: string;
       team: string;
       teamName: string;

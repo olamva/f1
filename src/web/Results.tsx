@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { RaceArchive, Season } from "../shared/season.ts";
+import type { RaceArchive, Season, Stints } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { FAVOURITE_ROW, useFavourite } from "./favourite.ts";
@@ -8,7 +8,8 @@ import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { Standings } from "./Standings.tsx";
-import { Strategy } from "./Strategy.tsx";
+import { LapAxis, Strategy, UsedSet } from "./Strategy.tsx";
+import { useStints } from "./stints.ts";
 import { Swipe } from "./Swipe.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
@@ -34,9 +35,11 @@ const years = Array.from({ length: currentYear - 1949 }, (_, index) =>
 interface ResultsTableProps {
   rows: RaceArchive["races"][number]["results"];
   favourite?: string;
+  stints: Stints | null;
+  laps: number;
 }
 
-const ResultsTable = ({ rows, favourite }: ResultsTableProps) => (
+const ResultsTable = ({ rows, favourite, stints, laps }: ResultsTableProps) => (
   <table className="tabular w-full text-xs sm:text-sm">
     <thead className="text-left text-xs text-zinc-500">
       <tr>
@@ -47,15 +50,23 @@ const ResultsTable = ({ rows, favourite }: ResultsTableProps) => (
         <th className="pb-2 pl-2 text-right">Status</th>
         <th className="pb-2 pl-2 text-right">Pts</th>
       </tr>
+      {stints && (
+        <tr>
+          <th />
+          <th colSpan={5} className="pb-1">
+            <LapAxis laps={laps} />
+          </th>
+        </tr>
+      )}
     </thead>
-    <tbody>
-      {(rows.length >= 3 ? rows.slice(3) : rows).map((result, index) => {
-        const status = result.status === "Finished" ? "" : result.status;
-        return (
-          <tr
-            key={`${result.driver}:${index}`}
-            className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${result.driver === favourite ? FAVOURITE_ROW : ""}`}
-          >
+    {(rows.length >= 3 ? rows.slice(3) : rows).map((result, index) => {
+      const status = result.status === "Finished" ? "" : result.status;
+      return (
+        <tbody
+          key={`${result.driver}:${index}`}
+          className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${result.driver === favourite ? FAVOURITE_ROW : ""}`}
+        >
+          <tr>
             <td className="py-2 font-semibold">{result.positionText}</td>
             <td className="py-2">
               <button
@@ -84,9 +95,17 @@ const ResultsTable = ({ rows, favourite }: ResultsTableProps) => (
               {result.points || "–"}
             </td>
           </tr>
-        );
-      })}
-    </tbody>
+          {stints && (
+            <tr>
+              <td />
+              <td colSpan={5} className="pb-2.5">
+                <Strategy stints={stints[result.number] ?? []} laps={laps} />
+              </td>
+            </tr>
+          )}
+        </tbody>
+      );
+    })}
   </table>
 );
 
@@ -107,6 +126,7 @@ const Races = ({ year, round, onRound }: RacesProps) => {
   const race = races.find((entry) => entry.round === round) ?? races[0];
   const shown = race?.results.length ? session : "sprint";
   const rows = (shown === "sprint" ? race?.sprint : race?.results) ?? [];
+  const { stints, laps } = useStints(year, race?.round, shown);
   const choose = (nextRound: number) => {
     setSession("race");
     onRound(nextRound);
@@ -189,19 +209,21 @@ const Races = ({ year, round, onRound }: RacesProps) => {
               color: teamColor(result.team),
               value: `${result.points} pts`,
               detail: result.teamName,
+              extra: stints && (
+                <Strategy stints={stints[result.number] ?? []} laps={laps} />
+              ),
             }))}
             crowned
             onSelect={openDriver}
           />
         )}
-        <ResultsTable rows={rows} favourite={favourite?.id} />
-        <Strategy
-          year={year}
-          round={race.round}
-          kind={shown}
+        <ResultsTable
           rows={rows}
           favourite={favourite?.id}
+          stints={stints}
+          laps={laps}
         />
+        {stints && <UsedSet stints={stints} />}
       </section>
     </div>
   );
