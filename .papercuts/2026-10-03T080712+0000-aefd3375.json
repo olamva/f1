@@ -1,0 +1,13 @@
+{
+  "id": "aefd3375",
+  "ts": "2026-10-03T08:07:12+00:00",
+  "text": "T3 preview_snapshot and object-returning preview_evaluate fail with 'automation failed on client'; only string results work",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "4d392274",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/stretch-microsectors"
+}
