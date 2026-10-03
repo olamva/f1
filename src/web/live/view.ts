@@ -23,6 +23,7 @@ export type Row = {
   tyre: string;
   tyreAge: number | null;
   pits: number;
+  pitTime: string;
   status: string;
 };
 
@@ -107,6 +108,7 @@ function row(
   line: Obj,
   driver: Obj,
   app: Obj | undefined,
+  stops: unknown,
   part: number,
 ): Row {
   const { gap, interval } = diffs(line, part);
@@ -133,6 +135,7 @@ function row(
     })),
     ...tyre(app),
     pits: Number(line.NumberOfPitStops ?? 0),
+    pitTime: values(stops).at(-1)?.PitStop?.PitStopTime ?? "",
     status: statusOf(line),
   };
 }
@@ -141,10 +144,18 @@ export function rows(state: Obj): Row[] {
   const lines: Obj = state.TimingData?.Lines ?? {};
   const drivers: Obj = state.DriverList ?? {};
   const apps: Obj = state.TimingAppData?.Lines ?? {};
+  const stops: Obj = state.PitStopSeries?.PitTimes ?? {};
   return Object.entries(lines)
     .filter(([n]) => drivers[n])
     .map(([n, line]) =>
-      row(n, line, drivers[n], apps[n], state.TimingData.SessionPart ?? 1),
+      row(
+        n,
+        line,
+        drivers[n],
+        apps[n],
+        stops[n],
+        state.TimingData.SessionPart ?? 1,
+      ),
     )
     .sort((a, b) => a.position - b.position);
 }

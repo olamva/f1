@@ -245,6 +245,9 @@ const TowerRow = ({
     <td className="hidden px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
       {row.pits || ""}
     </td>
+    <td className="box-content hidden min-w-[5ch] px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
+      {row.pitTime && `${row.pitTime}s`}
+    </td>
     <td className="px-1 py-1 text-xs text-zinc-400 sm:px-2">{row.status}</td>
   </tr>
 );
@@ -310,7 +313,13 @@ export const TimingTower = ({
               Tyre
             </th>
             <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
-              Pit
+              Pits
+            </th>
+            <th
+              className="hidden px-1 py-2 text-right sm:table-cell sm:px-2"
+              title="Stationary time of the last pit stop"
+            >
+              Stop
             </th>
             <th className="px-1 py-2 sm:px-2" />
           </tr>
