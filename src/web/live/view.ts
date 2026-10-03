@@ -284,6 +284,16 @@ export const elapsed = (utc: string, start: number): string => {
 
 export type Radio = { utc: string; number: string; url: string };
 
+export const trackTemps = (state: Obj): number[] =>
+  values(state.WeatherDataSeries?.Series)
+    .map((s) => Number(s.Weather?.TrackTemp))
+    .filter((t) => t > 0);
+
+const COMPASS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+
+export const compass = (degrees: string): string =>
+  COMPASS[Math.round(Number(degrees) / 45) % 8]!;
+
 export const radios = (state: Obj): Radio[] =>
   values(state.TeamRadio?.Captures)
     .map((c) => ({

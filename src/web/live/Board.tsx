@@ -19,6 +19,7 @@ import {
   sessionBests,
   sessionStart,
   trackStatus,
+  trackTemps,
 } from "./view.ts";
 
 interface BoardProps {
@@ -169,7 +170,7 @@ export const Board = ({
         </div>
         <div className="flex flex-col gap-4">
           <TeamRadio radios={radios(state)} rows={rows} selected={selected} />
-          <Weather weather={state.WeatherData} />
+          <Weather weather={state.WeatherData} trend={trackTemps(state)} />
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,24rem),1fr))] gap-4">

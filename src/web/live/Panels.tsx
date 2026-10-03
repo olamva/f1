@@ -11,6 +11,7 @@ import {
 import { useJson } from "../api.ts";
 import { slug, TeamNumber } from "../stats/TeamNumber.tsx";
 import {
+  compass,
   elapsed,
   highlight,
   type Message,
@@ -131,6 +132,7 @@ export const RaceControl = ({ messages, rows, start }: RaceControlProps) => (
 
 interface WeatherProps {
   weather: Record<string, string> | undefined;
+  trend: number[];
 }
 
 const WEATHER: [key: string, label: string, unit: string, Icon: LucideIcon][] =
@@ -149,7 +151,31 @@ const DROPS = Array.from({ length: 48 }, () => ({
   animationDelay: `${-Math.random()}s`,
 }));
 
-export const Weather = ({ weather }: WeatherProps) => (
+const Sparkline = ({ values }: { values: number[] }) => {
+  const lo = Math.min(...values);
+  const hi = Math.max(...values);
+  return (
+    <svg
+      viewBox={`0 0 ${values.length - 1} 1`}
+      preserveAspectRatio="none"
+      className="block h-4 w-full overflow-visible text-orange-400"
+      role="img"
+      aria-label={`Track temperature ${lo}–${hi} °C`}
+    >
+      <polyline
+        points={values
+          .map((v, i) => `${i},${hi === lo ? 0.5 : (hi - v) / (hi - lo)}`)
+          .join(" ")}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={1.5}
+        vectorEffect="non-scaling-stroke"
+      />
+    </svg>
+  );
+};
+
+export const Weather = ({ weather, trend }: WeatherProps) => (
   <Panel
     title={weather?.Rainfall === "1" ? "Weather · Rain" : "Weather"}
     className={weather?.Rainfall === "1" ? "rain" : ""}
@@ -167,6 +193,16 @@ export const Weather = ({ weather }: WeatherProps) => (
               {weather?.[k] ? unit : ""}
             </span>
           </dd>
+          {k === "WindSpeed" && weather?.WindDirection && (
+            <dd className="text-xs leading-4 font-semibold text-zinc-400">
+              {compass(weather.WindDirection)}
+            </dd>
+          )}
+          {k === "TrackTemp" && trend.length > 1 && (
+            <dd>
+              <Sparkline values={trend} />
+            </dd>
+          )}
         </div>
       ))}
     </dl>
