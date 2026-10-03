@@ -15,7 +15,7 @@ Read this thread with `t3_thread_configuration`. `t3_thread_launch` requires `ru
 
 Call `orchestrator_capabilities`. Use each provider with `driverKind` `claudeAgent` and `canRunChildTask` true. Use the model of this thread for all launches.
 
-Get the home path of each account:
+Get the config directory of each account:
 
 ```sh
 jq -c 'paths(type == "object" and .driver == "claudeAgent") as $p | {id: $p[-1], homePath: getpath($p).config.homePath}' ~/.t3/userdata/settings.json
@@ -23,10 +23,10 @@ jq -c 'paths(type == "object" and .driver == "claudeAgent") as $p | {id: $p[-1],
 
 ## 3. Read the remaining usage
 
-Run this command for each account. Omit `HOME=` if `homePath` is null. Expand `~` in `homePath`.
+Run this command for each account. Omit `CLAUDE_CONFIG_DIR=` if `homePath` is null or empty. Expand `~` in `homePath`. Do not set `HOME`. macOS then cannot find the keychain.
 
 ```sh
-cd /tmp && HOME=<homePath> claude -p /usage
+cd /tmp && CLAUDE_CONFIG_DIR=<homePath> claude -p /usage
 ```
 
 Read two lines from the output:

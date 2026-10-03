@@ -18,8 +18,12 @@ import { GlassSwitch } from "./GlassSwitch.tsx";
 import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
 
+const needsInstall = matchMedia("(pointer: coarse)").matches;
+
 const PUSH_NOTES: Partial<Record<PushState, string>> = {
-  unsupported: "Add the app to the Home Screen to get notifications.",
+  unsupported: needsInstall
+    ? "Add the app to the Home Screen to get notifications."
+    : "This browser does not support notifications.",
   off: "Notifications are not set up on this server.",
 };
 
@@ -207,7 +211,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
         </section>
       ) : (
         <>
-          <section className="bg-surface space-y-2 rounded-xl p-4 pointer-fine:hidden">
+          <section className="bg-surface space-y-2 rounded-xl p-4">
             <h2 className="font-f1 text-lg font-bold">Notifications</h2>
             <GlassSwitch
               checked={push === "enabled"}
@@ -217,7 +221,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
               Notify me 15 minutes and 5 minutes before each session
             </GlassSwitch>
             {note && <p className="text-sm text-zinc-400">{note}</p>}
-            {push === "unsupported" && (
+            {push === "unsupported" && needsInstall && (
               <GuideSheet title="Add to Home Screen" steps={INSTALL_STEPS} />
             )}
           </section>
