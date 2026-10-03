@@ -1,0 +1,14 @@
+{
+  "id": "45efec51",
+  "ts": "2026-10-03T13:23:03+00:00",
+  "text": "HOME=~/.claude-2 claude -p /usage prints only the cost summary, not the session/week plan usage lines",
+  "tags": [
+    "launch-issues",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c2e7c900",
+  "where": "claude -p /usage",
+  "branch": "t3code/reload-skills"
+}
