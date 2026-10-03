@@ -12,6 +12,7 @@ const SESSIONS: Record<string, [string, number]> = {
 const LEADS = [15, 5];
 const BASE = "https://api.jolpi.ca/ergast/f1";
 const MINUTE = 60_000;
+const DAY = 24 * 60 * MINUTE;
 
 export type Race = { date: string; time?: string } & Record<
   string,
@@ -54,13 +55,14 @@ export function shouldWake(schedule: Window[], now: number): boolean {
   return schedule.some((w) => now >= w.start && now <= w.end);
 }
 
-export function reminders(schedule: Window[], now: number) {
+const due = (at: number, now: number) => {
   const slot = Math.floor(now / (5 * MINUTE)) * 5 * MINUTE;
+  return at > slot - 5 * MINUTE && at <= slot;
+};
+
+export function reminders(schedule: Window[], now: number) {
   return schedule.flatMap(({ title, at }) =>
-    LEADS.filter(
-      (lead) =>
-        at - lead * MINUTE > slot - 5 * MINUTE && at - lead * MINUTE <= slot,
-    ).map((lead) => ({
+    LEADS.filter((lead) => due(at - lead * MINUTE, now)).map((lead) => ({
       title,
       body: `Starts in ${lead} minutes.`,
       tag: `${at}-${lead}`,
@@ -68,6 +70,18 @@ export function reminders(schedule: Window[], now: number) {
     })),
   );
 }
+
+export const loginReminders = (expires: number | null, now: number) =>
+  expires && due(expires - DAY, now)
+    ? [
+        {
+          title: "F1TV login expires tomorrow",
+          body: "Log in to F1TV again and save a new token in Settings.",
+          tag: `f1tv-${expires}`,
+          ttl: DAY / 1000,
+        },
+      ]
+    : [];
 
 export async function calendar(year: number, request = fetch): Promise<Race[]> {
   const response = await request(`${BASE}/${year}.json?limit=100`, {
