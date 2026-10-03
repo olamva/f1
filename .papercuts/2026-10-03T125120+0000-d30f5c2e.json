@@ -1,0 +1,14 @@
+{
+  "id": "d30f5c2e",
+  "ts": "2026-10-03T12:51:20+00:00",
+  "text": "T3 preview_evaluate disconnects when the expression awaits a setTimeout of 4-8 s",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "5401bd83",
+  "where": "mcp__t3-code__preview_evaluate",
+  "branch": "t3code/issue-318"
+}
