@@ -294,6 +294,7 @@ export const TimingTower = ({
   const relative = relativeTo(rows, [...selected][0]);
   const [view, setView] = useState<(typeof VIEWS)[number]>("Timing");
   const tyres = view === "Tyres";
+  const cover = race && tyres ? "invisible" : "";
   const table = useCover();
   const scale = Math.max(
     1,
@@ -360,20 +361,20 @@ export const TimingTower = ({
             )}
             <th
               data-tyres={race || undefined}
-              className={`px-1 py-2 sm:table-cell sm:px-2 ${race ? "" : "hidden"} ${race && tyres ? "invisible" : ""}`}
+              className={`px-1 py-2 sm:table-cell sm:px-2 ${race ? "" : "hidden"} ${cover}`}
             >
-              {race && tyres && <Cover>Stints</Cover>}
+              {cover && <Cover>Stints</Cover>}
               Tyre
             </th>
             <th
               data-tyres={race || undefined}
-              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${race && tyres ? "invisible" : ""}`}
+              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${cover}`}
             >
               Pits
             </th>
             <th
               data-tyres={race || undefined}
-              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${race && tyres ? "invisible" : ""}`}
+              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${cover}`}
               title="Stationary time of the last pit stop"
             >
               Stop
