@@ -1,0 +1,14 @@
+{
+  "id": "0222b7d2",
+  "ts": "2026-10-03T18:11:03+00:00",
+  "text": "T3 preview_snapshot fails with 'Preview automation snapshot failed' on every tab after a recording, even in a new tab",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b8451a5a",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3code/issue-320"
+}
