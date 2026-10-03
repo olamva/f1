@@ -7,6 +7,7 @@ import type {
   Period,
   Point,
 } from "../shared/timing.ts";
+import type { Message } from "./push.ts";
 import { seconds } from "./season.ts";
 
 export type Event = { t: number; topic: string; data: Json };
@@ -40,6 +41,14 @@ const PERIODS: Record<string, Period["kind"]> = {
 
 const POSITION_SPACING_MS = 500;
 const CHECKPOINT_MS = 2 * 60_000;
+const DAY_MS = 24 * 60 * 60_000;
+
+export const at = (date: unknown, offset: unknown) =>
+  Date.parse(
+    `${date}${String(offset ?? "00:00")
+      .replace(/^(?!-)/, "+")
+      .slice(0, 6)}`,
+  );
 
 export const inflate = (b64: string): Json =>
   JSON.parse(inflateRawSync(Buffer.from(b64, "base64")).toString("utf8"));
@@ -143,6 +152,48 @@ export class Session {
       marshalSectors: [],
     };
   }
+}
+
+export function delays(session: Session, data: Json): Message[] {
+  const info = session.state.SessionInfo as Record<string, any> | undefined;
+  const status = (
+    session.state.SessionStatus as { Status?: string } | undefined
+  )?.Status;
+  if (
+    !info ||
+    (status && status !== "Inactive") ||
+    Object.keys(session.laps).length
+  )
+    return [];
+  const scheduled = at(info.StartDate, info.GmtOffset);
+  const messages =
+    (data as { Messages?: Record<string, { Utc?: string; Message?: string }> })
+      .Messages ?? {};
+  return Object.values(messages).flatMap(({ Utc, Message: text = "" }) => {
+    const clock = /(?:START AT|DELAYED TO) (\d{1,2}):(\d{2})/.exec(text);
+    const by = /DELAYED BY (\d+) MINUTES/.exec(text);
+    const local = clock
+      ? at(
+          `${String(info.StartDate).slice(0, 11)}${clock[1]!.padStart(2, "0")}:${clock[2]}:00`,
+          info.GmtOffset,
+        )
+      : scheduled + Number(by?.[1]) * 60_000;
+    const start = local < scheduled - DAY_MS / 2 ? local + DAY_MS : local;
+    if (
+      /\bS?Q[23]\b/.test(text) ||
+      !(start > scheduled || /DELAY|SUSPENDED/.test(text))
+    )
+      return [];
+    return [
+      {
+        title: `${info.Meeting?.Name} · ${info.Name}`,
+        body: "Start delayed.",
+        tag: `delay-${info.Key}-${Utc}`,
+        ttl: 30 * 60,
+        ...(start > scheduled && { start }),
+      },
+    ];
+  });
 }
 
 export class History {
