@@ -2,6 +2,7 @@ import { ArrowDown, ArrowUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FAVOURITE_ROW, useFavourite } from "../favourite.ts";
 import { TeamLogo } from "../TeamLogo.tsx";
+import { Compound } from "../Tyre.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
@@ -16,14 +17,6 @@ const BAR: Record<Mark, string> = {
   personal: "bg-emerald-500",
   normal: "bg-yellow-400",
   none: "bg-zinc-700",
-};
-
-const TYRE: Record<string, string> = {
-  SOFT: "text-red-500 border-red-500",
-  MEDIUM: "text-yellow-300 border-yellow-300",
-  HARD: "text-zinc-100 border-zinc-100",
-  INTERMEDIATE: "text-emerald-400 border-emerald-400",
-  WET: "text-sky-400 border-sky-400",
 };
 
 interface TimingTowerProps {
@@ -43,11 +36,7 @@ interface TyreProps {
 const Tyre = ({ compound, age }: TyreProps) =>
   compound ? (
     <span className="flex items-center gap-1">
-      <span
-        className={`grid size-5 place-items-center rounded-full border-2 text-[10px] font-bold ${TYRE[compound] ?? "border-zinc-500 text-zinc-400"}`}
-      >
-        {compound[0]}
-      </span>
+      <Compound compound={compound} />
       <span className="text-zinc-400">{age ?? ""}</span>
     </span>
   ) : null;
