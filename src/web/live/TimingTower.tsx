@@ -18,7 +18,7 @@ const BAR: Record<Mark, string> = {
   none: "bg-zinc-700",
 };
 
-const TYRE: Record<string, string> = {
+export const TYRE: Record<string, string> = {
   SOFT: "text-red-500 border-red-500",
   MEDIUM: "text-yellow-300 border-yellow-300",
   HARD: "text-zinc-100 border-zinc-100",

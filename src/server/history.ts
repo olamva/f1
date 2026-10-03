@@ -18,6 +18,7 @@ type Result = RaceArchive["races"][number]["results"][number];
 const result = (row: any): Result => ({
   driver: row.Driver.driverId,
   name: `${row.Driver.givenName} ${row.Driver.familyName}`,
+  code: row.Driver.code ?? "",
   number: row.number ?? row.Driver.permanentNumber ?? "",
   team: row.Constructor?.constructorId ?? "",
   teamName: row.Constructor?.name ?? "",

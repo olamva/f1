@@ -8,6 +8,7 @@ import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
 import { Standings } from "./Standings.tsx";
+import { Strategy } from "./Strategy.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
@@ -194,6 +195,13 @@ const Races = ({ year, round, onRound }: RacesProps) => {
           />
         )}
         <ResultsTable rows={rows} favourite={favourite?.id} />
+        <Strategy
+          year={year}
+          round={race.round}
+          kind={shown}
+          rows={rows}
+          favourite={favourite?.id}
+        />
       </section>
     </div>
   );

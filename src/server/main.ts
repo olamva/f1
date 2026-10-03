@@ -8,6 +8,7 @@ import {
   seasonSessions,
   replay,
   stateAt,
+  stints,
   type Replay,
 } from "./archive.ts";
 import { requireGoogle, user } from "./auth.ts";
@@ -42,7 +43,7 @@ const send = (s: SSEStreamingApi, event: string, data: unknown) =>
   s.writeSSE({ event, data: JSON.stringify(data) });
 
 app.get("/api/season", async (c) => c.json(await season()));
-app.get("/api/pace/:year/:round/:kind", async (c) => {
+app.get("/api/:topic{pace|stints}/:year/:round/:kind", async (c) => {
   const year = Number(c.req.param("year"));
   const round = Number(c.req.param("round"));
   const kind = c.req.param("kind");
@@ -56,7 +57,13 @@ app.get("/api/pace/:year/:round/:kind", async (c) => {
     (kind !== "race" && kind !== "sprint")
   )
     return c.notFound();
-  return c.json(await pace(year, round, kind as PaceKind));
+  return c.json(
+    await (c.req.param("topic") === "pace" ? pace : stints)(
+      year,
+      round,
+      kind as PaceKind,
+    ),
+  );
 });
 app.get("/api/:kind{results|standings}/:year", async (c) => {
   const year = Number(c.req.param("year"));
