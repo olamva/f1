@@ -240,7 +240,12 @@ const TowerRow = ({
       <Tyre compound={row.tyre} age={row.tyreAge} />
     </td>
     <td className="hidden px-1 py-1 text-right text-zinc-400 sm:table-cell sm:px-2">
-      {row.pits || ""}
+      <span className="flex justify-end gap-2">
+        {row.pits || ""}
+        <span className="w-[5ch] text-zinc-500">
+          {row.pitTime && `${row.pitTime}s`}
+        </span>
+      </span>
     </td>
     <td className="px-1 py-1 text-xs text-zinc-400 sm:px-2">{row.status}</td>
   </tr>
