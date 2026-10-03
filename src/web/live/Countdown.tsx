@@ -126,7 +126,7 @@ const Facts = ({ circuit, year, session }: FactsProps) => {
   return (
     <span
       onAnimationIteration={() => setIndex((i) => i + 1)}
-      className={`absolute top-full left-1/2 mt-3 w-max max-w-[calc(100vw-2rem)] -translate-x-1/2 text-sm xl:mt-[1vw] xl:text-[1vw] ${facts.length > 1 ? "animate-fact" : ""}`}
+      className={`absolute inset-x-4 bottom-[calc(21px+62px+12px)] text-sm text-zinc-400 sm:bottom-6 xl:text-[1vw] ${facts.length > 1 ? "animate-fact" : ""}`}
     >
       {fact.text}
     </span>
@@ -151,7 +151,7 @@ export const Countdown = ({ rounds }: CountdownProps) => {
       <span className="tabular font-f1 text-[11vw] font-bold whitespace-nowrap md:text-8xl xl:text-[10vw]">
         {span(s.at - now)}
       </span>
-      <div className="relative text-zinc-400 xl:text-[1.4vw]">
+      <span className="text-zinc-400 xl:text-[1.4vw]">
         {new Date(s.at).toLocaleString([], {
           weekday: "long",
           day: "numeric",
@@ -160,12 +160,12 @@ export const Countdown = ({ rounds }: CountdownProps) => {
           hour: "2-digit",
           minute: "2-digit",
         })}
-        <Facts
-          circuit={s.round.circuitId}
-          year={new Date(s.at).getUTCFullYear()}
-          session={s.session}
-        />
-      </div>
+      </span>
+      <Facts
+        circuit={s.round.circuitId}
+        year={new Date(s.at).getUTCFullYear()}
+        session={s.session}
+      />
     </section>
   );
 };
