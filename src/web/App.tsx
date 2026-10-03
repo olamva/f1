@@ -17,6 +17,8 @@ import { Loading } from "./Loading.tsx";
 import { navigate } from "./path.ts";
 import { Results } from "./Results.tsx";
 import { Settings } from "./Settings.tsx";
+import { Spoiler } from "./Spoiler.tsx";
+import { KINDS } from "./spoilers.ts";
 import { Stats } from "./stats/Stats.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
@@ -119,7 +121,13 @@ export const App = () => {
               {t === "Results" && <Results season={season.data} />}
               {t === "Stats" &&
                 (season.data ? (
-                  <Stats season={season.data} />
+                  <Spoiler
+                    season={season.data}
+                    year={season.data.year}
+                    kinds={KINDS}
+                  >
+                    <Stats season={season.data} />
+                  </Spoiler>
                 ) : (
                   <Loading label="Loading the season…" error={season.error} />
                 ))}

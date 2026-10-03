@@ -17,6 +17,7 @@ import { setFavourite, useFavourite } from "./favourite.ts";
 import { GlassSwitch } from "./GlassSwitch.tsx";
 import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
+import { setSpoilerMode } from "./spoilers.ts";
 
 const needsInstall = matchMedia("(pointer: coarse)").matches;
 
@@ -131,10 +132,10 @@ export const Settings = ({ drivers }: SettingsProps) => {
           checked={spoilers}
           onChange={(checked) => {
             setSpoilers(checked);
-            localStorage.setItem("spoilers", checked ? "1" : "0");
+            setSpoilerMode(checked);
           }}
         >
-          Ask before showing live timing for each session
+          Ask before showing new qualifying, sprint and race results
         </GlassSwitch>
       </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">

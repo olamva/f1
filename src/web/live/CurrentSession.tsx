@@ -20,6 +20,7 @@ import { Flag } from "../Flag.tsx";
 import { navigate, pathPart, setPathPart, standalone } from "../path.ts";
 import { useAwake, useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
+import { useLiveSpoiler } from "../Spoiler.tsx";
 import { Board } from "./Board.tsx";
 import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
@@ -318,22 +319,20 @@ const Replay = ({ session, rounds, onClose }: ReplayProps) => {
 
 export const LiveSession = ({ season, info }: LiveSessionProps) => {
   const wasLive = useRef(false);
-  const [continued, setContinued] = useState(() =>
-    localStorage.getItem("continued"),
-  );
   const live = useDelay() * 1000;
   if (info.data?.live) wasLive.current = true;
+  const on = wasLive.current || !!info.data?.recent;
+  const spoiler = useLiveSpoiler(season.data?.rounds, on);
   if (!info.data || !season.data)
     return <Loading label="Loading…" error={info.error ?? season.error} />;
   const key = String(info.data.info?.Key);
   const start = info.data.start;
   const go = (back: number) => {
     rewind(key, back, null);
-    localStorage.setItem("continued", key);
-    setContinued(key);
+    spoiler.reveal();
   };
-  if (info.data.live || info.data.recent || wasLive.current)
-    return localStorage.getItem("spoilers") !== "0" && continued !== key ? (
+  if (on)
+    return spoiler.hidden ? (
       <div className="to-surface space-y-3 rounded-xl bg-gradient-to-r from-red-700/40 p-4">
         <div>
           <h1 className="font-f1 text-lg font-bold">
