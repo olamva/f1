@@ -47,11 +47,26 @@ export function positionEvents(t: number, raw: Json): Event[] {
   }));
 }
 
+const sectors = (line: any): string[] =>
+  Object.values<any>(line.Sectors ?? {}).map((s) => s.Value ?? "");
+
+const lapNumber = (
+  counted: number,
+  delta: any,
+  line: any,
+  last: LapRow | undefined,
+): number =>
+  delta.NumberOfLaps === undefined &&
+  ((delta.LastLapTime?.Value && line.InPit) || last?.lap === counted + 1)
+    ? counted + 1
+    : counted;
+
 export class Session {
   state: State = {};
   laps: Record<string, LapRow[]> = {};
   track: Record<string, Point[]> = {};
   private lastPosition = -Infinity;
+  private outLaps = new Set<string>();
 
   apply(e: Event): Event | null {
     if (e.topic === "Position") {
@@ -75,21 +90,33 @@ export class Session {
     >;
     for (const [n, delta] of Object.entries(lines)) {
       const line = all[n];
-      const lap = Number(line?.NumberOfLaps);
-      if (!lap) continue;
+      const counted = Number(line?.NumberOfLaps);
+      if (!counted) continue;
       const rows = (this.laps[n] ??= []);
-      let row = rows.at(-1);
-      if (row?.lap !== lap) {
-        row = { lap, t: e.t, time: "", position: line.Position ?? "", gap: "" };
-        rows.push(row);
+      const lap = lapNumber(counted, delta, line, rows.at(-1));
+      if (rows.at(-1)?.lap !== lap) rows.push(this.startLap(n, lap, line, e.t));
+      if (line.PitOut) this.outLaps.add(n);
+      const row = rows.at(-1)!;
+      if (delta.LastLapTime?.Value) {
+        row.time = delta.LastLapTime.Value;
+        row.sectors = sectors(line);
       }
-      if (delta.NumberOfLaps !== undefined) {
-        row.t = e.t;
-        row.position = line.Position ?? row.position;
-        row.gap = line.GapToLeader ?? line.TimeDiffToFastest ?? "";
-      }
-      if (delta.LastLapTime?.Value) row.time = delta.LastLapTime.Value;
     }
+  }
+
+  private startLap(n: string, lap: number, line: any, t: number): LapRow {
+    const stints = (this.state.TimingAppData as any)?.Lines?.[n]?.Stints;
+    const out = this.outLaps.delete(n);
+    return {
+      lap,
+      t,
+      time: "",
+      position: line.Position ?? "",
+      gap: line.GapToLeader ?? line.TimeDiffToFastest ?? "",
+      sectors: sectors(line),
+      compound: Object.values<any>(stints ?? {}).at(-1)?.Compound ?? "",
+      pit: line.InPit || line.PitOut ? "in" : out ? "out" : undefined,
+    };
   }
 
   outline(): Outline | null {

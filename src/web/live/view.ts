@@ -214,6 +214,37 @@ export const messages = (state: Obj): Message[] =>
     }))
     .reverse();
 
+export const deletedLaps = (
+  state: Obj,
+  number: string | undefined,
+): Set<number> =>
+  new Set(
+    values(state.RaceControlMessages?.Messages).flatMap((m) => {
+      const hit = /^CAR (\d+) .*DELETED.* LAP (\d+)/.exec(m.Message ?? "");
+      return hit && hit[1] === number ? [Number(hit[2])] : [];
+    }),
+  );
+
+export const theoreticalBest = (
+  number: string,
+  laps: LapRow[],
+  deleted: Set<number>,
+  rows: Row[],
+): { seconds: number; position: number } | null => {
+  const valid = laps.filter((l) => !deleted.has(l.lap));
+  const seconds = [0, 1, 2]
+    .map((i) =>
+      Math.min(...valid.map((l) => lapSeconds(l.sectors[i] ?? "") ?? Infinity)),
+    )
+    .reduce((a, b) => a + b, 0);
+  const faster = rows.filter(
+    (r) => r.number !== number && (lapSeconds(r.bestLap) ?? Infinity) < seconds,
+  );
+  return Number.isFinite(seconds)
+    ? { seconds, position: faster.length + 1 }
+    : null;
+};
+
 export const sectorFlags = (state: Obj): Map<number, string> => {
   const flags = new Map<number, string>();
   for (const m of values(state.RaceControlMessages?.Messages))

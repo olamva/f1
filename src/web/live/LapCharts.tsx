@@ -1,7 +1,10 @@
+import { useState } from "react";
 import { LineChart, type Series } from "../charts/LineChart.tsx";
 import { lapTime } from "../charts/summary.ts";
 import type { LapRow } from "../../shared/timing.ts";
 import { lapSeconds } from "../../shared/timing.ts";
+import { Tabs } from "../Tabs.tsx";
+import { LapList } from "./LapList.tsx";
 import { Panel } from "./Panels.tsx";
 import { gapSeconds, type Row } from "./view.ts";
 
@@ -9,9 +12,13 @@ interface LapChartsProps {
   laps: Record<string, LapRow[]>;
   rows: Row[];
   focus: string[];
+  driver?: string;
+  deleted: Set<number>;
   until: number;
   race: boolean;
 }
+
+const VIEWS = ["Chart", "Laps"] as const;
 
 const seriesOf = (
   laps: Record<string, LapRow[]>,
@@ -44,9 +51,12 @@ export const LapCharts = ({
   laps,
   rows,
   focus,
+  driver,
+  deleted,
   until,
   race,
 }: LapChartsProps) => {
+  const [view, setView] = useState<(typeof VIEWS)[number]>("Chart");
   const raw = seriesOf(laps, rows, focus, until, (r) => lapSeconds(r.time));
   const latest = Math.max(...raw.flatMap((s) => s.points.map((p) => p[0])));
   const recent = raw.map((s) => ({
@@ -62,8 +72,31 @@ export const LapCharts = ({
   const hint = "No lap times yet.";
   return (
     <>
-      <Panel title="Lap times (last 15, within 108% of the fastest)">
-        {Number.isFinite(fastest) ? (
+      <Panel
+        title={
+          view === "Chart"
+            ? "Lap times (last 15, within 108% of the fastest)"
+            : "Lap times"
+        }
+      >
+        <div className="mb-2">
+          <Tabs items={VIEWS} value={view} onChange={setView} small />
+        </div>
+        {view === "Laps" ? (
+          driver ? (
+            <LapList
+              number={driver}
+              laps={(laps[driver] ?? []).filter((r) => r.t <= until)}
+              deleted={deleted}
+              rows={rows}
+              race={race}
+            />
+          ) : (
+            <p className="text-sm text-zinc-500">
+              Select a driver in the timing tower.
+            </p>
+          )
+        ) : Number.isFinite(fastest) ? (
           <LineChart
             series={times}
             xLabel="Lap"
