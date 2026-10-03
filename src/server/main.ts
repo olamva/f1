@@ -23,6 +23,7 @@ import { audio, transcript } from "./radio.ts";
 import { pace, type PaceKind } from "./pace.ts";
 import * as push from "./push.ts";
 import { season } from "./season.ts";
+import { expand } from "./timing.ts";
 import * as token from "./token.ts";
 
 const DIST = process.env.DIST_DIR ?? "dist";
@@ -262,8 +263,8 @@ app.get("/api/replay/stream", async (c) => {
       clock += TICK_MS * speed;
       const batch: Delta[] = [];
       for (; index < r.events.length && r.events[index]!.t <= clock; index++) {
-        const e = r.events[index]!;
-        batch.push([e.topic, e.data, e.t]);
+        for (const e of expand(r.events[index]!))
+          batch.push([e.topic, e.data, e.t]);
       }
       await send(s, "delta", batch.length ? batch : [["Clock", null, clock]]);
     }

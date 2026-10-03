@@ -5,6 +5,7 @@ import circuits from "./circuits.json" with { type: "json" };
 import { get } from "./jolpica.ts";
 import { F1_ORIGIN } from "./origin.ts";
 import {
+  expand,
   parseStream,
   Session,
   TOPICS,
@@ -175,7 +176,7 @@ async function load(path: string): Promise<Replay> {
   events.forEach((e, index) => {
     if (e.t - checkpoints.at(-1)!.t >= CHECKPOINT_MS)
       checkpoints.push({ t: e.t, index, state: { ...session.state } });
-    session.apply(e);
+    expand(e).forEach((x) => session.apply(x));
   });
   return {
     path,
@@ -206,8 +207,8 @@ export function stateAt(r: Replay, t: number): { state: State; index: number } {
   const state: State = { ...cp.state };
   let i = cp.index;
   for (; i < r.events.length && r.events[i]!.t <= t; i++) {
-    const e = r.events[i]!;
-    state[e.topic] = merge(state[e.topic], e.data);
+    for (const e of expand(r.events[i]!))
+      state[e.topic] = merge(state[e.topic], e.data);
   }
   return { state, index: i };
 }

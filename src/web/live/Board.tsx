@@ -157,6 +157,7 @@ export const Board = ({
           <TrackMap
             outline={outline}
             positions={state.Position}
+            telemetry={state.CarData}
             rows={rows}
             bests={bests}
             race={race}

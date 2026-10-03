@@ -17,6 +17,13 @@ export type Period = {
 
 export type Point = [t: number, x: number, y: number];
 
+export type Telemetry = [
+  speed: number,
+  gear: number,
+  throttle: number,
+  brake: number,
+];
+
 export type PitLoss = Record<"normal" | "sc" | "vsc", number>;
 
 export type Outline = {
