@@ -1,6 +1,12 @@
 import { inflateRawSync } from "node:zlib";
 import { merge, type Json } from "../shared/merge.ts";
-import type { Delta, LapRow, Outline, Point } from "../shared/timing.ts";
+import type {
+  Delta,
+  LapRow,
+  Outline,
+  Period,
+  Point,
+} from "../shared/timing.ts";
 import { seconds } from "./season.ts";
 
 export type Event = { t: number; topic: string; data: Json };
@@ -23,6 +29,13 @@ export const TOPICS = [
   "PitStopSeries",
   "Position.z",
 ];
+
+const PERIODS: Record<string, Period["kind"]> = {
+  "4": "sc",
+  "5": "red",
+  "6": "vsc",
+  "7": "vsc",
+};
 
 const POSITION_SPACING_MS = 500;
 const CHECKPOINT_MS = 2 * 60_000;
@@ -51,6 +64,7 @@ export class Session {
   state: State = {};
   laps: Record<string, LapRow[]> = {};
   track: Record<string, Point[]> = {};
+  periods: Period[] = [];
   private lastPosition = -Infinity;
 
   apply(e: Event): Event | null {
@@ -64,7 +78,18 @@ export class Session {
     }
     this.state[e.topic] = merge(this.state[e.topic], e.data);
     if (e.topic === "TimingData") this.trackLaps(e);
+    if (e.topic === "TrackStatus") this.trackStatus(e.t);
     return e;
+  }
+
+  private trackStatus(t: number) {
+    const kind = PERIODS[(this.state.TrackStatus as any)?.Status];
+    const open = this.periods.at(-1);
+    if (open?.to === null) {
+      if (open.kind === kind) return;
+      open.to = t;
+    }
+    if (kind) this.periods.push({ kind, from: t, to: null });
   }
 
   private trackLaps(e: Event) {

@@ -417,6 +417,14 @@ export const lapStarts = (
 export const lapTime = (starts: number[], lap: number) =>
   starts[Math.min(Math.max(lap, 1), starts.length) - 1]!;
 
+export const lapPosition = (starts: number[], t: number) => {
+  const i = starts.findLastIndex((s) => s <= t);
+  const from = starts[i];
+  const to = starts[i + 1];
+  if (from === undefined) return 0;
+  return to === undefined ? i : i + (t - from) / (to - from);
+};
+
 export const clockSeconds = (text: string) => {
   if (!text.includes(":")) {
     const n = Number(text);
