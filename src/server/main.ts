@@ -137,6 +137,7 @@ app.get("/api/live", (c) =>
   }),
 );
 app.get("/api/live/laps", (c) => c.json(feed(c).session.laps));
+app.get("/api/live/periods", (c) => c.json(feed(c).session.periods));
 app.get("/api/live/outline", async (c) => {
   const { session } = feed(c);
   return c.json(
@@ -220,6 +221,9 @@ const startOf = (r: Replay): number =>
 
 app.get("/api/replay/laps", async (c) =>
   c.json((await withReplay(c.req.query("path"))).session.laps),
+);
+app.get("/api/replay/periods", async (c) =>
+  c.json((await withReplay(c.req.query("path"))).session.periods),
 );
 app.get("/api/replay/outline", async (c) => {
   const r = await withReplay(c.req.query("path"));

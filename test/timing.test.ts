@@ -317,3 +317,24 @@ test("the tower shows the stationary time of the last pit stop from the stream",
   });
   assert.equal(row!.pitTime, "2.5");
 });
+
+test("track status changes become safety car, VSC and red flag periods", () => {
+  const session = new Session();
+  for (const [t, Status] of [
+    [10, "2"],
+    [20, "4"],
+    [25, "4"],
+    [30, "1"],
+    [40, "6"],
+    [45, "7"],
+    [50, "5"],
+    [60, "4"],
+  ] as const)
+    session.apply({ t, topic: "TrackStatus", data: { Status } });
+  assert.deepEqual(session.periods, [
+    { kind: "sc", from: 20, to: 30 },
+    { kind: "vsc", from: 40, to: 50 },
+    { kind: "red", from: 50, to: 60 },
+    { kind: "sc", from: 60, to: null },
+  ]);
+});

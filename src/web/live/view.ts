@@ -202,6 +202,7 @@ export type Message = {
   category: string;
   flag: string;
   text: string;
+  cars: string[];
 };
 
 export const messages = (state: Obj): Message[] =>
@@ -211,6 +212,13 @@ export const messages = (state: Obj): Message[] =>
       category: m.Category,
       flag: m.Flag ?? "",
       text: m.Message,
+      cars: m.RacingNumber
+        ? [m.RacingNumber]
+        : [
+            ...String(m.Message ?? "").matchAll(
+              /(?<![:.])\b(\d{1,2}) \([A-Z]{3}\)/g,
+            ),
+          ].map((c) => c[1]!),
     }))
     .reverse();
 
@@ -283,6 +291,16 @@ export const elapsed = (utc: string, start: number): string => {
 };
 
 export type Radio = { utc: string; number: string; url: string };
+
+export const trackTemps = (state: Obj): number[] =>
+  values(state.WeatherDataSeries?.Series)
+    .map((s) => Number(s.Weather?.TrackTemp))
+    .filter((t) => t > 0);
+
+const COMPASS = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"];
+
+export const compass = (degrees: string): string =>
+  COMPASS[Math.round(Number(degrees) / 45) % 8]!;
 
 export const radios = (state: Obj): Radio[] =>
   values(state.TeamRadio?.Captures)
@@ -416,6 +434,14 @@ export const lapStarts = (
 
 export const lapTime = (starts: number[], lap: number) =>
   starts[Math.min(Math.max(lap, 1), starts.length) - 1]!;
+
+export const lapPosition = (starts: number[], t: number) => {
+  const i = starts.findLastIndex((s) => s <= t);
+  const from = starts[i];
+  const to = starts[i + 1];
+  if (from === undefined) return 0;
+  return to === undefined ? i : i + (t - from) / (to - from);
+};
 
 export const clockSeconds = (text: string) => {
   if (!text.includes(":")) {
