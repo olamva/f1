@@ -6,6 +6,12 @@ export type LapRow = {
   gap: string;
 };
 
+export type Period = {
+  kind: "sc" | "vsc" | "red";
+  from: number;
+  to: number | null;
+};
+
 export type Point = [t: number, x: number, y: number];
 
 export type Outline = {

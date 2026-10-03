@@ -29,6 +29,7 @@ data "azurerm_client_config" "current" {}
 locals {
   digest     = substr(sha1(var.subscription_id), 0, 6)
   push_store = "${azurerm_storage_account.f1.primary_blob_endpoint}${azurerm_storage_container.push.name}"
+  push_host  = var.custom_domain == "" ? "${var.name}.${azurerm_container_app_environment.f1.default_domain}" : var.custom_domain
 }
 
 resource "azurerm_resource_group" "f1" {
@@ -84,6 +85,11 @@ resource "azurerm_container_app" "f1" {
   secret {
     name  = "f1-origin"
     value = var.f1_origin
+  }
+
+  secret {
+    name  = "vapid-private-key"
+    value = tls_private_key.vapid.private_key_pem
   }
 
   ingress {
@@ -148,6 +154,14 @@ resource "azurerm_container_app" "f1" {
       env {
         name  = "VAPID_PUBLIC_KEY"
         value = tls_private_key.vapid.public_key_pem
+      }
+      env {
+        name        = "VAPID_PRIVATE_KEY"
+        secret_name = "vapid-private-key"
+      }
+      env {
+        name  = "VAPID_SUBJECT"
+        value = "https://${local.push_host}"
       }
       env {
         name  = "ALLOWED_EMAILS"
@@ -215,7 +229,7 @@ resource "azurerm_container_app_job" "wake" {
       }
       env {
         name  = "VAPID_SUBJECT"
-        value = "https://${var.custom_domain == "" ? azurerm_container_app.f1.ingress[0].fqdn : var.custom_domain}"
+        value = "https://${local.push_host}"
       }
     }
   }

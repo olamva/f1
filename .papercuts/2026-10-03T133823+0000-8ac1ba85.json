@@ -1,0 +1,14 @@
+{
+  "id": "8ac1ba85",
+  "ts": "2026-10-03T13:38:23+00:00",
+  "text": "pnpm dev in a worktree collided with ports that other agents held; 5212, 5231 and 8831 were busy with no registry of used ports",
+  "tags": [
+    "dev",
+    "ports"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "9cd1996d",
+  "where": "scripts/dev.ts",
+  "branch": "t3code/issue-287"
+}
