@@ -1,0 +1,13 @@
+{
+  "id": "175ec0b6",
+  "ts": "2026-10-03T12:53:45+00:00",
+  "text": "pnpm dev with a taken PORT fails the server with EADDRINUSE while Vite still starts, so the UI silently hits nothing",
+  "tags": [
+    "dev"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "61f6dfc4",
+  "where": "scripts/dev.ts",
+  "branch": "t3code/issue-308"
+}

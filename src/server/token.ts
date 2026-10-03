@@ -29,6 +29,8 @@ export const key = (user: string) =>
 
 export const keys = () => [...tokens.keys()];
 
+export const owner = (key: string) => key.slice(PREFIX.length);
+
 const claims = (jwt: string): Record<string, any> =>
   JSON.parse(
     Buffer.from(jwt.split(".")[1] ?? "", "base64url").toString("utf8"),

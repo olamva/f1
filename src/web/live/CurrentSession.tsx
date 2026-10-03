@@ -225,20 +225,22 @@ interface ReplayProps {
   onClose: () => void;
 }
 
+type Play = { t: number | null; speed: number; on: boolean | null };
+
+const streamUrl = (q: string, { t, speed }: Play) =>
+  `/api/replay/stream?${q}&speed=${speed}${t === null ? "" : `&t=${t}`}`;
+
 const Replay = ({ session, onClose }: ReplayProps) => {
-  const [play, setPlay] = useState<{
-    t: number | null;
-    speed: number;
-    on: boolean;
-  }>({ t: null, speed: 4, on: true });
+  const [play, setPlay] = useState<Play>(() => {
+    const t = Number(new URLSearchParams(location.search).get("t")) * 1000;
+    return { t: t || null, speed: 4, on: t ? null : true };
+  });
   const visible = useVisible();
   useAwake();
   const q = `path=${encodeURIComponent(session.path)}`;
-  const url =
-    play.on && visible
-      ? `/api/replay/stream?${q}&speed=${play.speed}${play.t === null ? "" : `&t=${play.t}`}`
-      : null;
+  const url = play.on !== false && visible ? streamUrl(q, play) : null;
   const [feed] = useFeed(url);
+  if (play.on === null && feed) setPlay((s) => ({ ...s, on: false }));
   useEffect(() => {
     if (!visible) setPlay((s) => ({ ...s, t: feed?.t ?? s.t }));
   }, [visible, feed?.t]);
@@ -249,7 +251,12 @@ const Replay = ({ session, onClose }: ReplayProps) => {
     () => (race && feed?.start ? lapStarts(laps.data ?? {}, feed.start) : []),
     [race, laps.data, feed?.start],
   );
-  const seek = (t: number) => setPlay((s) => ({ ...s, t, on: true }));
+  const share = (t: number) =>
+    history.replaceState(null, "", `?t=${Math.floor(t / 1000)}`);
+  const seek = (t: number) => {
+    share(t);
+    setPlay((s) => ({ ...s, t, on: true }));
+  };
   return (
     <div className="space-y-4">
       <button
@@ -265,11 +272,12 @@ const Replay = ({ session, onClose }: ReplayProps) => {
         start={feed?.start ?? 0}
         end={feed?.duration ?? 0}
         at={(feed?.src === url ? null : play.t) ?? feed?.t ?? 0}
-        playing={play.on}
+        playing={!!play.on}
         speed={play.speed}
-        onToggle={() =>
-          setPlay((s) => ({ ...s, on: !s.on, t: feed?.t ?? s.t }))
-        }
+        onToggle={() => {
+          if (play.on && feed) share(feed.t);
+          setPlay((s) => ({ ...s, on: !s.on, t: feed?.t ?? s.t }));
+        }}
         onSpeed={(speed) =>
           setPlay((s) => ({ ...s, speed, t: feed?.t ?? s.t }))
         }
