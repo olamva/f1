@@ -129,18 +129,19 @@ async function load(path: string): Promise<Replay> {
   };
 }
 
-let current: { path: string; replay: Promise<Replay> } | null = null;
+const CACHED = 3;
+const cache = new Map<string, Promise<Replay>>();
 
 export function replay(path: string): Promise<Replay> {
   if (!/^\d{4}\/[\w\-.]+\/[\w\-.]+\/$/.test(path)) throw new Error("bad path");
-  if (current?.path !== path) {
-    const r = load(path);
-    current = { path, replay: r };
-    r.catch(() => {
-      if (current?.path === path) current = null;
-    });
-  }
-  return current.replay;
+  const r = cache.get(path) ?? load(path);
+  cache.delete(path);
+  cache.set(path, r);
+  r.catch(() => {
+    if (cache.get(path) === r) cache.delete(path);
+  });
+  if (cache.size > CACHED) cache.delete(cache.keys().next().value!);
+  return r;
 }
 
 export function stateAt(r: Replay, t: number): { state: State; index: number } {
