@@ -4,6 +4,7 @@ import type { Round } from "../../shared/season.ts";
 import type { LapRow, Outline } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 import { Championship } from "./Championship.tsx";
+import { cutGaps, knockout } from "./knockout.ts";
 import { LapCharts } from "./LapCharts.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { prediction, titleOpen } from "./prediction.ts";
@@ -91,7 +92,7 @@ export const Board = ({
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const top = useRef<HTMLDivElement>(null);
   const state = feed.state as Record<string, any>;
-  const rows = useMemo(() => towerRows(state), [state]);
+  const rows = useMemo(() => cutGaps(towerRows(state), state), [state]);
   const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
   const race = isRace(state.SessionInfo);
   const qualifying = isQualifying(state.SessionInfo);
@@ -146,6 +147,7 @@ export const Board = ({
             race={race}
             qualifying={qualifying}
             bests={bests}
+            cut={knockout(state)}
             selected={selected}
             pit={pit}
             onToggle={toggle}

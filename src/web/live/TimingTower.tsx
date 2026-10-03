@@ -26,6 +26,7 @@ interface TimingTowerProps {
   race: boolean;
   qualifying: boolean;
   bests: SessionBests;
+  cut: number | null;
   selected: Set<string>;
   pit: Rejoin | null;
   onToggle: (number: string) => void;
@@ -283,6 +284,7 @@ export const TimingTower = ({
   race,
   qualifying,
   bests,
+  cut,
   selected,
   pit,
   onToggle,
@@ -336,8 +338,11 @@ export const TimingTower = ({
                 +/−
               </th>
             )}
-            <th className="px-1 py-2 text-right sm:px-2">
-              {race ? "Gap" : "Diff"}
+            <th
+              className="px-1 py-2 text-right sm:px-2"
+              title={cut ? `Gap to the time of P${cut}` : undefined}
+            >
+              {race ? "Gap" : cut ? "Cut" : "Diff"}
             </th>
             {race && <th className="px-1 py-2 text-right sm:px-2">Int</th>}
             <th className="px-1 py-2 text-right sm:px-2">Last</th>
@@ -400,6 +405,7 @@ export const TimingTower = ({
                   last={pit.before === rows.length}
                 />
               )}
+              {i + 1 === cut && <PitLine label="KO" color="#ef4444" last />}
             </TowerRow>
           ))}
         </tbody>

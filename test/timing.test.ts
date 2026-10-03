@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { test } from "node:test";
 import { parseStream, Session } from "../src/server/timing.ts";
 import { merge, type Json } from "../src/shared/merge.ts";
+import { cutGaps, knockout } from "../src/web/live/knockout.ts";
 import {
   qualifyingPart,
   relativeTo,
@@ -262,6 +263,43 @@ test("qualifyingPart names the qualifying segment", () => {
       SessionInfo: { Type: "Race", Name: "Race" },
       TimingData: {},
     }),
+    null,
+  );
+});
+
+test("qualifying rows measure each best time in the part against the knockout car", () => {
+  const line = (position: string, q1: string, q2: string, extra = {}) => ({
+    Position: position,
+    BestLapTimes: [{ Value: q1 }, { Value: q2 }, {}],
+    ...extra,
+  });
+  const state = {
+    SessionInfo: { Type: "Qualifying", Name: "Qualifying" },
+    DriverList: { "1": {}, "2": {}, "3": {}, "4": {} },
+    TimingData: {
+      SessionPart: 2,
+      NoEntries: { "0": 4, "1": 3, "2": 2 },
+      Lines: {
+        "1": line("1", "1:30.000", "1:29.500"),
+        "2": line("2", "1:31.000", "1:30.250"),
+        "3": line("3", "1:30.500", "1:30.400"),
+        "4": line("4", "1:31.500", "", { KnockedOut: true }),
+      },
+    },
+  };
+  assert.equal(knockout(state), 2);
+  assert.deepEqual(
+    cutGaps(rows(state), state).map(({ gap }) => gap),
+    ["-0.750", "", "+0.150", ""],
+  );
+  assert.deepEqual(
+    relativeTo(cutGaps(rows(state), state), "3")
+      .slice(0, 3)
+      .map(({ gap }) => gap),
+    ["-0.900", "-0.150", ""],
+  );
+  assert.equal(
+    knockout({ ...state, TimingData: { ...state.TimingData, SessionPart: 3 } }),
     null,
   );
 });
