@@ -1,4 +1,5 @@
 import {
+  useEffect,
   useRef,
   useState,
   type CSSProperties,
@@ -58,6 +59,7 @@ export const ReplayBar = ({
   const [unit, setUnit] = useState<(typeof UNITS)[number]>("time");
   const [flags, setFlags] = useState(false);
   const down = useRef(0);
+  const bar = useRef<HTMLDivElement>(null);
   const laps = unit === "laps" && starts.length > 1;
   const value = drag ?? at;
   const lap = Math.max(
@@ -107,8 +109,44 @@ export const ReplayBar = ({
     setHeld(false);
     setDrag(null);
   };
+  useEffect(() => {
+    const keydown = (event: KeyboardEvent) => {
+      const lap = starts.findLastIndex((s) => s <= at + 1000);
+      const toggle = event.key === " " || event.key === "k";
+      const target =
+        end > start
+          ? {
+              j: Math.max(start, at - 10_000),
+              l: Math.min(end, at + 10_000),
+              "[": starts[lap - 1],
+              "]": starts[lap + 1],
+            }[event.key]
+          : undefined;
+      if (
+        (!toggle && target === undefined) ||
+        (toggle && event.repeat) ||
+        event.defaultPrevented ||
+        event.ctrlKey ||
+        event.metaKey ||
+        !bar.current?.checkVisibility() ||
+        (event.target instanceof Element &&
+          event.target.closest(
+            `input:not([type=range]), select, textarea, [contenteditable]${event.key === " " ? ", button" : ""}`,
+          ))
+      )
+        return;
+      event.preventDefault();
+      if (toggle) onToggle();
+      else onSeek(target!);
+    };
+    addEventListener("keydown", keydown);
+    return () => removeEventListener("keydown", keydown);
+  });
   return (
-    <div className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm">
+    <div
+      ref={bar}
+      className="glass-panel flex flex-wrap items-center gap-x-3 gap-y-2 rounded-xl p-3 text-sm"
+    >
       <button
         onClick={onToggle}
         aria-label={playing ? "Pause" : "Play"}
