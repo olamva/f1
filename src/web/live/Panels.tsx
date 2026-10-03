@@ -180,6 +180,7 @@ export const Weather = ({ weather }: WeatherProps) => (
 interface TeamRadioProps {
   radios: Radio[];
   rows: Row[];
+  selected: Set<string>;
 }
 
 export const clip = (s: number) =>
@@ -285,13 +286,19 @@ const Bars = ({
   );
 };
 
-export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
+export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
+  const shown = selected.size
+    ? radios.filter((r) => selected.has(r.number))
+    : radios;
+  const [played, setPlayed] = useState<string[]>(() =>
+    JSON.parse(localStorage.getItem("played") ?? "[]"),
+  );
   const by = new Map(rows.map((r) => [r.number, r]));
   const audio = useRef<HTMLAudioElement>(null);
   const [url, setUrl] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
   const [at, setAt] = useState({ t: 0, d: 0 });
-  const current = radios.find((r) => r.url === url) ?? radios[0];
+  const current = radios.find((r) => r.url === url) ?? shown[0];
   const driver = current && by.get(current.number);
   const color = driver?.color ?? "#71717a";
   const toggle = (r: Radio) => {
@@ -304,6 +311,10 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
     if (!a.paused) return a.pause();
     if (!a.currentTime || a.ended) void sfx(analyserOf(a), "in");
     void a.play();
+    if (played.includes(r.url)) return;
+    const next = [...played, r.url];
+    localStorage.setItem("played", JSON.stringify(next));
+    setPlayed(next);
   };
   const newest = useRef(radios[0]?.url);
   useEffect(() => {
@@ -386,7 +397,7 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
         </div>
       )}
       <ul className="min-h-60 grow basis-0 divide-y divide-zinc-800 overflow-y-auto text-sm">
-        {radios.slice(0, 30).map((r) => {
+        {shown.map((r) => {
           const active = r.url === current?.url;
           const d = by.get(r.number);
           return (
@@ -407,7 +418,13 @@ export const TeamRadio = ({ radios, rows }: TeamRadioProps) => {
                 <span className="font-f1 font-bold uppercase">
                   {d?.last ?? r.number}
                 </span>
-                <span className="tabular ml-auto font-mono text-xs text-zinc-500">
+                <span
+                  role="img"
+                  aria-label="Not played"
+                  title="Not played"
+                  className={`ml-auto size-2 shrink-0 rounded-full bg-sky-400 ${played.includes(r.url) ? "invisible" : ""}`}
+                />
+                <span className="tabular font-mono text-xs text-zinc-500">
                   {time(r.utc)}
                 </span>
                 {active && playing ? (
