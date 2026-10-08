@@ -6,6 +6,7 @@ import { Flag } from "../Flag.tsx";
 import { Championship } from "./Championship.tsx";
 import { cutGaps, knockout } from "./knockout.ts";
 import { LapCharts } from "./LapCharts.tsx";
+import { LongRuns } from "./LongRuns.tsx";
 import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { prediction, titleOpen } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
@@ -204,6 +205,13 @@ export const Board = ({
         {race && titleOpen(state, rounds) && (
           <Championship drivers={prediction(state)} />
         )}
+        <LongRuns
+          laps={laps}
+          rows={rows}
+          until={feed.t}
+          selected={selected}
+          info={state.SessionInfo}
+        />
       </div>
     </div>
   );
