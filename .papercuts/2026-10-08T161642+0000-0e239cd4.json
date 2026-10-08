@@ -1,0 +1,14 @@
+{
+  "id": "0e239cd4",
+  "ts": "2026-10-08T16:16:42+00:00",
+  "text": "No real race recording in recordings/, so SC bands in the gap chart cannot be checked visually",
+  "tags": [
+    "docs",
+    "tests"
+  ],
+  "who": "agent",
+  "model": "sonnet-5",
+  "session": "b3e44418",
+  "where": "recordings/",
+  "branch": "t3code/issue-302"
+}

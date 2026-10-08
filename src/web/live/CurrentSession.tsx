@@ -211,6 +211,7 @@ const Live = ({ session, positions, rounds }: LiveProps) => {
             feed={feed}
             laps={rows}
             outline={outline.data ?? null}
+            periods={periods.data}
             rounds={rounds}
             positionsNote={note}
             paused={pos.pausedAt !== null}
@@ -306,6 +307,7 @@ const Replay = ({ session, rounds, onClose }: ReplayProps) => {
           feed={feed}
           laps={laps.data ?? {}}
           outline={outline.data ?? null}
+          periods={periods.data}
           rounds={rounds}
           positionsNote={null}
           speed={play.speed}

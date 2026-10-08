@@ -1,5 +1,10 @@
-import { useRef, useState } from "react";
-import type { RaceArchive, Season, Stints } from "../shared/season.ts";
+import { useRef, useState, type ReactNode } from "react";
+import type {
+  Qualifying,
+  RaceArchive,
+  Season,
+  Stints,
+} from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { useJson } from "./api.ts";
 import { FAVOURITE_ROW, useFavourite } from "./favourite.ts";
@@ -14,7 +19,9 @@ import { Swipe } from "./Swipe.tsx";
 import { TeamLogo } from "./TeamLogo.tsx";
 import { Tabs } from "./Tabs.tsx";
 
-const SESSIONS = ["sprint", "race"] as const;
+const SESSIONS = ["sprintQualifying", "sprint", "qualifying", "race"] as const;
+type Kind = (typeof SESSIONS)[number];
+const LABELS = { sprintQualifying: "SQ", qualifying: "Quali" };
 const VIEWS = ["results", "tyres"] as const;
 const PARTS = ["Races", "Standings"] as const;
 type Part = (typeof PARTS)[number];
@@ -33,88 +40,125 @@ const years = Array.from({ length: currentYear - 1949 }, (_, index) =>
   String(currentYear - index),
 );
 
-interface ResultsTableProps {
-  rows: RaceArchive["races"][number]["results"];
+type Race = RaceArchive["races"][number];
+type Result = Race["results"][number];
+type Entry = Pick<
+  Result,
+  "driver" | "name" | "team" | "teamName" | "positionText"
+>;
+
+interface ResultsTableProps<T extends Entry> {
+  rows: T[];
   favourite?: string;
+  columns: string[];
+  cells: (row: T) => ReactNode;
+  wide?: boolean;
 }
 
-const ResultsTable = ({ rows, favourite }: ResultsTableProps) => (
+const ResultsTable = <T extends Entry>({
+  rows,
+  favourite,
+  columns,
+  cells,
+  wide,
+}: ResultsTableProps<T>) => (
   <table className="tabular w-full text-xs sm:text-sm">
     <thead className="text-left text-xs text-zinc-500">
       <tr>
         <th className="w-8 pb-2">Pos</th>
         <th className="pb-2">Driver</th>
-        <th className="pb-2 pl-2">Team</th>
-        <th className="pb-2 pl-2 text-right">Grid</th>
-        <th className="pb-2 pl-2 text-right">Status</th>
-        <th className="pb-2 pl-2 text-right">Pts</th>
+        <th className={`pb-2 pl-2 ${wide ? "max-sm:hidden" : ""}`}>Team</th>
+        {columns.map((column) => (
+          <th key={column} className="pb-2 pl-2 text-right">
+            {column}
+          </th>
+        ))}
       </tr>
     </thead>
     <tbody>
-      {(rows.length >= 3 ? rows.slice(3) : rows).map((result, index) => {
-        const status = result.status === "Finished" ? "" : result.status;
-        return (
-          <tr
-            key={`${result.driver}:${index}`}
-            className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${result.driver === favourite ? FAVOURITE_ROW : ""}`}
-          >
-            <td className="py-2 font-semibold">{result.positionText}</td>
-            <td className="py-2">
-              <button
-                type="button"
-                onClick={() => openDriver(result.driver)}
-                className="cursor-pointer text-left after:absolute after:inset-0"
-              >
-                <TeamLogo
-                  team={result.team}
-                  className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
-                />
-                {result.name}
-              </button>
-            </td>
-            <td className="py-2 pl-2 text-zinc-400">{result.teamName}</td>
-            <td className="py-2 pl-2 text-right text-zinc-400">
-              {result.grid || "Pit"}
-            </td>
-            <td
-              className="py-2 pl-2 text-right text-zinc-400 sm:max-w-40 sm:truncate"
-              title={status}
+      {(rows.length >= 3 ? rows.slice(3) : rows).map((row, index) => (
+        <tr
+          key={`${row.driver}:${index}`}
+          className={`relative border-t border-zinc-800 hover:bg-zinc-800/50 ${row.driver === favourite ? FAVOURITE_ROW : ""}`}
+        >
+          <td className="py-2 font-semibold">{row.positionText}</td>
+          <td className="py-2">
+            <button
+              type="button"
+              onClick={() => openDriver(row.driver)}
+              className="cursor-pointer text-left after:absolute after:inset-0"
             >
-              {status}
-            </td>
-            <td className="py-2 pl-2 text-right font-semibold">
-              {result.points || "–"}
-            </td>
-          </tr>
-        );
-      })}
+              <TeamLogo
+                team={row.team}
+                className="mr-1.5 inline h-4 w-6 align-[-3px] sm:mr-2"
+              />
+              {row.name}
+            </button>
+          </td>
+          <td
+            className={`py-2 pl-2 text-zinc-400 ${wide ? "max-sm:hidden" : ""}`}
+          >
+            {row.teamName}
+          </td>
+          {cells(row)}
+        </tr>
+      ))}
     </tbody>
   </table>
 );
 
-const Classification = ({ rows, favourite }: ResultsTableProps) => (
+interface ClassificationProps<T extends Entry> extends ResultsTableProps<T> {
+  value: (row: T) => string;
+}
+
+const Classification = <T extends Entry>({
+  value,
+  ...table
+}: ClassificationProps<T>) => (
   <>
-    {rows.length >= 3 && (
+    {table.rows.length >= 3 && (
       <Podium
-        entries={rows.map((result) => ({
-          id: result.driver,
-          name: result.name,
-          color: teamColor(result.team),
-          value: `${result.points} pts`,
-          detail: result.teamName,
+        entries={table.rows.map((row) => ({
+          id: row.driver,
+          name: row.name,
+          color: teamColor(row.team),
+          value: value(row),
+          detail: row.teamName,
         }))}
         crowned
         onSelect={openDriver}
       />
     )}
-    <ResultsTable rows={rows} favourite={favourite} />
+    <ResultsTable {...table} />
   </>
 );
 
-interface RaceBodyProps extends ResultsTableProps {
+const raceCells = (result: Result) => {
+  const status = result.status === "Finished" ? "" : result.status;
+  return (
+    <>
+      <td className="py-2 pl-2 text-right text-zinc-400">
+        {result.grid || "Pit"}
+      </td>
+      <td
+        className="py-2 pl-2 text-right text-zinc-400 sm:max-w-40 sm:truncate"
+        title={status}
+      >
+        {status}
+      </td>
+      <td className="py-2 pl-2 text-right font-semibold">
+        {result.points || "–"}
+      </td>
+    </>
+  );
+};
+
+interface RaceBodyProps {
   year: string;
   round: number;
   kind: "race" | "sprint";
+  rows: Result[];
+  favourite?: string;
 }
 
 const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
@@ -147,9 +191,68 @@ const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
           key={`${round}:${kind}`}
           rows={rows}
           favourite={favourite}
+          columns={["Grid", "Status", "Pts"]}
+          cells={raceCells}
+          value={(result) => `${result.points} pts`}
         />
       )}
     </>
+  );
+};
+
+interface QualifyingBodyProps {
+  year: string;
+  race: Race;
+  kind: "qualifying" | "sprintQualifying";
+  favourite?: string;
+}
+
+const QualifyingBody = ({
+  year,
+  race,
+  kind,
+  favourite,
+}: QualifyingBodyProps) => {
+  const quali = useJson<Qualifying>(
+    `/api/qualifying/${year}/${race.round}/${kind === "qualifying" ? "race" : "sprint"}`,
+  );
+  if (!quali.data)
+    return (
+      <Loading
+        label="Loading qualifying results…"
+        error={
+          quali.error &&
+          "Qualifying results are not available for this session."
+        }
+      />
+    );
+  const entrants = new Map(
+    [...race.sprint, ...race.results].map((result) => [result.number, result]),
+  );
+  const prefix = kind === "qualifying" ? "Q" : "SQ";
+  return (
+    <Classification
+      rows={quali.data.map(({ number, position, times }) => ({
+        driver: "",
+        name: `#${number}`,
+        team: "",
+        teamName: "",
+        ...entrants.get(number),
+        positionText: String(position),
+        times,
+      }))}
+      favourite={favourite}
+      columns={[1, 2, 3].map((part) => `${prefix}${part}`)}
+      cells={(row) =>
+        row.times.map((time, part) => (
+          <td key={part} className="py-2 pl-2 text-right text-zinc-400">
+            {time ?? "–"}
+          </td>
+        ))
+      }
+      value={(row) => row.times.findLast(Boolean) ?? ""}
+      wide
+    />
   );
 };
 
@@ -164,13 +267,11 @@ interface RacesProps {
 }
 
 const Races = ({ year, season, round, onRound }: RacesProps) => {
-  const [session, setSession] = useState<"race" | "sprint">("race");
+  const [session, setSession] = useState<Kind>("race");
   const favourite = useFavourite();
   const archive = useJson<RaceArchive>(`/api/results/${year}`);
   const races = archive.data?.year === Number(year) ? archive.data.races : [];
   const race = races.find((entry) => entry.round === round) ?? races[0];
-  const shown = race?.results.length ? session : "sprint";
-  const rows = (shown === "sprint" ? race?.sprint : race?.results) ?? [];
   const choose = (nextRound: number) => {
     setSession("race");
     onRound(nextRound);
@@ -183,6 +284,14 @@ const Races = ({ year, season, round, onRound }: RacesProps) => {
         No race results are available for {year}.
       </p>
     );
+  const available: Record<Kind, boolean> = {
+    sprintQualifying: race.sprint.length > 0 && Number(year) >= 2023,
+    sprint: race.sprint.length > 0,
+    qualifying: Number(year) >= 2018,
+    race: race.results.length > 0,
+  };
+  const sessions = SESSIONS.filter((kind) => available[kind]);
+  const shown = available[session] ? session : "sprint";
   return (
     <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
       <aside className="bg-surface rounded-xl p-3">
@@ -223,7 +332,7 @@ const Races = ({ year, season, round, onRound }: RacesProps) => {
         </div>
       </aside>
       <section className="bg-surface min-w-0 overflow-x-auto rounded-xl p-3 sm:p-4">
-        <div className="mb-4 flex items-start justify-between gap-4">
+        <div className="mb-4 flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
           <div>
             <p className="text-xs text-zinc-400">
               Round {race.round} · {race.date}
@@ -233,12 +342,13 @@ const Races = ({ year, season, round, onRound }: RacesProps) => {
               {race.name}
             </h2>
           </div>
-          {race.results.length > 0 && race.sprint.length > 0 && (
+          {sessions.length > 1 && (
             <div className="shrink-0">
               <Tabs
-                items={SESSIONS}
+                items={sessions}
                 value={shown}
                 onChange={setSession}
+                labels={LABELS}
                 small
               />
             </div>
@@ -250,13 +360,23 @@ const Races = ({ year, season, round, onRound }: RacesProps) => {
           kinds={[shown]}
           round={race.round}
         >
-          <RaceBody
-            year={year}
-            round={race.round}
-            kind={shown}
-            rows={rows}
-            favourite={favourite?.id}
-          />
+          {shown === "race" || shown === "sprint" ? (
+            <RaceBody
+              year={year}
+              round={race.round}
+              kind={shown}
+              rows={shown === "sprint" ? race.sprint : race.results}
+              favourite={favourite?.id}
+            />
+          ) : (
+            <QualifyingBody
+              key={`${race.round}:${shown}`}
+              year={year}
+              race={race}
+              kind={shown}
+              favourite={favourite?.id}
+            />
+          )}
         </Spoiler>
       </section>
     </div>

@@ -1,7 +1,7 @@
 import { ArrowDownToLine } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import type { Round } from "../../shared/season.ts";
-import type { LapRow, Outline } from "../../shared/timing.ts";
+import type { LapRow, Outline, Period } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 import { Championship } from "./Championship.tsx";
 import { cutGaps, knockout } from "./knockout.ts";
@@ -33,6 +33,7 @@ interface BoardProps {
   feed: Feed;
   laps: Record<string, LapRow[]>;
   outline: Outline | null;
+  periods: Period[] | null;
   rounds: Round[];
   positionsNote: string | null;
   speed?: number;
@@ -82,6 +83,7 @@ export const Board = ({
   feed,
   laps,
   outline,
+  periods,
   rounds,
   positionsNote,
   speed,
@@ -197,6 +199,7 @@ export const Board = ({
           deleted={deletedLaps(state, driver)}
           until={feed.t}
           race={race}
+          periods={periods}
         />
         {race && titleOpen(state, rounds) && (
           <Championship drivers={prediction(state)} />

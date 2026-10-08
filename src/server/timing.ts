@@ -205,6 +205,7 @@ export class Session {
       corners: [],
       sectors: [],
       detection: null,
+      pit: null,
       marshalSectors: [],
     };
   }
