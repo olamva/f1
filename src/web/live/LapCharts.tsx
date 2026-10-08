@@ -68,7 +68,16 @@ export const LapCharts = ({
     ...s,
     points: s.points.filter((p) => p[1] <= fastest * 1.08),
   }));
-  const gaps = seriesOf(laps, rows, focus, until, (r) => gapSeconds(r.gap));
+  const base = new Map(
+    (driver ? (laps[driver] ?? []) : []).map((r) => [r.lap, gapSeconds(r.gap)]),
+  );
+  const gaps = seriesOf(laps, rows, focus, until, (r) => {
+    const gap = gapSeconds(r.gap);
+    if (!driver) return gap;
+    const to = base.get(r.lap);
+    return gap === null || to == null ? null : gap - to;
+  });
+  const reference = rows.find((r) => r.number === driver)?.tla;
   const hint = "No lap times yet.";
   return (
     <>
@@ -110,7 +119,9 @@ export const LapCharts = ({
         )}
       </Panel>
       {race && (
-        <Panel title="Gap to leader (s)">
+        <Panel
+          title={reference ? `Gap to ${reference} (s)` : "Gap to leader (s)"}
+        >
           <LineChart
             series={gaps}
             xLabel="Lap"

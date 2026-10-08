@@ -102,9 +102,10 @@ export const Board = ({
     setSelected((s) => new Set(s.has(n) ? [] : [n]));
   const [driver] = selected;
   const pit = race ? rejoin(state, rows, driver, outline?.pitLoss) : null;
-  const focus = selected.size
-    ? [...selected]
-    : rows.slice(0, 5).map((r) => r.number);
+  const at = rows.findIndex((r) => r.number === driver);
+  const focus = (
+    at < 0 ? rows.slice(0, 5) : rows.slice(Math.max(0, at - 1), at + 2)
+  ).map((r) => r.number);
   const banner = status && (
     <div
       role="alert"
