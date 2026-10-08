@@ -1,0 +1,14 @@
+{
+  "id": "0cca9bbc",
+  "ts": "2026-10-08T15:33:41+00:00",
+  "text": "scripts/circuits.py needs UnityPy, but no file in the repo says how to install it",
+  "tags": [
+    "docs",
+    "scripts"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "ee1f26cf",
+  "where": "scripts/circuits.py",
+  "branch": "t3code/issue-297"
+}
