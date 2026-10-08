@@ -26,7 +26,6 @@ interface LineChartProps {
   invert?: boolean;
   yDomain?: [number, number];
   height?: number;
-  detailsBelow?: boolean;
   bands?: Band[];
 }
 
@@ -79,10 +78,9 @@ export const LineChart = ({
   invert,
   yDomain,
   height = 320,
-  detailsBelow = false,
   bands = [],
 }: LineChartProps) => {
-  const [hover, setHover] = useState<number | null>(null);
+  const [hover, setHover] = useState<{ x: number; low: boolean } | null>(null);
   const all = series.flatMap((s) => s.points);
   const [x0, x1] = extent(all.map((p) => p[0]));
   const [y0, y1] = yDomain ?? extent(all.map((p) => p[1]));
@@ -103,168 +101,179 @@ export const LineChart = ({
       (b, v) => (Math.abs(sx(v) - x) < Math.abs(sx(b) - x) ? v : b),
       xs[0] ?? 0,
     );
-    setHover(xs.length ? near : null);
+    setHover(
+      xs.length ? { x: near, low: e.clientY - box.top > box.height / 2 } : null,
+    );
   };
-  const selected = hover ?? (detailsBelow ? (xs.at(-1) ?? null) : null);
   const at =
-    selected === null
+    hover === null
       ? []
       : series
-          .map((s) => ({ s, p: s.points.find((p) => p[0] === selected) }))
+          .map((s) => ({ s, p: s.points.find((p) => p[0] === hover.x) }))
           .filter((v) => v.p);
+  const fx = hover === null ? 0 : sx(hover.x) / W;
   return (
-    <div className="relative">
+    <div>
       {series.length > 1 && <Legend series={series} />}
-      <svg
-        viewBox={`0 0 ${W} ${height}`}
-        className="w-full"
-        onMouseMove={onMove}
-        onMouseLeave={() => setHover(null)}
-      >
-        {ticks(Math.min(y0, y1), Math.max(y0, y1)).map((v) => (
-          <g key={v}>
-            <line
-              x1={M.left}
-              x2={W - M.right}
-              y1={sy(v)}
-              y2={sy(v)}
-              stroke="#27272a"
-            />
-            <text
-              x={M.left - 8}
-              y={sy(v) + 4}
-              textAnchor="end"
-              className="fill-zinc-500 text-[11px]"
-            >
-              {yFormat(v)}
-            </text>
-          </g>
-        ))}
-        {ticks(x0, x1, 8).map((v) => (
-          <text
-            key={v}
-            x={sx(v)}
-            y={height - 12}
-            textAnchor="middle"
-            className="fill-zinc-500 text-[11px]"
-          >
-            {v}
-          </text>
-        ))}
-        <text
-          x={W - M.right}
-          y={height - 12}
-          textAnchor="end"
-          className="fill-zinc-500 text-[11px]"
-          dx={40}
+      <div className="@container relative">
+        <svg
+          viewBox={`0 0 ${W} ${height}`}
+          className="w-full"
+          onMouseMove={onMove}
+          onMouseLeave={() => setHover(null)}
         >
-          {xLabel}
-        </text>
-        {bands.map((b) => {
-          const from = Math.max(b.from, x0);
-          const to = Math.min(b.to, x1);
-          return to > from ? (
-            <g key={`${b.label}${b.from}`}>
-              <rect
-                x={sx(from)}
-                y={M.top}
-                width={sx(to) - sx(from)}
-                height={height - M.top - M.bottom}
-                className={b.className}
+          {ticks(Math.min(y0, y1), Math.max(y0, y1)).map((v) => (
+            <g key={v}>
+              <line
+                x1={M.left}
+                x2={W - M.right}
+                y1={sy(v)}
+                y2={sy(v)}
+                stroke="#27272a"
               />
               <text
-                x={sx(from) + 4}
-                y={M.top + 12}
-                className="fill-amber-300 text-[10px] font-bold"
+                x={M.left - 8}
+                y={sy(v) + 4}
+                textAnchor="end"
+                className="fill-zinc-500 text-[11px]"
               >
-                {b.label}
+                {yFormat(v)}
               </text>
             </g>
-          ) : null;
-        })}
-        {series.map((s) => (
-          <polyline
-            key={s.id}
-            points={s.points.map(([x, y]) => `${sx(x)},${sy(y)}`).join(" ")}
-            fill="none"
-            stroke={s.color}
-            strokeWidth={2}
-            strokeLinejoin="round"
-            strokeLinecap="round"
-            strokeDasharray={s.dashed ? "6 4" : undefined}
-          />
-        ))}
-        {series.map((s) =>
-          s.points.map(([x, y]) => {
-            const mark = s.marks?.get(x);
-            const cx = sx(x);
-            const cy = sy(y);
-            return mark ? (
-              mark.pit ? (
-                <polygon
-                  key={`${s.id}-${x}`}
-                  points={`${cx},${cy - 6} ${cx + 6},${cy} ${cx},${cy + 6} ${cx - 6},${cy}`}
-                  stroke="#18181b"
-                  strokeWidth={1}
-                  className={`fill-current ${tyreColor(mark.compound)}`}
+          ))}
+          {ticks(x0, x1, 8).map((v) => (
+            <text
+              key={v}
+              x={sx(v)}
+              y={height - 12}
+              textAnchor="middle"
+              className="fill-zinc-500 text-[11px]"
+            >
+              {v}
+            </text>
+          ))}
+          <text
+            x={W - M.right}
+            y={height - 12}
+            textAnchor="end"
+            className="fill-zinc-500 text-[11px]"
+            dx={40}
+          >
+            {xLabel}
+          </text>
+          {bands.map((b) => {
+            const from = Math.max(b.from, x0);
+            const to = Math.min(b.to, x1);
+            return to > from ? (
+              <g key={`${b.label}${b.from}`}>
+                <rect
+                  x={sx(from)}
+                  y={M.top}
+                  width={sx(to) - sx(from)}
+                  height={height - M.top - M.bottom}
+                  className={b.className}
                 />
-              ) : (
-                <circle
-                  key={`${s.id}-${x}`}
-                  cx={cx}
-                  cy={cy}
-                  r={3.5}
-                  stroke="#18181b"
-                  className={`fill-current ${tyreColor(mark.compound)}`}
-                />
-              )
-            ) : null;
-          }),
-        )}
-        {series.length <= 6 &&
-          series.map((s) => {
-            const last = s.points.at(-1);
-            return last ? (
-              <text
-                key={s.id}
-                x={sx(last[0]) + 8}
-                y={sy(last[1]) + 4}
-                className="fill-zinc-300 text-[11px]"
-              >
-                {s.label}
-              </text>
+                <text
+                  x={sx(from) + 4}
+                  y={M.top + 12}
+                  className="fill-amber-300 text-[10px] font-bold"
+                >
+                  {b.label}
+                </text>
+              </g>
             ) : null;
           })}
-        {hover !== null && (
-          <g>
-            <line
-              x1={sx(hover)}
-              x2={sx(hover)}
-              y1={M.top}
-              y2={height - M.bottom}
-              stroke="#52525b"
+          {series.map((s) => (
+            <polyline
+              key={s.id}
+              points={s.points.map(([x, y]) => `${sx(x)},${sy(y)}`).join(" ")}
+              fill="none"
+              stroke={s.color}
+              strokeWidth={2}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+              strokeDasharray={s.dashed ? "6 4" : undefined}
             />
-            {at.map(({ s, p }) => (
-              <circle
-                key={s.id}
-                cx={sx(p![0])}
-                cy={sy(p![1])}
-                r={4}
-                fill={s.color}
-                stroke="#18181b"
-                strokeWidth={2}
+          ))}
+          {series.map((s) =>
+            s.points.map(([x, y]) => {
+              const mark = s.marks?.get(x);
+              const cx = sx(x);
+              const cy = sy(y);
+              return mark ? (
+                mark.pit ? (
+                  <polygon
+                    key={`${s.id}-${x}`}
+                    points={`${cx},${cy - 6} ${cx + 6},${cy} ${cx},${cy + 6} ${cx - 6},${cy}`}
+                    stroke="#18181b"
+                    strokeWidth={1}
+                    className={`fill-current ${tyreColor(mark.compound)}`}
+                  />
+                ) : (
+                  <circle
+                    key={`${s.id}-${x}`}
+                    cx={cx}
+                    cy={cy}
+                    r={3.5}
+                    stroke="#18181b"
+                    className={`fill-current ${tyreColor(mark.compound)}`}
+                  />
+                )
+              ) : null;
+            }),
+          )}
+          {series.length <= 6 &&
+            series.map((s) => {
+              const last = s.points.at(-1);
+              return last ? (
+                <text
+                  key={s.id}
+                  x={sx(last[0]) + 8}
+                  y={sy(last[1]) + 4}
+                  className="fill-zinc-300 text-[11px]"
+                >
+                  {s.label}
+                </text>
+              ) : null;
+            })}
+          {hover !== null && (
+            <g>
+              <line
+                x1={sx(hover.x)}
+                x2={sx(hover.x)}
+                y1={M.top}
+                y2={height - M.bottom}
+                stroke="#52525b"
               />
-            ))}
-          </g>
-        )}
-      </svg>
-      <div className={detailsBelow ? "min-h-36" : ""}>
-        {selected !== null && at.length > 0 && (
+              {at.map(({ s, p }) => (
+                <circle
+                  key={s.id}
+                  cx={sx(p![0])}
+                  cy={sy(p![1])}
+                  r={4}
+                  fill={s.color}
+                  stroke="#18181b"
+                  strokeWidth={2}
+                />
+              ))}
+            </g>
+          )}
+        </svg>
+        {hover !== null && at.length > 0 && (
           <div
-            className={`pointer-events-none rounded-lg bg-zinc-800/95 px-3 py-2 text-xs shadow-lg ${detailsBelow ? "ml-auto w-fit min-w-48" : "absolute top-8 right-2"}`}
+            className="pointer-events-none absolute w-max rounded-lg bg-zinc-800/95 px-3 py-2 text-xs shadow-lg"
+            style={{
+              left: `${fx * 100}%`,
+              translate:
+                fx > 0.5
+                  ? `max(${-fx * 100}cqw, -100% - 12px)`
+                  : `min(12px, ${(1 - fx) * 100}cqw - 100%)`,
+              [hover.low ? "top" : "bottom"]:
+                `${((hover.low ? M.top : M.bottom) / height) * 100}%`,
+            }}
           >
             <div className="mb-1 text-zinc-400">
-              {xLabel} {selected}
+              {xLabel} {hover.x}
             </div>
             {[...at]
               .sort((a, b) => (invert ? a.p![1] - b.p![1] : b.p![1] - a.p![1]))
@@ -275,8 +284,8 @@ export const LineChart = ({
                     className="size-2 rounded-full"
                     style={{ background: s.color }}
                   />
-                  <span className="w-24 text-zinc-300">{s.label}</span>
-                  <span className="tabular ml-auto font-mono text-zinc-100">
+                  <span className="text-zinc-300">{s.label}</span>
+                  <span className="tabular ml-auto pl-3 font-mono text-zinc-100">
                     {yFormat(p![1])}
                   </span>
                 </div>
