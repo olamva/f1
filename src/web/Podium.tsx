@@ -15,7 +15,7 @@ interface PodiumProps {
   onSelect?: (id: string) => void;
 }
 
-const METALS = ["#facc15", "#d4d4d8", "#d97706"];
+export const METALS = ["#facc15", "#d4d4d8", "#d97706"];
 const HEIGHTS = ["h-28", "h-20", "h-16"];
 const ORDER = ["order-2", "order-1", "order-3"];
 const DELAYS = [400, 200, 0];
