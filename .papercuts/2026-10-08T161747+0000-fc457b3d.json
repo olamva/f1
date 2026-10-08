@@ -1,0 +1,14 @@
+{
+  "id": "fc457b3d",
+  "ts": "2026-10-08T16:17:47+00:00",
+  "text": "gh issue view <n> --comments prints nothing when the issue has no comments; drop --comments to see the body",
+  "tags": [
+    "gh",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "aa9b653d",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3code-issue-316",
+  "branch": "t3code/issue-316"
+}

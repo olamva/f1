@@ -91,6 +91,7 @@ export const Stats = ({ season }: StatsProps) => {
                 <DriverProfile
                   key={driver}
                   id={driver}
+                  season={season}
                   onBack={() => show("Drivers")}
                 />
               ) : (
