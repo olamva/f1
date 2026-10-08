@@ -1,16 +1,63 @@
 import { ArrowLeft } from "lucide-react";
-import type { DriverProfile as Profile } from "../../shared/season.ts";
+import type { DriverProfile as Profile, Season } from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
+import { Flag } from "../Flag.tsx";
 import { Loading } from "../Loading.tsx";
+import { METALS } from "../Podium.tsx";
 import { TeamNumber } from "./TeamNumber.tsx";
+
+const SHORT: Record<string, string> = {
+  "Did not start": "DNS",
+  Disqualified: "DSQ",
+};
+
+interface SeasonResultsProps {
+  id: string;
+  season: Season;
+}
+
+const SeasonResults = ({ id, season }: SeasonResultsProps) => {
+  const races = season.rounds.flatMap((round) => {
+    const race = season.races.find((r) => r.round === round.round);
+    return race
+      ? [{ round, result: race.results.find((r) => r.driver === id) }]
+      : [];
+  });
+  if (!races.some((race) => race.result)) return null;
+  return (
+    <section className="bg-surface rounded-xl p-3 sm:p-4">
+      <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
+        {season.year} races
+      </h3>
+      <ol className="tabular flex gap-1 overflow-x-auto">
+        {races.map(({ round, result }) => (
+          <li
+            key={round.round}
+            title={`${round.name}: ${result?.status ?? "Did not race"}`}
+            className={`flex w-11 shrink-0 flex-col items-center gap-0.5 rounded-md bg-zinc-800/60 py-1.5 *:mr-0 ${result?.points ? "" : "text-zinc-500"}`}
+            style={{ color: METALS[(result?.position ?? 0) - 1] }}
+          >
+            <Flag country={round.country} />
+            <span className="font-f1 text-sm font-bold">
+              {result
+                ? (result.position ?? SHORT[result.status] ?? "DNF")
+                : "–"}
+            </span>
+          </li>
+        ))}
+      </ol>
+    </section>
+  );
+};
 
 interface DriverProfileProps {
   id: string;
+  season: Season;
   onBack: () => void;
 }
 
-export const DriverProfile = ({ id, onBack }: DriverProfileProps) => {
+export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
   const { data, error } = useJson<Profile>(`/api/drivers/${id}`);
   const color = teamColor(data?.seasons[0]?.team ?? "");
   return (
@@ -98,6 +145,7 @@ export const DriverProfile = ({ id, onBack }: DriverProfileProps) => {
               ))}
             </div>
           </section>
+          <SeasonResults id={id} season={season} />
           <section className="bg-surface overflow-x-auto rounded-xl p-3 sm:p-4">
             <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
               Seasons
