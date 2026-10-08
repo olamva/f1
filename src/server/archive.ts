@@ -114,6 +114,7 @@ const circuit = (key: number, date: string): Outline | null => {
         rotation: 0,
         corners: c.corners,
         sectors: c.sectors,
+        detection: c.detection,
         marshalSectors: [],
       }
     : null;
@@ -137,6 +138,9 @@ export async function outlineFor(
     if (res?.ok) {
       const c = await res.json();
       return {
+        sectors: [],
+        detection: null,
+        ...bundled,
         x: c.x,
         y: c.y,
         time: c.trackPositionTime ?? [],
@@ -145,7 +149,6 @@ export async function outlineFor(
           number: k.number,
           ...k.trackPosition,
         })),
-        sectors: bundled?.sectors ?? [],
         marshalSectors: (c.marshalSectors ?? []).map((k: any) => ({
           number: k.number,
           ...k.trackPosition,
