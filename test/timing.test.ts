@@ -150,6 +150,24 @@ test("race rows count the places each car gained or lost from its grid slot", ()
   );
 });
 
+test("race rows mark a car as catching the car ahead only for Catching code 2", () => {
+  const result = rows({
+    DriverList: { "1": {}, "2": {}, "3": {} },
+    TimingData: {
+      Lines: {
+        "1": { Position: "1" },
+        "2": { Position: "2" },
+        "3": { Position: "3" },
+      },
+    },
+    DriverRaceInfo: { "1": { Catching: 1 }, "2": { Catching: 2 }, "3": {} },
+  });
+  assert.deepEqual(
+    result.map(({ catching }) => catching),
+    [false, true, false],
+  );
+});
+
 test("tower stints count the laps on each set since it was fitted", () => {
   const [row] = rows({
     DriverList: { "1": {} },
@@ -314,7 +332,13 @@ test("a car that stops on track shows as out, like a retired car", () => {
 
 test("relativeTo measures gap and interval toward the selected driver", () => {
   const line = (number: string, gap: string, interval: string) =>
-    ({ number, gap, interval, lapsBehind: gap === "1L" ? 1 : null }) as Row;
+    ({
+      number,
+      gap,
+      interval,
+      catching: true,
+      lapsBehind: gap === "1L" ? 1 : null,
+    }) as Row;
   const tower = [
     line("1", "LAP 30", "LAP 30"),
     line("2", "+1.500", "+1.500"),
@@ -322,12 +346,16 @@ test("relativeTo measures gap and interval toward the selected driver", () => {
     line("4", "1L", "1L"),
   ];
   assert.deepEqual(
-    relativeTo(tower, "2").map(({ gap, interval }) => [gap, interval]),
+    relativeTo(tower, "2").map(({ gap, interval, catching }) => [
+      gap,
+      interval,
+      catching,
+    ]),
     [
-      ["-1.500", "-1.500"],
-      ["", ""],
-      ["+2.500", "+2.500"],
-      ["+1 LAP", "1L"],
+      ["-1.500", "-1.500", false],
+      ["", "", false],
+      ["+2.500", "+2.500", true],
+      ["+1 LAP", "1L", true],
     ],
   );
   assert.equal(relativeTo(tower, undefined), tower);

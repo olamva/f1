@@ -17,6 +17,7 @@ export type Row = {
   gap: string;
   lapsBehind: number | null;
   interval: string;
+  catching: boolean;
   lastLap: string;
   lastMark: Mark;
   bestLap: string;
@@ -106,6 +107,7 @@ function row(
   driver: Obj,
   app: Obj | undefined,
   stops: unknown,
+  info: Obj | undefined,
   part: number,
 ): Row {
   const { gap, interval } = diffs(line, part);
@@ -122,6 +124,7 @@ function row(
     gap,
     lapsBehind: lapGap(gap),
     interval,
+    catching: info?.Catching === 2,
     lastLap: line.LastLapTime?.Value ?? "",
     lastMark: mark(line.LastLapTime),
     bestLap: line.BestLapTime?.Value ?? "",
@@ -148,6 +151,7 @@ export function rows(state: Obj): Row[] {
   const drivers: Obj = state.DriverList ?? {};
   const apps: Obj = state.TimingAppData?.Lines ?? {};
   const stops: Obj = state.PitStopSeries?.PitTimes ?? {};
+  const info: Obj = state.DriverRaceInfo ?? {};
   return Object.entries(lines)
     .filter(([n]) => drivers[n])
     .map(([n, line]) =>
@@ -157,6 +161,7 @@ export function rows(state: Obj): Row[] {
         drivers[n],
         apps[n],
         stops[n],
+        info[n],
         state.TimingData.SessionPart ?? 1,
       ),
     )
@@ -410,6 +415,7 @@ export const relativeTo = (rows: Row[], number: string | undefined): Row[] => {
         : i > at
           ? r.interval
           : "",
+    catching: i > at && r.catching,
   }));
 };
 
