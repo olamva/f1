@@ -1,4 +1,14 @@
 import { useMemo, useState } from "react";
+import { tyreColor } from "../Tyre.tsx";
+
+export type Mark = { compound: string; pit?: "in" | "out" };
+
+export type Band = {
+  from: number;
+  to: number;
+  label: string;
+  className: string;
+};
 
 export type Series = {
   id: string;
@@ -6,6 +16,7 @@ export type Series = {
   color: string;
   dashed?: boolean;
   points: [x: number, y: number][];
+  marks?: Map<number, Mark>;
 };
 
 interface LineChartProps {
@@ -16,6 +27,7 @@ interface LineChartProps {
   yDomain?: [number, number];
   height?: number;
   detailsBelow?: boolean;
+  bands?: Band[];
 }
 
 const W = 800;
@@ -68,6 +80,7 @@ export const LineChart = ({
   yDomain,
   height = 320,
   detailsBelow = false,
+  bands = [],
 }: LineChartProps) => {
   const [hover, setHover] = useState<number | null>(null);
   const all = series.flatMap((s) => s.points);
@@ -147,6 +160,28 @@ export const LineChart = ({
         >
           {xLabel}
         </text>
+        {bands.map((b) => {
+          const from = Math.max(b.from, x0);
+          const to = Math.min(b.to, x1);
+          return to > from ? (
+            <g key={`${b.label}${b.from}`}>
+              <rect
+                x={sx(from)}
+                y={M.top}
+                width={sx(to) - sx(from)}
+                height={height - M.top - M.bottom}
+                className={b.className}
+              />
+              <text
+                x={sx(from) + 4}
+                y={M.top + 12}
+                className="fill-amber-300 text-[10px] font-bold"
+              >
+                {b.label}
+              </text>
+            </g>
+          ) : null;
+        })}
         {series.map((s) => (
           <polyline
             key={s.id}
@@ -159,6 +194,33 @@ export const LineChart = ({
             strokeDasharray={s.dashed ? "6 4" : undefined}
           />
         ))}
+        {series.map((s) =>
+          s.points.map(([x, y]) => {
+            const mark = s.marks?.get(x);
+            const cx = sx(x);
+            const cy = sy(y);
+            return mark ? (
+              mark.pit ? (
+                <polygon
+                  key={`${s.id}-${x}`}
+                  points={`${cx},${cy - 6} ${cx + 6},${cy} ${cx},${cy + 6} ${cx - 6},${cy}`}
+                  stroke="#18181b"
+                  strokeWidth={1}
+                  className={`fill-current ${tyreColor(mark.compound)}`}
+                />
+              ) : (
+                <circle
+                  key={`${s.id}-${x}`}
+                  cx={cx}
+                  cy={cy}
+                  r={3.5}
+                  stroke="#18181b"
+                  className={`fill-current ${tyreColor(mark.compound)}`}
+                />
+              )
+            ) : null;
+          }),
+        )}
         {series.length <= 6 &&
           series.map((s) => {
             const last = s.points.at(-1);
