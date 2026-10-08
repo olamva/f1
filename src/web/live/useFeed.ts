@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { merge, type Json } from "../../shared/merge.ts";
 import type { Delta, Snapshot } from "../../shared/timing.ts";
+import type { ClockState, Latest } from "./sync.ts";
 
 type Point = [number, number];
 
@@ -70,13 +71,15 @@ export const buffer = () => {
 export function useFeed(
   url: string | null,
   delay = 0,
-): [Feed | null, number | null] {
+): [Feed | null, number | null, RefObject<Latest>] {
   const [feed, setFeed] = useState<Feed | null>(null);
   const [due, setDue] = useState<number | null>(null);
+  const latest = useRef<Latest>({ lapAt: null, clock: null });
   const lag = useRef(delay);
   lag.current = delay;
   useEffect(() => {
     if (!url) return;
+    latest.current = { lapAt: null, clock: null };
     const b = buffer();
     const flush = () => {
       const f = b.flush(Date.now() - lag.current);
@@ -90,11 +93,22 @@ export function useFeed(
       skew = snap.now === undefined ? null : Date.now() - snap.now;
       const at = skew === null ? Date.now() : snap.t + skew;
       setDue(at + lag.current);
+      latest.current.clock =
+        (snap.state.ExtrapolatedClock as ClockState | undefined) ?? null;
       b.push(at, () => ({ ...snap, beat: snap.t, src: url }));
       flush();
     });
     source.addEventListener("delta", (m) => {
       const batch = JSON.parse(m.data) as Delta[];
+      for (const [topic, data, at] of batch) {
+        if (topic === "LapCount" && (data as any)?.CurrentLap !== undefined)
+          latest.current.lapAt = skew === null ? Date.now() : at + skew;
+        if (topic === "ExtrapolatedClock")
+          latest.current.clock = merge(
+            (latest.current.clock ?? undefined) as Json | undefined,
+            data as Json,
+          ) as ClockState;
+      }
       if (skew === null)
         b.push(Date.now(), (f) => (f ? applyDelta(f, batch) : f));
       else
@@ -107,7 +121,7 @@ export function useFeed(
       clearInterval(timer);
     };
   }, [url]);
-  return [feed, due];
+  return [feed, due, latest];
 }
 
 export const feedUtc = (f: Feed): number => {

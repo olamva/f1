@@ -162,9 +162,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">TV delay</h2>
         <p className="text-sm text-zinc-400">
-          Live timing is ahead of the F1TV stream. Hold it back by this many
-          seconds, up to 60, so that LIVE matches your stream. You can also
-          change it from the live timing.
+          Hold live timing back by this many seconds to match your F1TV stream.
         </p>
         <DelayInput />
       </section>
