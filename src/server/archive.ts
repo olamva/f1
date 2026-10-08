@@ -1,5 +1,5 @@
 import { merge } from "../shared/merge.ts";
-import type { Stints } from "../shared/season.ts";
+import type { Qualifying, Stints } from "../shared/season.ts";
 import type { Outline, SessionRef } from "../shared/timing.ts";
 import circuits from "./circuits.json" with { type: "json" };
 import { get } from "./jolpica.ts";
@@ -44,17 +44,34 @@ export async function seasonSessions(year: number): Promise<SessionRef[]> {
   );
 }
 
+const SESSIONS = {
+  race: { label: "Race", name: /^Race$/, event: (r: any) => r },
+  sprint: {
+    label: "Sprint",
+    name: /^Sprint(?: Race)?$/,
+    event: (r: any) => r?.Sprint,
+  },
+  qualifying: {
+    label: "Qualifying",
+    name: /^Qualifying$/,
+    event: (r: any) => r?.Qualifying,
+  },
+  sprintQualifying: {
+    label: "Sprint qualifying",
+    name: /^Sprint (?:Qualifying|Shootout)$/,
+    event: (r: any) => r?.SprintQualifying ?? r?.SprintShootout,
+  },
+};
+
 export async function sessionPath(
   year: number,
   round: number,
-  kind: "race" | "sprint",
+  kind: keyof typeof SESSIONS,
 ): Promise<string> {
-  const label = kind === "race" ? "Race" : "Sprint";
-  const race = (await get(`${year}/${round}.json`)).RaceTable.Races[0];
-  const event = kind === "race" ? race : race?.Sprint;
+  const { label, name, event: pick } = SESSIONS[kind];
+  const event = pick((await get(`${year}/${round}.json`)).RaceTable.Races[0]);
   if (!event) throw new Error(`${label} is not available for this round`);
   const start = Date.parse(`${event.date}T${event.time ?? "00:00:00Z"}`);
-  const name = kind === "race" ? /^Race$/ : /^Sprint(?: Race)?$/;
   const away = (s: SessionRef) => Math.abs(Date.parse(s.start) - start);
   const match = (await seasonSessions(year))
     .filter((s) => name.test(s.name) && s.path)
@@ -94,6 +111,26 @@ export async function stints(
   );
 }
 
+export async function qualifying(
+  year: number,
+  round: number,
+  kind: "race" | "sprint",
+): Promise<Qualifying> {
+  const path = await sessionPath(
+    year,
+    round,
+    kind === "race" ? "qualifying" : "sprintQualifying",
+  );
+  const data = await json(`${BASE}${path}TimingData.json`);
+  return Object.entries(data.Lines ?? {})
+    .map(([number, line]: [string, any]) => ({
+      number,
+      position: Number(line.Position),
+      times: [0, 1, 2].map((part) => line.BestLapTimes?.[part]?.Value || null),
+    }))
+    .sort((a, b) => a.position - b.position);
+}
+
 export type Replay = {
   path: string;
   events: Event[];
@@ -115,6 +152,7 @@ const circuit = (key: number, date: string): Outline | null => {
         corners: c.corners,
         sectors: c.sectors,
         detection: c.detection,
+        pit: c.pit,
         marshalSectors: [],
       }
     : null;
@@ -140,6 +178,7 @@ export async function outlineFor(
       return {
         sectors: [],
         detection: null,
+        pit: null,
         ...bundled,
         x: c.x,
         y: c.y,

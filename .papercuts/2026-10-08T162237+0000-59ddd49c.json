@@ -1,0 +1,14 @@
+{
+  "id": "59ddd49c",
+  "ts": "2026-10-08T16:22:37+00:00",
+  "text": "The map full-screen button in a T3 preview tab shrinks the map to 400x300 instead of filling the viewport",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "d969ae3c",
+  "where": "src/web/live/MapFrame.tsx",
+  "branch": "t3code/issue-303"
+}
