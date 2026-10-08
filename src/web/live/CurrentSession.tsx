@@ -5,6 +5,7 @@ import {
   useRef,
   useState,
   type CSSProperties,
+  type RefObject,
 } from "react";
 import type { Round, Season } from "../../shared/season.ts";
 import type {
@@ -14,7 +15,7 @@ import type {
   SessionRef,
 } from "../../shared/timing.ts";
 import { useJson, type Loaded } from "../api.ts";
-import { useDelay } from "../delay.ts";
+import { setDelay, useDelay } from "../delay.ts";
 import { DelayInput } from "../DelayInput.tsx";
 import { Flag } from "../Flag.tsx";
 import { navigate, pathPart, setPathPart, standalone } from "../path.ts";
@@ -26,6 +27,7 @@ import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { clip } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
+import { clockSync, lapSync, type Latest } from "./sync.ts";
 import { useFeed, type Feed } from "./useFeed.ts";
 import { lapStarts, lapTime } from "./view.ts";
 
@@ -105,29 +107,53 @@ const GoLive = ({ behind, onClick }: GoLiveProps) => (
   </button>
 );
 
-const DelaySettings = () => (
-  <>
-    <button
-      popoverTarget="tv-delay"
-      aria-label="TV delay"
-      title="TV delay"
-      className="glass-control grid size-9 cursor-pointer place-items-center [anchor-name:--tv-delay]"
-    >
-      <Settings aria-hidden="true" className="size-4" />
-    </button>
-    <div
-      id="tv-delay"
-      popover="auto"
-      className="tv-delay bg-surface w-64 space-y-2 rounded-xl border border-white/10 p-4 text-sm text-zinc-100 shadow-lg"
-    >
-      <h2 className="font-f1 font-bold">TV delay</h2>
-      <p className="text-zinc-400">
-        Hold live timing back to match the F1TV stream, up to 60 seconds.
-      </p>
-      <DelayInput />
-    </div>
-  </>
-);
+interface DelaySettingsProps {
+  race: boolean;
+  latest: RefObject<Latest>;
+}
+
+const DelaySettings = ({ race, latest }: DelaySettingsProps) => {
+  const delay = useDelay();
+  const find = () =>
+    race
+      ? lapSync(latest.current.lapAt, Date.now())
+      : clockSync(latest.current.clock, Date.now(), delay);
+  return (
+    <>
+      <button
+        popoverTarget="tv-delay"
+        aria-label="TV delay"
+        title="TV delay"
+        className="glass-control grid size-9 cursor-pointer place-items-center [anchor-name:--tv-delay]"
+      >
+        <Settings aria-hidden="true" className="size-4" />
+      </button>
+      <div
+        id="tv-delay"
+        popover="auto"
+        className="tv-delay bg-surface w-72 space-y-3 rounded-xl border border-white/10 p-4 text-sm text-zinc-100 shadow-lg"
+      >
+        <h2 className="font-f1 font-bold">TV delay</h2>
+        <DelayInput />
+        <div className="space-y-1">
+          <button
+            type="button"
+            disabled={find() === null}
+            onClick={() => setDelay(find() ?? delay)}
+            className="glass-control w-full cursor-pointer px-3 py-1.5 font-semibold disabled:cursor-default disabled:opacity-50"
+          >
+            Sync
+          </button>
+          <p className="text-xs text-zinc-400">
+            {race
+              ? "Tap when the TV lap counter changes."
+              : "Tap when the TV clock shows a full minute."}
+          </p>
+        </div>
+      </div>
+    </>
+  );
+};
 
 const liveStart = (feed: Feed | null) =>
   Math.max(feed?.since ?? 0, feed?.start ?? 0);
@@ -159,7 +185,7 @@ const Live = ({ session, positions, rounds }: LiveProps) => {
     visible && (pos.pausedAt === null || loading)
       ? `/api/live/stream?delay=${Math.round(live + pos.back)}`
       : null;
-  const [feed, due] = useFeed(url, live + pos.back);
+  const [feed, due, latest] = useFeed(url, live + pos.back);
   if (loading && feed) setLoading(false);
   const waiting = !!due && due > Date.now() && feed?.src !== url;
   const laps = useJson<Record<string, LapRow[]>>("/api/live/laps", 15_000);
@@ -205,7 +231,7 @@ const Live = ({ session, positions, rounds }: LiveProps) => {
             onSeek={seek}
           >
             {goLive}
-            <DelaySettings />
+            <DelaySettings race={race} latest={latest} />
           </ReplayBar>
           <Board
             feed={feed}
