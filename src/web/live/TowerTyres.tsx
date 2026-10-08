@@ -91,9 +91,17 @@ interface TyreCellsProps {
   race: boolean;
   tyres: boolean;
   scale: number;
+  hidden?: boolean;
 }
 
-export const TyreCells = ({ row, race, tyres, scale }: TyreCellsProps) => {
+export const TyreCells = ({
+  row,
+  race,
+  tyres,
+  scale,
+  hidden,
+}: TyreCellsProps) => {
+  if (hidden) return null;
   const set = row.stints.at(-1);
   const cover = race && tyres ? "invisible" : "";
   return (

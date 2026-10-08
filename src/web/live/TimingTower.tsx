@@ -5,7 +5,13 @@ import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import type { Rejoin } from "./rejoin.ts";
 import { Cover, Stints, TyreCells, useCover } from "./TowerTyres.tsx";
-import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
+import {
+  relativeTo,
+  SPEED_POINTS,
+  type Mark,
+  type Row,
+  type SessionBests,
+} from "./view.ts";
 
 const MARK: Record<Mark, string> = {
   overall: "text-purple",
@@ -32,7 +38,7 @@ interface TimingTowerProps {
   onToggle: (number: string) => void;
 }
 
-const VIEWS = ["Timing", "Tyres"] as const;
+const VIEWS = ["Timing", "Tyres", "Speeds"] as const;
 
 interface Swap {
   up: boolean;
@@ -181,6 +187,36 @@ const Sectors = ({ sectors, qualifying }: SectorsProps) => (
   </span>
 );
 
+const SPEED_CELL = "w-[4ch] text-right";
+
+const SpeedLabels = () => (
+  <span className="flex gap-2 sm:gap-3" title="Speed in km/h">
+    {SPEED_POINTS.map((p) => (
+      <span key={p} className={SPEED_CELL}>
+        {p}
+      </span>
+    ))}
+  </span>
+);
+
+interface SpeedValuesProps {
+  speeds: Row["speeds"];
+  bests: SessionBests["speeds"];
+}
+
+const SpeedValues = ({ speeds, bests }: SpeedValuesProps) => (
+  <span className="flex gap-2 sm:gap-3">
+    {speeds.map((s, i) => (
+      <span
+        key={i}
+        className={`${SPEED_CELL} ${MARK[s.value && s.value === bests[i]?.value ? "overall" : s.mark]}`}
+      >
+        {s.value}
+      </span>
+    ))}
+  </span>
+);
+
 interface TowerRowProps {
   row: Row;
   race: boolean;
@@ -190,6 +226,8 @@ interface TowerRowProps {
   favourite: boolean;
   relative: boolean;
   tyres: boolean;
+  speeds: boolean;
+  bests: SessionBests;
   scale: number;
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
@@ -206,6 +244,8 @@ const TowerRow = ({
   favourite,
   relative,
   tyres,
+  speeds,
+  bests,
   scale,
   swap,
   bind,
@@ -268,15 +308,27 @@ const TowerRow = ({
     <td className="hidden px-1 py-1 text-right text-zinc-300 sm:table-cell sm:px-2">
       {row.bestLap}
     </td>
-    {!race && (
+    {speeds ? (
       <td className="px-1 py-1 sm:px-2">
-        {tyres && <Stints stints={row.stints} scale={scale} />}
-        <div className={tyres ? "invisible" : undefined}>
-          <Sectors sectors={row.sectors} qualifying={qualifying} />
-        </div>
+        <SpeedValues speeds={row.speeds} bests={bests.speeds} />
       </td>
+    ) : (
+      !race && (
+        <td className="px-1 py-1 sm:px-2">
+          {tyres && <Stints stints={row.stints} scale={scale} />}
+          <div className={tyres ? "invisible" : undefined}>
+            <Sectors sectors={row.sectors} qualifying={qualifying} />
+          </div>
+        </td>
+      )
     )}
-    <TyreCells row={row} race={race} tyres={tyres} scale={scale} />
+    <TyreCells
+      row={row}
+      race={race}
+      tyres={tyres}
+      scale={scale}
+      hidden={speeds && race}
+    />
     <td className="px-1 py-1 text-xs text-zinc-400 sm:px-2">{row.status}</td>
   </tr>
 );
@@ -296,6 +348,8 @@ export const TimingTower = ({
   const relative = relativeTo(rows, [...selected][0]);
   const [view, setView] = useState<(typeof VIEWS)[number]>("Timing");
   const tyres = view === "Tyres";
+  const speeds = view === "Speeds";
+  const hidden = speeds && race;
   const cover = race && tyres ? "invisible" : "";
   const table = useCover();
   const scale = Math.max(
@@ -309,11 +363,15 @@ export const TimingTower = ({
         <span className="font-f1 tracking-wider text-zinc-500 uppercase">
           Session best
         </span>
-        {[...bests.sectors, bests.lap].map((best, i) => (
-          <span key={i} className="flex items-center gap-1.5 font-mono">
-            <span className="text-zinc-500">
-              {i === 3 ? "Lap" : `S${i + 1}`}
-            </span>
+        {(speeds
+          ? bests.speeds.map((best, i) => [SPEED_POINTS[i]!, best] as const)
+          : [
+              ...bests.sectors.map((best, i) => [`S${i + 1}`, best] as const),
+              ["Lap", bests.lap] as const,
+            ]
+        ).map(([label, best]) => (
+          <span key={label} className="flex items-center gap-1.5 font-mono">
+            <span className="text-zinc-500">{label}</span>
             {best ? (
               <span className="font-semibold">
                 <span style={{ color: best.color }}>{best.tla}</span>{" "}
@@ -352,35 +410,45 @@ export const TimingTower = ({
             <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
               Best
             </th>
-            {!race && (
-              <th
-                data-tyres
-                className={`px-1 py-2 sm:px-2 ${tyres ? "invisible" : ""}`}
-              >
-                {tyres && <Cover>Stints</Cover>}
-                Sectors
+            {speeds ? (
+              <th className="px-1 py-2 sm:px-2">
+                <SpeedLabels />
               </th>
+            ) : (
+              !race && (
+                <th
+                  data-tyres
+                  className={`px-1 py-2 sm:px-2 ${tyres ? "invisible" : ""}`}
+                >
+                  {tyres && <Cover>Stints</Cover>}
+                  Sectors
+                </th>
+              )
             )}
-            <th
-              data-tyres={race || undefined}
-              className={`px-1 py-2 sm:table-cell sm:px-2 ${race ? "" : "hidden"} ${cover}`}
-            >
-              {cover && <Cover>Stints</Cover>}
-              Tyre
-            </th>
-            <th
-              data-tyres={race || undefined}
-              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${cover}`}
-            >
-              Pits
-            </th>
-            <th
-              data-tyres={race || undefined}
-              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${cover}`}
-              title="Stationary time of the last pit stop"
-            >
-              Stop
-            </th>
+            {!hidden && (
+              <>
+                <th
+                  data-tyres={race || undefined}
+                  className={`px-1 py-2 sm:table-cell sm:px-2 ${race ? "" : "hidden"} ${cover}`}
+                >
+                  {cover && <Cover>Stints</Cover>}
+                  Tyre
+                </th>
+                <th
+                  data-tyres={race || undefined}
+                  className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${cover}`}
+                >
+                  Pits
+                </th>
+                <th
+                  data-tyres={race || undefined}
+                  className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${cover}`}
+                  title="Stationary time of the last pit stop"
+                >
+                  Stop
+                </th>
+              </>
+            )}
             <th className="px-1 py-2 sm:px-2" />
           </tr>
         </thead>
@@ -396,6 +464,8 @@ export const TimingTower = ({
               favourite={r.tla === favourite?.code}
               relative={relative !== rows}
               tyres={tyres}
+              speeds={speeds}
+              bests={bests}
               scale={scale}
               swap={swaps[r.number]}
               bind={bind(r.number)}

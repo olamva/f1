@@ -213,6 +213,7 @@ test("session best owners use personal records instead of the latest sectors", (
             { Value: "25.000" },
           ],
           PersonalBestLapTime: { Value: "1:44.500" },
+          BestSpeeds: { I1: { Value: "301" }, ST: { Value: "9" } },
         },
         "2": {
           BestSectors: [
@@ -221,6 +222,7 @@ test("session best owners use personal records instead of the latest sectors", (
             { Value: "26.000" },
           ],
           PersonalBestLapTime: { Value: "1:44.000" },
+          BestSpeeds: { I1: { Value: "305" }, ST: { Value: "310" } },
         },
         "3": {
           BestSectors: [
@@ -238,6 +240,12 @@ test("session best owners use personal records instead of the latest sectors", (
       { number: "1", tla: "VER", color: "#3671C6", value: "35.000" },
       { number: "2", tla: "RUS", color: "#27F4D2", value: "41.000" },
       { number: "3", tla: "HAM", color: "#E8002D", value: "24.000" },
+    ],
+    speeds: [
+      { number: "2", tla: "RUS", color: "#27F4D2", value: "305" },
+      null,
+      null,
+      { number: "2", tla: "RUS", color: "#27F4D2", value: "310" },
     ],
     lap: { number: "2", tla: "RUS", color: "#27F4D2", value: "1:44.000" },
   });
