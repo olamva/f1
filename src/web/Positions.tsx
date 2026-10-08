@@ -30,7 +30,7 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
   });
   return (
     <div className="tabular text-xs">
-      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] pb-1 text-[10px] text-zinc-500">
+      <div className="grid grid-cols-[minmax(0,1fr)_6rem] pb-1 text-[10px] text-zinc-500">
         <div className="relative mx-2 h-4">
           {ticks.map((lap) => (
             <span
@@ -43,7 +43,7 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem]">
+      <div className="grid grid-cols-[minmax(0,1fr)_6rem]">
         <div className="relative mx-2">
           <svg
             viewBox={`0 0 ${last} ${rows.length}`}
@@ -116,7 +116,7 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
                   {row.positionText}
                 </span>
                 <TeamLogo team={row.team} className="mr-1.5 h-4 w-6" />
-                {row.code}
+                <span className="font-f1 font-bold">{row.code}</span>
               </button>
             </li>
           ))}
