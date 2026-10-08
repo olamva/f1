@@ -60,7 +60,7 @@ const SeasonResults = ({ id, season }: SeasonResultsProps) => {
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
         {season.year} results
       </h3>
-      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1">
+      <ol className="tabular grid auto-rows-fr grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1">
         {weekends.map(({ round, sessions }) => (
           <li
             key={round.round}
