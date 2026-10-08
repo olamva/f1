@@ -1,0 +1,14 @@
+{
+  "id": "94887e38",
+  "ts": "2026-10-08T16:24:16+00:00",
+  "text": "gh pr diff 351 -- <paths> prints nothing and exits 0; it ignores path filters silently, so I had to filter the full diff with awk",
+  "tags": [
+    "gh",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "620053fe",
+  "where": "gh pr diff",
+  "branch": "t3code/issue-315"
+}
