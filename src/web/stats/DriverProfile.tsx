@@ -148,7 +148,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                   href={data.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 inline-block text-sm text-red-400 hover:text-red-300"
+                  className="mt-1 inline-block text-sm text-zinc-300 underline decoration-zinc-500 underline-offset-4 hover:text-white hover:decoration-white"
                 >
                   Biography ↗
                 </a>
