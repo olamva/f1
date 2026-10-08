@@ -76,10 +76,22 @@ const fitted = (outline: Outline, turn: number) => {
 const Markers = ({
   finish,
   splits,
+  detection,
   labels,
   corners,
 }: ReturnType<typeof markers>) => (
   <>
+    {detection && (
+      <line
+        x1={detection[0] - detection[2]}
+        y1={detection[1] - detection[3]}
+        x2={detection[0] + detection[2]}
+        y2={detection[1] + detection[3]}
+        stroke="#a1a1aa"
+        strokeWidth={4}
+        strokeDasharray="4 4"
+      />
+    )}
     {splits.map(([x, y, dx, dy], i) => (
       <line
         key={i}

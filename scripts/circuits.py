@@ -93,6 +93,7 @@ def circuit(bundle):
             p = world(transforms[gid], (0, 0, 0))
             corners[int(m[1])] = (p[0] * SCALE, p[2] * SCALE)
     finish = spot("finishPoint") or line[0]
+    detection = spot("overtake_detect_point", "Overtake_dete_point")
     i = nearest(line, finish)
     line = line[i:] + line[:i]
     order = [nearest(line, corners[n]) for n in sorted(corners)]
@@ -130,6 +131,7 @@ def circuit(bundle):
             for n, p in sorted(corners.items())
         ],
         "sectors": [{"x": round(p[0]), "y": round(p[1])} for p in sectors],
+        "detection": detection and {"x": round(detection[0]), "y": round(detection[1])},
     }
 
 
