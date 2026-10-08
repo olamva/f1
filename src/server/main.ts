@@ -5,6 +5,7 @@ import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import type { Delta, Snapshot } from "../shared/timing.ts";
 import {
   outlineFor,
+  qualifying,
   seasonSessions,
   replay,
   stateAt,
@@ -49,7 +50,7 @@ const send = (s: SSEStreamingApi, event: string, data: unknown) =>
   s.writeSSE({ event, data: JSON.stringify(data) });
 
 app.get("/api/season", async (c) => c.json(await season()));
-app.get("/api/:topic{pace|stints}/:year/:round/:kind", async (c) => {
+app.get("/api/:topic{pace|stints|qualifying}/:year/:round/:kind", async (c) => {
   const year = Number(c.req.param("year"));
   const round = Number(c.req.param("round"));
   const kind = c.req.param("kind");
@@ -63,12 +64,9 @@ app.get("/api/:topic{pace|stints}/:year/:round/:kind", async (c) => {
     (kind !== "race" && kind !== "sprint")
   )
     return c.notFound();
+  const topic = c.req.param("topic") as "pace" | "stints" | "qualifying";
   return c.json(
-    await (c.req.param("topic") === "pace" ? pace : stints)(
-      year,
-      round,
-      kind as PaceKind,
-    ),
+    await { pace, stints, qualifying }[topic](year, round, kind as PaceKind),
   );
 });
 app.get("/api/:kind{results|standings}/:year", async (c) => {
