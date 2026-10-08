@@ -1,5 +1,9 @@
 import { ArrowLeft } from "lucide-react";
-import type { DriverProfile as Profile, Season } from "../../shared/season.ts";
+import type {
+  Classified,
+  DriverProfile as Profile,
+  Season,
+} from "../../shared/season.ts";
 import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
 import { Flag } from "../Flag.tsx";
@@ -12,38 +16,70 @@ const SHORT: Record<string, string> = {
   Disqualified: "DSQ",
 };
 
+interface PlaceProps {
+  result: Classified | undefined;
+  sprint: boolean;
+}
+
+const Place = ({ result, sprint }: PlaceProps) => (
+  <span
+    className={`font-f1 font-bold ${sprint ? "text-[10px]" : "text-sm"} ${result?.points ? "" : "text-zinc-500"}`}
+    style={{ color: METALS[(result?.position ?? 0) - 1] }}
+  >
+    {sprint && <span className="mr-0.5 text-zinc-500">S</span>}
+    {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
+  </span>
+);
+
 interface SeasonResultsProps {
   id: string;
   season: Season;
 }
 
 const SeasonResults = ({ id, season }: SeasonResultsProps) => {
-  const races = season.rounds.flatMap((round) => {
-    const race = season.races.find((r) => r.round === round.round);
-    return race
-      ? [{ round, result: race.results.find((r) => r.driver === id) }]
-      : [];
-  });
-  if (!races.some((race) => race.result)) return null;
+  const weekends = season.rounds
+    .map((round) => ({
+      round,
+      sessions: (
+        [
+          ["Race", season.races],
+          ["Sprint", season.sprints],
+        ] as const
+      ).flatMap(([name, all]) => {
+        const rows = all.find((s) => s.round === round.round)?.results;
+        return rows
+          ? [{ name, result: rows.find((r) => r.driver === id) }]
+          : [];
+      }),
+    }))
+    .filter((weekend) => weekend.sessions.length);
+  if (!weekends.some((weekend) => weekend.sessions.some((s) => s.result)))
+    return null;
   return (
     <section className="bg-surface rounded-xl p-3 sm:p-4">
       <h3 className="font-f1 mb-2 text-xs tracking-wider text-zinc-400 uppercase">
-        {season.year} races
+        {season.year} results
       </h3>
-      <ol className="tabular flex gap-1 overflow-x-auto">
-        {races.map(({ round, result }) => (
+      <ol className="tabular grid grid-cols-[repeat(auto-fill,minmax(2.75rem,1fr))] gap-1">
+        {weekends.map(({ round, sessions }) => (
           <li
             key={round.round}
-            title={`${round.name}: ${result?.status ?? "Did not race"}`}
-            className={`flex w-11 shrink-0 flex-col items-center gap-0.5 rounded-md bg-zinc-800/60 py-1.5 *:mr-0 ${result?.points ? "" : "text-zinc-500"}`}
-            style={{ color: METALS[(result?.position ?? 0) - 1] }}
+            title={[
+              round.name,
+              ...sessions.map(
+                (s) => `${s.name}: ${s.result?.status ?? "Did not race"}`,
+              ),
+            ].join("\n")}
+            className="flex flex-col items-center gap-0.5 rounded-md bg-zinc-800/60 py-1.5 *:mr-0"
           >
             <Flag country={round.country} />
-            <span className="font-f1 text-sm font-bold">
-              {result
-                ? (result.position ?? SHORT[result.status] ?? "DNF")
-                : "–"}
-            </span>
+            {sessions.map((s) => (
+              <Place
+                key={s.name}
+                result={s.result}
+                sprint={s.name === "Sprint"}
+              />
+            ))}
           </li>
         ))}
       </ol>
