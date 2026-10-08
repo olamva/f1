@@ -7,6 +7,7 @@ import type {
   Period,
   Point,
 } from "../shared/timing.ts";
+import { Overtake } from "./overtake.ts";
 import type { Message } from "./push.ts";
 import { seconds } from "./season.ts";
 
@@ -119,10 +120,19 @@ export class Session {
   periods: Period[] = [];
   private lastPosition = -Infinity;
   private outLaps = new Set<string>();
+  private overtake = new Overtake();
 
-  apply(e: Event): Event | null {
+  apply(e: Event): Event[] {
+    const out = this.keep(e) ? [e] : [];
+    const data = this.overtake.see(e, this.state);
+    return data
+      ? [...out, ...this.apply({ t: e.t, topic: "OvertakeMode", data })]
+      : out;
+  }
+
+  private keep(e: Event): boolean {
     if (e.topic === "Position") {
-      if (e.t - this.lastPosition < POSITION_SPACING_MS) return null;
+      if (e.t - this.lastPosition < POSITION_SPACING_MS) return false;
       this.lastPosition = e.t;
       for (const [n, p] of Object.entries(
         e.data as Record<string, [number, number]>,
@@ -132,7 +142,7 @@ export class Session {
     this.state[e.topic] = merge(this.state[e.topic], e.data);
     if (e.topic === "TimingData") this.trackLaps(e);
     if (e.topic === "TrackStatus") this.trackStatus(e.t);
-    return e;
+    return true;
   }
 
   private trackStatus(t: number) {

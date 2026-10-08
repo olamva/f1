@@ -28,6 +28,7 @@ export type Row = {
   status: string;
   investigation?: string;
   penalty?: string;
+  overtake?: boolean;
 };
 
 export type SessionBest = {
@@ -152,6 +153,7 @@ export function rows(state: Obj): Row[] {
   const apps: Obj = state.TimingAppData?.Lines ?? {};
   const stops: Obj = state.PitStopSeries?.PitTimes ?? {};
   const info: Obj = state.DriverRaceInfo ?? {};
+  const mode: Obj = state.OvertakeMode ?? {};
   return Object.entries(lines)
     .filter(([n]) => drivers[n])
     .map(([n, line]) =>
@@ -165,7 +167,7 @@ export function rows(state: Obj): Row[] {
         state.TimingData.SessionPart ?? 1,
       ),
     )
-    .map((r) => ({ ...r, ...calls.get(r.number) }))
+    .map((r) => ({ ...r, ...calls.get(r.number), overtake: mode[r.number] }))
     .sort((a, b) => a.position - b.position);
 }
 

@@ -79,7 +79,8 @@ export class Feed {
       this.listeners.forEach((fn) => fn(true));
     }
     for (const e of this.events(topic, data, now))
-      if (this.session.apply(e)) this.pending.push([e.topic, e.data, e.t]);
+      for (const x of this.session.apply(e))
+        this.pending.push([x.topic, x.data, x.t]);
   }
 
   private flush() {

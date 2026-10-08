@@ -227,14 +227,21 @@ async function load(path: string): Promise<Replay> {
       ),
     ),
   );
-  const events = streams.flat().sort((a, b) => a.t - b.t);
+  const events: Event[] = [];
   const session = new Session();
   const checkpoints: Replay["checkpoints"] = [{ t: 0, index: 0, state: {} }];
-  events.forEach((e, index) => {
+  for (const e of streams.flat().sort((a, b) => a.t - b.t)) {
     if (e.t - checkpoints.at(-1)!.t >= CHECKPOINT_MS)
-      checkpoints.push({ t: e.t, index, state: { ...session.state } });
-    expand(e).forEach((x) => session.apply(x));
-  });
+      checkpoints.push({
+        t: e.t,
+        index: events.length,
+        state: { ...session.state },
+      });
+    events.push(
+      e,
+      ...expand(e).flatMap((x) => session.apply(x).filter((y) => y !== x)),
+    );
+  }
   return {
     path,
     events,
