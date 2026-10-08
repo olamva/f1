@@ -1,4 +1,5 @@
 import { lapSeconds, type LapRow } from "../../shared/timing.ts";
+import { clockLeft } from "./sync.ts";
 
 type Obj = Record<string, any>;
 
@@ -16,6 +17,7 @@ export type Row = {
   gap: string;
   lapsBehind: number | null;
   interval: string;
+  catching: boolean;
   lastLap: string;
   lastMark: Mark;
   bestLap: string;
@@ -105,6 +107,7 @@ function row(
   driver: Obj,
   app: Obj | undefined,
   stops: unknown,
+  info: Obj | undefined,
   part: number,
 ): Row {
   const { gap, interval } = diffs(line, part);
@@ -121,6 +124,7 @@ function row(
     gap,
     lapsBehind: lapGap(gap),
     interval,
+    catching: info?.Catching === 2,
     lastLap: line.LastLapTime?.Value ?? "",
     lastMark: mark(line.LastLapTime),
     bestLap: line.BestLapTime?.Value ?? "",
@@ -147,6 +151,7 @@ export function rows(state: Obj): Row[] {
   const drivers: Obj = state.DriverList ?? {};
   const apps: Obj = state.TimingAppData?.Lines ?? {};
   const stops: Obj = state.PitStopSeries?.PitTimes ?? {};
+  const info: Obj = state.DriverRaceInfo ?? {};
   return Object.entries(lines)
     .filter(([n]) => drivers[n])
     .map(([n, line]) =>
@@ -156,6 +161,7 @@ export function rows(state: Obj): Row[] {
         drivers[n],
         apps[n],
         stops[n],
+        info[n],
         state.TimingData.SessionPart ?? 1,
       ),
     )
@@ -373,11 +379,8 @@ export const trackStatus = (
 };
 
 export function remaining(state: Obj, utcNow: number): string {
-  const clock = state.ExtrapolatedClock;
-  if (!clock?.Remaining) return "";
-  const [h, m, s] = String(clock.Remaining).split(":").map(Number);
-  let left = ((h ?? 0) * 3600 + (m ?? 0) * 60 + (s ?? 0)) * 1000;
-  if (clock.Extrapolating) left -= Math.max(0, utcNow - Date.parse(clock.Utc));
+  const left = clockLeft(state.ExtrapolatedClock, utcNow);
+  if (left === null) return "";
   const total = Math.max(0, Math.round(left / 1000));
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${Math.floor(total / 3600)}:${pad(Math.floor(total / 60) % 60)}:${pad(total % 60)}`;
@@ -412,6 +415,7 @@ export const relativeTo = (rows: Row[], number: string | undefined): Row[] => {
         : i > at
           ? r.interval
           : "",
+    catching: i > at && r.catching,
   }));
 };
 

@@ -1,4 +1,4 @@
-import { ArrowDown, ArrowUp, Timer } from "lucide-react";
+import { ArrowDown, ArrowUp, ChevronsUp, Timer } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FAVOURITE_ROW, useFavourite } from "../favourite.ts";
 import { Tabs } from "../Tabs.tsx";
@@ -259,7 +259,20 @@ const TowerRow = ({
     </td>
     {race && (
       <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
-        {row.interval}
+        <span className="flex items-center justify-between gap-1">
+          <span className="inline-block w-3">
+            {row.catching && (
+              <span
+                className="inline-flex text-emerald-400"
+                title="Catching the car ahead"
+                aria-label="Catching the car ahead"
+              >
+                <ChevronsUp size={12} strokeWidth={3} />
+              </span>
+            )}
+          </span>
+          {row.interval}
+        </span>
       </td>
     )}
     <td className={`px-1 py-1 text-right sm:px-2 ${MARK[row.lastMark]}`}>
