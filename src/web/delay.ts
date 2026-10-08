@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from "react";
 
-const MAX_S = 60;
+export const MAX_DELAY_S = 300;
 const listeners = new Set<() => void>();
 
 const subscribe = (change: () => void) => {
@@ -9,11 +9,11 @@ const subscribe = (change: () => void) => {
 };
 
 export const setDelay = (s: number) => {
-  localStorage.setItem("delay", String(Math.min(MAX_S, s)));
+  localStorage.setItem("delay", String(Math.min(MAX_DELAY_S, s)));
   listeners.forEach((change) => change());
 };
 
 export const useDelay = () =>
   useSyncExternalStore(subscribe, () =>
-    Math.min(MAX_S, Number(localStorage.getItem("delay")) || 0),
+    Math.min(MAX_DELAY_S, Number(localStorage.getItem("delay")) || 0),
   );
