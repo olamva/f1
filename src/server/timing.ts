@@ -21,6 +21,7 @@ export const TOPICS = [
   "TimingData",
   "TimingAppData",
   "TimingStats",
+  "DriverRaceInfo",
   "RaceControlMessages",
   "WeatherData",
   "WeatherDataSeries",
