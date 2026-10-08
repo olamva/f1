@@ -77,6 +77,9 @@ export const markers = (
   return {
     finish: across(lines[0]!, 20),
     splits: lines.slice(1).map((i) => across(i, 16)),
+    detection:
+      outline.detection &&
+      across(nearest(outline, outline.detection.x, outline.detection.y), 16),
     corners: outline.corners.map((c) => ({
       number: c.number,
       at: beside(nearest(outline, c.x, c.y), 11 * String(c.number).length),

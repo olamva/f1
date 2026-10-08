@@ -33,6 +33,7 @@ export type Outline = {
   rotation: number;
   corners: { number: number; x: number; y: number }[];
   sectors: { x: number; y: number }[];
+  detection: { x: number; y: number } | null;
   marshalSectors: { number: number; x: number; y: number }[];
   pitLoss?: PitLoss;
 };
