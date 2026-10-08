@@ -1,5 +1,6 @@
 import { useRef, useState, type ReactNode } from "react";
 import type {
+  LapPositions,
   Qualifying,
   RaceArchive,
   Season,
@@ -12,6 +13,7 @@ import { Flag } from "./Flag.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver, pathPart, pathSegment } from "./path.ts";
 import { Podium } from "./Podium.tsx";
+import { Positions } from "./Positions.tsx";
 import { Spoiler } from "./Spoiler.tsx";
 import { Standings } from "./Standings.tsx";
 import { Strategy } from "./Strategy.tsx";
@@ -22,7 +24,7 @@ import { Tabs } from "./Tabs.tsx";
 const SESSIONS = ["sprintQualifying", "sprint", "qualifying", "race"] as const;
 type Kind = (typeof SESSIONS)[number];
 const LABELS = { sprintQualifying: "SQ", qualifying: "Quali" };
-const VIEWS = ["results", "tyres"] as const;
+const VIEWS = ["results", "tyres", "positions"] as const;
 const PARTS = ["Races", "Standings"] as const;
 type Part = (typeof PARTS)[number];
 
@@ -164,9 +166,12 @@ interface RaceBodyProps {
 const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
   const [view, setView] = useState<(typeof VIEWS)[number]>("results");
   const archived = Number(year) >= 2018;
-  const tyres = archived && view === "tyres";
+  const shown = archived ? view : "results";
   const strategy = useJson<Stints>(
-    tyres ? `/api/stints/${year}/${round}/${kind}` : null,
+    shown === "tyres" ? `/api/stints/${year}/${round}/${kind}` : null,
+  );
+  const positions = useJson<LapPositions>(
+    shown === "positions" ? `/api/positions/${year}/${round}/${kind}` : null,
   );
   return (
     <>
@@ -175,7 +180,7 @@ const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
           <Tabs items={VIEWS} value={view} onChange={setView} small />
         </div>
       )}
-      {tyres ? (
+      {shown === "tyres" ? (
         strategy.data ? (
           <Strategy rows={rows} stints={strategy.data} favourite={favourite} />
         ) : (
@@ -183,6 +188,18 @@ const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
             label="Loading tyre strategy…"
             error={
               strategy.error && "Tyre data is not available for this session."
+            }
+          />
+        )
+      ) : shown === "positions" ? (
+        positions.data ? (
+          <Positions rows={rows} laps={positions.data} favourite={favourite} />
+        ) : (
+          <Loading
+            label="Loading positions…"
+            error={
+              positions.error &&
+              "Position data is not available for this session."
             }
           />
         )

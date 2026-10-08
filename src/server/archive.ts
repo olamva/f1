@@ -1,5 +1,5 @@
 import { merge } from "../shared/merge.ts";
-import type { Qualifying, Stints } from "../shared/season.ts";
+import type { LapPositions, Qualifying, Stints } from "../shared/season.ts";
 import type { Outline, SessionRef } from "../shared/timing.ts";
 import circuits from "./circuits.json" with { type: "json" };
 import { get } from "./jolpica.ts";
@@ -108,6 +108,21 @@ export async function stints(
         }),
       ];
     }),
+  );
+}
+
+export async function positions(
+  year: number,
+  round: number,
+  kind: "race" | "sprint",
+): Promise<LapPositions> {
+  const path = await sessionPath(year, round, kind);
+  const data = await json(`${BASE}${path}LapSeries.json`);
+  return Object.fromEntries(
+    Object.entries(data ?? {}).map(([number, line]: [string, any]) => [
+      number,
+      (line.LapPosition ?? []).map(Number),
+    ]),
   );
 }
 

@@ -156,7 +156,6 @@ export const LapCharts = ({
               yFormat={lapTime}
               invert
               height={400}
-              detailsBelow
             />
           </>
         ) : (
@@ -174,7 +173,6 @@ export const LapCharts = ({
             yFormat={(v) => v.toFixed(0)}
             invert
             height={400}
-            detailsBelow
           />
         </Panel>
       )}
