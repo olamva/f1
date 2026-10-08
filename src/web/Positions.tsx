@@ -14,26 +14,23 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
   const [hover, setHover] = useState<string | null>(null);
   const [pinned, setPinned] = useState<string | null>(null);
   const focus = hover ?? pinned;
-  const lines = Object.values(laps);
-  const last = Math.max(1, ...lines.map((line) => line.length - 1));
-  const count = Math.max(rows.length, ...lines.flat());
+  const last = Math.max(
+    1,
+    ...Object.values(laps).map((line) => line.length - 1),
+  );
   const ticks = Array.from(
     { length: Math.floor(last / 10) + 1 },
     (_, i) => i * 10,
   );
-  const grid = new Map(rows.map((row) => [laps[row.number]?.[0], row]));
   const highlight = (id: string) => ({
     onPointerEnter: (event: PointerEvent) =>
       event.pointerType === "mouse" && setHover(id),
     onPointerLeave: () => setHover(null),
     onClick: () => setPinned((current) => (current === id ? null : id)),
   });
-  const label = (row: (typeof rows)[number]) =>
-    `flex h-6 w-full cursor-pointer items-center rounded ${row.driver === favourite ? FAVOURITE_ROW : ""} ${focus && focus !== row.number ? "opacity-40" : ""} ${focus === row.number ? "font-bold text-white" : ""}`;
   return (
     <div className="tabular text-xs">
-      <div className="grid grid-cols-[2.25rem_minmax(0,1fr)_5.5rem] pb-1 text-[10px] text-zinc-500">
-        <span />
+      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem] pb-1 text-[10px] text-zinc-500">
         <div className="relative mx-2 h-4">
           {ticks.map((lap) => (
             <span
@@ -46,28 +43,10 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
           ))}
         </div>
       </div>
-      <div className="grid grid-cols-[2.25rem_minmax(0,1fr)_5.5rem]">
-        <ol>
-          {Array.from({ length: count }, (_, i) => grid.get(i + 1)).map(
-            (row, i) => (
-              <li key={i}>
-                {row && (
-                  <button
-                    type="button"
-                    aria-pressed={pinned === row.number}
-                    className={`${label(row)} justify-end pr-1`}
-                    {...highlight(row.number)}
-                  >
-                    {row.code}
-                  </button>
-                )}
-              </li>
-            ),
-          )}
-        </ol>
+      <div className="grid grid-cols-[minmax(0,1fr)_5.5rem]">
         <div className="relative mx-2">
           <svg
-            viewBox={`0 0 ${last} ${count}`}
+            viewBox={`0 0 ${last} ${rows.length}`}
             preserveAspectRatio="none"
             className="absolute inset-0 size-full overflow-visible"
           >
@@ -76,7 +55,7 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
                 key={lap}
                 x1={lap}
                 x2={lap}
-                y2={count}
+                y2={rows.length}
                 stroke="#27272a"
                 vectorEffect="non-scaling-stroke"
               />
@@ -130,7 +109,7 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
               <button
                 type="button"
                 aria-pressed={pinned === row.number}
-                className={`${label(row)} pl-1`}
+                className={`flex h-6 w-full cursor-pointer items-center rounded pl-1 ${row.driver === favourite ? FAVOURITE_ROW : ""} ${focus && focus !== row.number ? "opacity-40" : ""} ${focus === row.number ? "font-bold text-white" : ""}`}
                 {...highlight(row.number)}
               >
                 <span className="w-6 text-left text-zinc-500">
