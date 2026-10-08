@@ -5,6 +5,7 @@ import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import type { Rejoin } from "./rejoin.ts";
 import { Cover, Stints, TyreCells, useCover } from "./TowerTyres.tsx";
+import { BestRow } from "./BestRow.tsx";
 import { relativeTo, type Mark, type Row, type SessionBests } from "./view.ts";
 
 const MARK: Record<Mark, string> = {
@@ -315,28 +316,42 @@ export const TimingTower = ({
     1,
     ...rows.map((r) => r.stints.reduce((total, s) => total + s.laps, 0)),
   );
+  const widths = [0, 1, 2].map((i) =>
+    Math.max(0, ...rows.map((r) => r.sectors[i]?.segments.length ?? 0)),
+  );
+  const bestRow = !race && !tyres;
+  const strip = bestRow ? "sm:hidden" : "sm:contents";
   return (
     <div className="bg-surface overflow-x-auto rounded-xl pb-1.5">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-3 py-2 text-xs">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 border-b border-zinc-800 px-2 py-2 text-xs sm:px-3">
         <Tabs items={VIEWS} value={view} onChange={setView} small />
-        <span className="font-f1 tracking-wider text-zinc-500 uppercase">
+        <span
+          className={`font-f1 tracking-wider text-zinc-500 uppercase ${bestRow ? "sm:hidden" : ""}`}
+        >
           Session best
         </span>
-        {[...bests.sectors, bests.lap].map((best, i) => (
-          <span key={i} className="flex items-center gap-1.5 font-mono">
-            <span className="text-zinc-500">
-              {i === 3 ? "Lap" : `S${i + 1}`}
-            </span>
-            {best ? (
-              <span className="font-semibold">
-                <span style={{ color: best.color }}>{best.tla}</span>{" "}
-                <span className="text-purple">{best.value}</span>
+        <div
+          className={`flex w-full flex-wrap justify-between text-[10px] sm:w-auto sm:text-xs ${strip}`}
+        >
+          {[...bests.sectors, bests.lap].map((best, i) => (
+            <span
+              key={i}
+              className="flex items-center gap-0.5 font-mono sm:gap-1.5"
+            >
+              <span className="text-zinc-500">
+                {i === 3 ? "Lap" : `S${i + 1}`}
               </span>
-            ) : (
-              <span className="text-zinc-600">—</span>
-            )}
-          </span>
-        ))}
+              {best ? (
+                <span className="flex gap-1 font-semibold sm:gap-[1ch]">
+                  <span style={{ color: best.color }}>{best.tla}</span>
+                  <span className="text-purple">{best.value}</span>
+                </span>
+              ) : (
+                <span className="text-zinc-600">—</span>
+              )}
+            </span>
+          ))}
+        </div>
       </div>
       <table
         ref={table}
@@ -398,6 +413,9 @@ export const TimingTower = ({
           </tr>
         </thead>
         <tbody>
+          {bestRow && (
+            <BestRow bests={bests} widths={widths} qualifying={qualifying} />
+          )}
           {relative.map((r, i) => (
             <TowerRow
               key={r.number}
