@@ -67,6 +67,12 @@ export type Stint = {
 
 export type Stints = Record<string, Stint[]>;
 
+export type Qualifying = {
+  number: string;
+  position: number;
+  times: (string | null)[];
+}[];
+
 export type RaceArchive = {
   year: number;
   races: {
