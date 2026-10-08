@@ -152,6 +152,7 @@ const circuit = (key: number, date: string): Outline | null => {
         corners: c.corners,
         sectors: c.sectors,
         detection: c.detection,
+        pit: c.pit,
         marshalSectors: [],
       }
     : null;
@@ -177,6 +178,7 @@ export async function outlineFor(
       return {
         sectors: [],
         detection: null,
+        pit: null,
         ...bundled,
         x: c.x,
         y: c.y,
