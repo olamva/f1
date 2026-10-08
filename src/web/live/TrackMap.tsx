@@ -179,15 +179,15 @@ export const TrackMap = ({
   );
   const cardX =
     hover && (hover.x > box[0] + box[2] / 2 ? hover.x - 260 : hover.x + 20);
-  const path = useMemo(
-    () =>
-      outline && project
-        ? outline.x
-            .map((x, i) => project(x, outline.y[i]!).map(Math.round).join(","))
+  const [path, lane] = useMemo(() => {
+    const trace = (line: { x: number[]; y: number[] } | null | undefined) =>
+      line && project
+        ? line.x
+            .map((x, i) => project(x, line.y[i]!).map(Math.round).join(","))
             .join(" ")
-        : "",
-    [outline, project],
-  );
+        : "";
+    return [trace(outline), trace(outline?.pit)];
+  }, [outline, project]);
   const splits = sectorSplits(bests).join();
   const marks = useMemo(
     () =>
@@ -198,15 +198,23 @@ export const TrackMap = ({
   const cars = project
     ? [...rows].reverse().flatMap((r) => {
         const p = positions?.[r.number];
+        const inPit = r.status === "PIT";
         if (
-          ["PIT", "KO", "OUT"].includes(r.status) ||
+          ["KO", "OUT"].includes(r.status) ||
+          (inPit && !outline!.pit) ||
           !p ||
           (p[0] === 0 && p[1] === 0)
         )
           return [];
         const [x, y] = project(p[0], p[1]);
         return [
-          { r, x, y, focus: selected.size === 0 || selected.has(r.number) },
+          {
+            r,
+            x,
+            y,
+            inPit,
+            focus: !inPit && (selected.size === 0 || selected.has(r.number)),
+          },
         ];
       })
     : [];
@@ -278,6 +286,14 @@ export const TrackMap = ({
             }}
           >
             <polyline
+              points={lane}
+              fill="none"
+              stroke="#3f3f46"
+              strokeWidth={6}
+              strokeLinejoin="round"
+              strokeLinecap="round"
+            />
+            <polyline
               points={path}
               fill="none"
               stroke="#3f3f46"
@@ -288,7 +304,7 @@ export const TrackMap = ({
             {marks && <SectorFlags marshal={marks.marshal} flags={flags} />}
             {marks && <Markers {...marks} />}
             <g key={stream}>
-              {cars.map(({ r, x, y, focus }) => (
+              {cars.map(({ r, x, y, inPit, focus }) => (
                 <g
                   key={r.number}
                   data-number={r.number}
@@ -316,7 +332,9 @@ export const TrackMap = ({
                   style={place(x, y)}
                   opacity={focus || hovered === r.number ? 1 : 0.35}
                 >
-                  <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
+                  {!inPit && (
+                    <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
+                  )}
                   <circle
                     r={14}
                     fill={r.color}
@@ -341,7 +359,8 @@ export const TrackMap = ({
                   />
                 </g>
               )}
-              {cars.map(({ r, x, y, focus }) => {
+              {cars.map(({ r, x, y, inPit, focus }) => {
+                if (inPit) return null;
                 const crown = r.position === 1 && (race || r.bestLap);
                 const laps =
                   !crown && race && r.lapsBehind ? `+${r.lapsBehind}` : "";

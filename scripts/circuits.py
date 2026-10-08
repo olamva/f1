@@ -67,18 +67,23 @@ def circuit(bundle):
         if o.type.name == "MonoBehaviour" and "CircuitKey" in o.read_typetree()
     )
     filters = [o.read() for o in env.objects if o.type.name == "MeshFilter"]
-    track = next(f for f in filters if names[f.m_GameObject.path_id] == "Track")
-    handler = MeshHandler(objects[track.m_Mesh.path_id].read())
-    handler.process()
-    vertices = handler.m_Vertices
-    if len(vertices) % 4:
-        raise ValueError(f"{len(vertices)} track vertices")
-    transform = transforms[track.m_GameObject.path_id]
-    centre = [
-        world(transform, tuple(sum(p[k] for p in vertices[i:i + 4]) / 4 for k in range(3)))
-        for i in range(0, len(vertices), 4)
-    ]
-    line = [(p[0] * SCALE, p[2] * SCALE) for p in centre]
+
+    def mesh(name):
+        f = next(f for f in filters if names[f.m_GameObject.path_id] == name)
+        handler = MeshHandler(objects[f.m_Mesh.path_id].read())
+        handler.process()
+        return [world(transforms[f.m_GameObject.path_id], v) for v in handler.m_Vertices or []]
+
+    def centre(vertices, size):
+        if len(vertices) % size:
+            raise ValueError(f"{len(vertices)} vertices")
+        return [
+            tuple(sum(p[k] for p in vertices[i:i + size]) / size * SCALE for k in (0, 2))
+            for i in range(0, len(vertices), size)
+        ]
+
+    line = centre(mesh("Track"), 4)
+    pit = centre(mesh("Pit"), 2) if "Pit" in names.values() else []
 
     def spot(*labels):
         for gid, name in names.items():
@@ -103,14 +108,7 @@ def circuit(bundle):
     n = len(line)
 
     def span(name):
-        mesh = next(f for f in filters if names[f.m_GameObject.path_id] == name)
-        handler = MeshHandler(objects[mesh.m_Mesh.path_id].read())
-        handler.process()
-        transform = transforms[mesh.m_GameObject.path_id]
-        index = sorted({
-            nearest(line, (p[0] * SCALE, p[2] * SCALE))
-            for p in (world(transform, v) for v in handler.m_Vertices)
-        })
+        index = sorted({nearest(line, (p[0] * SCALE, p[2] * SCALE)) for p in mesh(name)})
         end, start = max(zip(index, index[1:] + [index[0] + n]), key=lambda g: g[1] - g[0])
         return start % n, end
 
@@ -132,6 +130,7 @@ def circuit(bundle):
         ],
         "sectors": [{"x": round(p[0]), "y": round(p[1])} for p in sectors],
         "detection": detection and {"x": round(detection[0]), "y": round(detection[1])},
+        "pit": {"x": [round(p[0]) for p in pit], "y": [round(p[1]) for p in pit]} if pit else None,
     }
 
 
