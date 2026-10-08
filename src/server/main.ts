@@ -5,6 +5,7 @@ import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import type { Delta, Snapshot } from "../shared/timing.ts";
 import {
   outlineFor,
+  positions,
   qualifying,
   seasonSessions,
   replay,
@@ -50,25 +51,27 @@ const send = (s: SSEStreamingApi, event: string, data: unknown) =>
   s.writeSSE({ event, data: JSON.stringify(data) });
 
 app.get("/api/season", async (c) => c.json(await season()));
-app.get("/api/:topic{pace|stints|qualifying}/:year/:round/:kind", async (c) => {
-  const year = Number(c.req.param("year"));
-  const round = Number(c.req.param("round"));
-  const kind = c.req.param("kind");
-  if (
-    !Number.isInteger(year) ||
-    year < 1950 ||
-    year > new Date().getFullYear() ||
-    !Number.isInteger(round) ||
-    round < 1 ||
-    round > 30 ||
-    (kind !== "race" && kind !== "sprint")
-  )
-    return c.notFound();
-  const topic = c.req.param("topic") as "pace" | "stints" | "qualifying";
-  return c.json(
-    await { pace, stints, qualifying }[topic](year, round, kind as PaceKind),
-  );
-});
+const topics = { pace, stints, qualifying, positions };
+app.get(
+  "/api/:topic{pace|stints|qualifying|positions}/:year/:round/:kind",
+  async (c) => {
+    const year = Number(c.req.param("year"));
+    const round = Number(c.req.param("round"));
+    const kind = c.req.param("kind");
+    if (
+      !Number.isInteger(year) ||
+      year < 1950 ||
+      year > new Date().getFullYear() ||
+      !Number.isInteger(round) ||
+      round < 1 ||
+      round > 30 ||
+      (kind !== "race" && kind !== "sprint")
+    )
+      return c.notFound();
+    const topic = c.req.param("topic") as keyof typeof topics;
+    return c.json(await topics[topic](year, round, kind as PaceKind));
+  },
+);
 app.get("/api/:kind{results|standings}/:year", async (c) => {
   const year = Number(c.req.param("year"));
   if (
