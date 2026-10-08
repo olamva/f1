@@ -67,6 +67,8 @@ export type Stint = {
 
 export type Stints = Record<string, Stint[]>;
 
+export type LapPositions = Record<string, number[]>;
+
 export type Qualifying = {
   number: string;
   position: number;

@@ -1,0 +1,14 @@
+{
+  "id": "f84971ed",
+  "ts": "2026-10-08T20:41:41+00:00",
+  "text": "zsh applies the :r modifier inside double quotes, so \"$sha:refs/heads/x\" breaks git push; the memory note said quoting was enough",
+  "tags": [
+    "memory",
+    "shell"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "0b0cbbc3",
+  "where": "screenshots-in-pr-body.md",
+  "branch": "t3code/issue-295"
+}
