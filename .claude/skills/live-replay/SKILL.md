@@ -11,10 +11,10 @@ Run `ls recordings` to see the sessions. The file name gives the season, the eve
 
 ## Replay a session
 
-Run the dev server with `LIVE_REPLAY`. Use unused ports:
+Run the dev server with `LIVE_REPLAY`. The command selects unused ports:
 
 ```sh
-LIVE_REPLAY=recordings/2026-bahrain-fp3.jsonl.gz LIVE_REPLAY_FROM=25 PORT=8788 VITE_PORT=5174 pnpm dev
+LIVE_REPLAY=recordings/2026-bahrain-fp3.jsonl.gz LIVE_REPLAY_FROM=25 PORT=0 VITE_PORT=0 pnpm dev
 ```
 
 - The server does not connect to F1. It sends the recorded messages to `/api/live` and `/api/live/stream` at the recorded pace.
@@ -35,6 +35,17 @@ gunzip -c recordings/2026-bahrain-fp3.jsonl.gz | node -e 'let s="";process.stdin
 ```
 
 Use the minute as `LIVE_REPLAY_FROM`. Start one or two minutes early, so that the page connects before the moment.
+
+## Race and qualifying topics
+
+A practice recording has no race or qualifying data, such as `DriverRaceInfo`.
+Use the archive replay when `recordings/` has no session of the necessary type:
+
+- Open the Calendar tab and select the session. The URL is `/calendar/<encoded session path>`.
+- Seek in the replay bar. The page writes the position to `?t=`. Open that URL again to return to the moment.
+- The archive replay does not make the session live. Use a recording to test `isLive` and other live behavior.
+
+Record a race or a qualifying session to test its live behavior.
 
 ## Record a session
 

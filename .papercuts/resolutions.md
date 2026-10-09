@@ -51,3 +51,32 @@ The review changes no global instruction file. All reports concern this reposito
 - Install librsvg with brew install librsvg if SVG export needs rsvg-convert.
 - Show this thread preview on a desktop before a later capture recovery check.
 - Preserve a response fixture if the two-driver season response occurs again.
+
+## Review of 9 October 2026
+
+This review covers 70 open reports.
+
+| IDs | Type | Fault and resolution |
+| --- | --- | --- |
+| `175ec0b6`, `8ac1ba85` | fixed | Port collisions. The dev command probes each port on 127.0.0.1 and on all interfaces. `PORT=0 VITE_PORT=0` selects unused ports. A test covers a port held on all interfaces. |
+| `98c3bbab` | fixed | Cleanup of a renamed worktree branch. The cleanup command compares the PR head commit, not the branch name. It waits for deletion of the PR head branch. |
+| `b4e1012a`, `aafe6d1b`, `ec5c0e64` | fixed | Missing recordings. Commit `0deef98` adds the Bahrain FP3 recording. |
+| `45efec51` | fixed | Usage lines missing. Commit `72c11b0` reads usage with `CLAUDE_CONFIG_DIR`. |
+| `380c4036` | avoided | Crashed server watcher. The README gives the restart command `touch src/server/main.ts`. |
+| `83d9e4f7` | avoided | Empty wake job logs. The README gives the follow command for a running job. |
+| `0cca9bbc` | avoided | UnityPy install. The README gives the venv command for `scripts/circuits.py`. |
+| `3c6af6b4`, `0e239cd4`, `68acb46c` | skill | Race data in practice recordings. The live replay skill points to the archive replay for race and qualifying data. |
+| `96c7df84` | project doc | Push after auto-merge. Do not push when the merge of `origin/main` fast-forwards the task branch. |
+| `2ced3eca`, `4a6772aa`, `260f3105`, `7f6bc4e4`, `c0519860`, `463e020b`, `ad813406`, `998c5877`, `aefd3375`, `ea50a557`, `7ce38eee`, `c0a59097`, `0222b7d2`, `eccd8197`, `d18ca6a3`, `abc144aa`, `7019ee31`, `857af440` | skill | T3 snapshot failures. Capture works in this review. The skill adds the Playwright fallback and its browser install. |
+| `5eb98b8d`, `d30f5c2e`, `afa9f70d`, `e8f2f7d7`, `f6163bdf`, `f6087455`, `fed58d1a`, `9b79bbb5`, `d485a376`, `7c1efa80`, `028f6917`, `471ac2fa` | skill | T3 host disconnects and waits. A 6 s evaluation and the Stats page work in this review. The skill keeps evaluations short and confirms waits. |
+| `da0ad893`, `babf82dc`, `a61088d8`, `4fcc9d39` | skill | Low-resolution captures. T3 saves one image pixel for each CSS pixel. The skill adds a 2x Playwright capture. |
+| `cf96222a`, `59ddd49c` | skill | Real full screen shrinks the T3 viewport to 400 by 300 pixels. The skill turns off `fullscreenEnabled` to use the CSS fallback. |
+| `1195aac7`, `57aec522`, `9b3ddde3` | skill | Hidden preview tab. The skill checks `document.visibilityState` before timing animation or media. |
+| `600b6413`, `f105d5f1`, `fc457b3d`, `94887e38`, `70afd534`, `97e5418e`, `88a80e54` | skill | gh output, pnpm flags, and network retries. The skill already holds these workarounds. |
+| `db0b638f`, `8b54ab1b` | skill | Azure Cost Management 429 and rounded NOK prices. |
+| `9f3208fb`, `e166a588`, `19a5bdf6`, `27133d76`, `ac7cee8c`, `f84971ed` | skill | Missing Python tools, the Docker daemon, `pkill`, Chrome debug ports, and zsh modifiers. |
+| `19248a02` | left open | Two-driver season data. The fault does not occur, and the report has no fixture. |
+| `34cbc34b` | left open | 2025 race control AccessDenied. All 60 race and qualifying streams of 2025 return HTTP 200 in this review. |
+
+The personal tool-failures skill holds the new tool workarounds. Its symlinks expose it to Claude Code, Codex, and Gemini.
+The review changes no global instruction file.

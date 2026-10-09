@@ -1,14 +1,18 @@
 import { spawn } from "node:child_process";
 import { once } from "node:events";
-import { createServer } from "node:net";
+import { createServer, type AddressInfo } from "node:net";
 
 async function checkPort(port: number) {
-  const server = createServer();
-  server.listen(port, "127.0.0.1");
-  await once(server, "listening");
-  await new Promise<void>((resolve, reject) =>
-    server.close((error) => (error ? reject(error) : resolve())),
-  );
+  for (const host of ["127.0.0.1", "::"]) {
+    const server = createServer();
+    server.listen(port, host);
+    await once(server, "listening");
+    port = (server.address() as AddressInfo).port;
+    await new Promise<void>((resolve, reject) =>
+      server.close((error) => (error ? reject(error) : resolve())),
+    );
+  }
+  return String(port);
 }
 
 export async function runDev(commands: string[][]): Promise<number> {
@@ -61,8 +65,10 @@ export async function runDev(commands: string[][]): Promise<number> {
 }
 
 if (import.meta.main) {
-  await checkPort(Number(process.env.PORT ?? 8787));
-  await checkPort(Number(process.env.VITE_PORT ?? 5173));
+  process.env.PORT = await checkPort(Number(process.env.PORT ?? 8787));
+  process.env.VITE_PORT = await checkPort(
+    Number(process.env.VITE_PORT ?? 5173),
+  );
   process.exitCode = await runDev([
     [
       ...(process.env.DEV_WATCH === "0" ? [] : ["--watch"]),

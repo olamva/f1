@@ -80,7 +80,6 @@ if (
   branch === "main" ||
   pr.state !== "MERGED" ||
   pr.baseRefName !== "main" ||
-  pr.headRefName !== branch ||
   pr.headRefOid !== head ||
   !pr.mergeCommit
 )
@@ -95,7 +94,7 @@ git(
 );
 if (git(target, "status", "--porcelain", "--untracked-files=all"))
   throw new Error("Preserve uncommitted or untracked files.");
-if (git(cwd, "ls-remote", "--heads", "origin", `refs/heads/${branch}`))
+if (git(cwd, "ls-remote", "--heads", "origin", `refs/heads/${pr.headRefName}`))
   throw new Error("Wait for remote branch deletion.");
 const local = git(cwd, "branch", "--list", branch);
 if (local && git(cwd, "rev-parse", `refs/heads/${branch}`) !== head)

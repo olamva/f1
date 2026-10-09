@@ -8,28 +8,33 @@ import { join, resolve } from "node:path";
 import { createInterface } from "node:readline";
 import { test } from "node:test";
 
-test("dev refuses an occupied port before starting either server", async () => {
-  const occupied = createServer();
-  occupied.listen(0, "127.0.0.1");
-  await once(occupied, "listening");
-  const address = occupied.address();
-  assert.ok(address && typeof address === "object");
-  try {
-    const child = spawn(process.execPath, ["scripts/dev.ts"], {
-      env: { ...process.env, PORT: String(address.port) },
-      stdio: ["ignore", "ignore", "pipe"],
-    });
-    let error = "";
-    child.stderr.on("data", (data) => {
-      error += data;
-    });
-    const [code] = await once(child, "exit");
-    assert.equal(code, 1);
-    assert.match(error, /EADDRINUSE/);
-  } finally {
-    occupied.close();
-  }
-});
+for (const host of ["127.0.0.1", "::"])
+  test(
+    `dev refuses a port held on ${host} before starting either server`,
+    { timeout: 10_000 },
+    async () => {
+      const occupied = createServer();
+      occupied.listen(0, host);
+      await once(occupied, "listening");
+      const address = occupied.address();
+      assert.ok(address && typeof address === "object");
+      try {
+        const child = spawn(process.execPath, ["scripts/dev.ts"], {
+          env: { ...process.env, PORT: String(address.port), VITE_PORT: "0" },
+          stdio: ["ignore", "ignore", "pipe"],
+        });
+        let error = "";
+        child.stderr.on("data", (data) => {
+          error += data;
+        });
+        const [code] = await once(child, "exit");
+        assert.equal(code, 1);
+        assert.match(error, /EADDRINUSE/);
+      } finally {
+        occupied.close();
+      }
+    },
+  );
 
 for (const signal of ["SIGINT", "SIGTERM", null] as const)
   test(
