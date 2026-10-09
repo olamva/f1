@@ -19,12 +19,13 @@ pnpm dev
 pnpm test
 ```
 
-`pnpm dev` turns off Google sign-in. Set `PORT` and `VITE_PORT` to run more than one dev server, such as `PORT=8788 VITE_PORT=5174 pnpm dev`. Set `NO_LIVE=1` to turn off live timing, so that the app shows replays during a live session.
+`pnpm dev` turns off Google sign-in. Set `PORT` and `VITE_PORT` to run more than one dev server, such as `PORT=0 VITE_PORT=0 pnpm dev`. The value 0 selects an unused port. Set `NO_LIVE=1` to turn off live timing, so that the app shows replays during a live session.
 Set `LIVE_REPLAY` to a file in `recordings/` to replay a recorded session as a live session. See the [live replay skill](.claude/skills/live-replay/SKILL.md).
 
 Stop `pnpm dev` with Ctrl+C. The command stops both servers and the Node watcher.
-The command checks both ports before startup. Select unused ports for each worktree.
+The command checks both ports before startup.
 Wait for both readiness messages before opening the printed Vite URL.
+If the server prints `Failed running 'src/server/main.ts'`, read the error above it. Fix the error, or run `touch src/server/main.ts` to restart the server.
 Run `DEV_WATCH=0 pnpm dev` if file watchers report `EMFILE`. Vite then polls for edits. Restart the command after server edits.
 Give the command network permission if the sandbox blocks local ports.
 
@@ -33,6 +34,8 @@ The server retries HTTP 429 twice and follows `Retry-After` for waits of at most
 The server preserves cached responses after a failed refresh. Longer cooldowns fail without sending more requests.
 Start preview servers one at a time. Multiple servers share the upstream IP limit, but keep separate caches.
 See the [Jolpica rate limits](https://github.com/jolpica/jolpica-f1/blob/main/docs/rate_limits.md).
+
+`scripts/circuits.py` refreshes `src/server/circuits.json`. It needs UnityPy. Run `python3 -m venv /tmp/unitypy && /tmp/unitypy/bin/pip install UnityPy && /tmp/unitypy/bin/python scripts/circuits.py`.
 
 ## T3 worktrees
 
@@ -58,6 +61,8 @@ Use the existing Azure account and backend permissions. See the [Azure CLI login
 The wake job checks the current and next season calendars every five minutes. It wakes the app from 15 minutes before each session until two hours after its expected end. The two hours cover delayed sessions. The app scales to zero after the wake requests stop. No year-specific cron rule remains.
 
 A calendar change takes effect at the next five-minute check. If the calendar source fails, the job uses the schedule bundled during the last deployment. A deployment stops if it cannot refresh that schedule. The bundled schedule covers the seasons available when the image was built. Run `pnpm sessions` to refresh `infra/sessions.json` during local work. Terraform creates the wake job. The deployment workflow updates its image.
+
+The Container Apps environment keeps no console logs. A finished job run shows an empty log. Run `az containerapp job logs show -g f1 -n f1-wake --container wake --follow` during a run to see its output. The job runs every five minutes.
 
 The server uses `F1_ORIGIN` as the base URL for F1 archives and live timing. Terraform sets it from `f1_origin`. The default is `https://livetiming.formula1.com`.
 

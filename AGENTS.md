@@ -20,7 +20,7 @@ Coordinate changes to shared state with concurrent agents. Worktrees do not isol
 - the Jolpica rate limit, which all local servers share
 - the Terraform state, Azure resources, and GitHub settings and variables
 
-Run `pnpm dev` with unused `PORT` and `VITE_PORT` values in each worktree.
+Run `PORT=0 VITE_PORT=0 pnpm dev` in each worktree. The command then selects unused ports.
 Point preview and Playwright checks at the Vite URL that the command prints.
 
 ## Pull requests
@@ -32,6 +32,7 @@ Run relevant local checks before pushing. Use `pnpm test`, `pnpm typecheck`, and
 Review the final diff. Resolve review feedback within the task scope.
 Resolve each review thread. Unresolved threads block auto-merge.
 Fetch `origin/main` before you push. Merge it into the task branch if the branch is behind.
+Do not push when this merge fast-forwards the task branch. The PR is then already merged. Start cleanup instead.
 Enable auto-merge on your own PR with `gh pr merge --auto --merge` immediately after you push.
 Do not wait for user review before you merge a PR without visual changes.
 Let GitHub merge the PR when the required checks pass.
