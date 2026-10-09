@@ -34,7 +34,8 @@ Resolve each review thread. Unresolved threads block auto-merge.
 Fetch `origin/main` before you push. Merge it into the task branch if the branch is behind.
 Do not push when this merge fast-forwards the task branch. The PR is then already merged. Start cleanup instead.
 Enable auto-merge on your own PR with `gh pr merge --auto --merge` immediately after you push.
-Do not wait for user review before you merge a PR without visual changes.
+The user explicitly approves agents to merge minor visual changes and non-visual changes.
+Do not ask for additional user review before you merge these changes.
 Let GitHub merge the PR when the required checks pass.
 Run `gh pr checks --watch --fail-fast` to wait. Then run `gh pr view --json state,mergeStateStatus`.
 If a check fails, fix the failure and push the correction. Auto-merge stays enabled for the new head commit.
