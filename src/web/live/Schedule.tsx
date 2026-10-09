@@ -37,7 +37,9 @@ export const ScheduleWeekend = ({ round, featured }: WeekendProps) => (
         <p
           className={`font-f1 text-xs tracking-wider uppercase ${featured ? "text-red-400" : "text-zinc-500"}`}
         >
-          {featured ? "Next race weekend" : `Round ${round.round}`}
+          {featured
+            ? `${+sessions(round)[0].at < Date.now() ? "Current" : "Next"} race weekend`
+            : `Round ${round.round}`}
         </p>
         <h2
           className={`font-f1 line-clamp-2 ${featured ? "text-lg sm:text-2xl sm:font-bold" : "font-bold"}`}
@@ -80,5 +82,5 @@ export const ScheduleWeekend = ({ round, featured }: WeekendProps) => (
   </article>
 );
 
-export const upcoming = (rounds: Round[]) =>
-  rounds.filter((r) => sessions(r).length && +sessions(r)[0].at > Date.now());
+export const upcoming = (rounds: Round[], after: number) =>
+  rounds.filter((r) => sessions(r).length && +sessions(r)[0].at > after);
