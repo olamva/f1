@@ -415,7 +415,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
               onClick={() => toggle(current)}
               aria-label={playing ? "Pause radio" : "Play radio"}
               title={playing ? "Pause radio" : "Play radio"}
-              className="grid w-14 shrink-0 place-items-center text-white after:absolute after:inset-0"
+              className="grid w-14 shrink-0 cursor-pointer place-items-center text-white after:absolute after:inset-0"
             >
               {playing ? (
                 <Pause aria-hidden="true" className="size-6 fill-current" />
