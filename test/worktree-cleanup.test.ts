@@ -30,14 +30,14 @@ test("cleanup keeps an active merged worktree and removes its branch", () => {
     git(main, "add", "file.txt");
     git(main, "commit", "-m", "base");
     git(main, "push", "-u", "origin", "main");
-    git(main, "worktree", "add", "-b", "task", task);
+    git(main, "worktree", "add", "-b", "t3/task", task);
     git(task, "config", "user.name", "Test");
     git(task, "config", "user.email", "test@example.com");
     writeFileSync(join(task, "file.txt"), "task\n");
     git(task, "commit", "-am", "task");
     const head = git(task, "rev-parse", "HEAD");
-    git(task, "push", "-u", "origin", "task");
-    git(main, "merge", "--no-ff", "-m", "merge task", "task");
+    git(task, "push", "-u", "origin", "t3/task:task");
+    git(main, "merge", "--no-ff", "-m", "merge task", "t3/task");
     const merge = git(main, "rev-parse", "HEAD");
     git(main, "push", "origin", "main");
     git(main, "push", "origin", "--delete", "task");
@@ -71,7 +71,7 @@ test("cleanup keeps an active merged worktree and removes its branch", () => {
     assert.equal(JSON.parse(result.stdout).branchRemoved, true);
     assert.equal(git(task, "rev-parse", "HEAD"), head);
     assert.equal(git(task, "branch", "--show-current"), "");
-    assert.equal(git(main, "branch", "--list", "task"), "");
+    assert.equal(git(main, "branch", "--list", "t3/task"), "");
   } finally {
     rmSync(root, { recursive: true, force: true });
   }
