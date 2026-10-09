@@ -1,0 +1,14 @@
+{
+  "id": "c1ab4327",
+  "ts": "2026-10-09T09:38:33+00:00",
+  "text": "T3 preview_snapshot returns a blurred 640x400 screenshot of the f1 calendar, even with save:true; Playwright CLI was needed",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "591c1a18",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/fix-singapore-calendar"
+}

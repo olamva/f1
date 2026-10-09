@@ -164,7 +164,10 @@ export const CalendarList = ({
       ref.current?.scrollIntoView({ block: "center" });
   }, []);
   const past = weekends(sessions);
-  const future = upcoming(rounds).reverse();
+  const future = upcoming(
+    rounds,
+    +new Date(sessions.at(-1)?.start ?? 0),
+  ).reverse();
   const anchor =
     past[0] && ongoing(past[0]) ? past[0][0].start : future.at(-1)?.name;
   const keys = [...future.map((r) => r.name), ...past.map((w) => w[0].start)];
