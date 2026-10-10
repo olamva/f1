@@ -190,7 +190,7 @@ interface TowerRowProps {
   selected: boolean;
   favourite: boolean;
   relative: boolean;
-  tyres: boolean;
+  hide: string;
   scale: number;
   swap?: Swap;
   bind: (node: HTMLTableRowElement | null) => void;
@@ -206,7 +206,7 @@ const TowerRow = ({
   selected,
   favourite,
   relative,
-  tyres,
+  hide,
   scale,
   swap,
   bind,
@@ -260,7 +260,7 @@ const TowerRow = ({
     </td>
     {race && (
       <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
-        <span className="flex items-center justify-between gap-1">
+        <span className={`flex items-center justify-between gap-1 ${hide}`}>
           <span className="flex gap-1">
             <span className="inline-block w-3">
               {row.catching && (
@@ -290,20 +290,20 @@ const TowerRow = ({
       </td>
     )}
     <td className={`px-1 py-1 text-right sm:px-2 ${MARK[row.lastMark]}`}>
-      {row.lastLap}
+      <span className={hide}>{row.lastLap}</span>
     </td>
     <td className="hidden px-1 py-1 text-right text-zinc-300 sm:table-cell sm:px-2">
-      {row.bestLap}
+      <span className={hide}>{row.bestLap}</span>
     </td>
     {!race && (
       <td className="px-1 py-1 sm:px-2">
-        {tyres && <Stints stints={row.stints} scale={scale} />}
-        <div className={tyres ? "invisible" : undefined}>
+        {hide && <Stints stints={row.stints} scale={scale} />}
+        <div className={hide}>
           <Sectors sectors={row.sectors} qualifying={qualifying} />
         </div>
       </td>
     )}
-    <TyreCells row={row} race={race} tyres={tyres} scale={scale} />
+    <TyreCells row={row} race={race} hide={hide} scale={scale} />
     <td className="px-1 py-1 text-xs text-zinc-400 sm:px-2">{row.status}</td>
   </tr>
 );
@@ -323,7 +323,8 @@ export const TimingTower = ({
   const relative = relativeTo(rows, [...selected][0]);
   const [view, setView] = useState<(typeof VIEWS)[number]>("Timing");
   const tyres = view === "Tyres";
-  const cover = race && tyres ? "invisible" : "";
+  const hide = tyres ? "invisible" : "";
+  const cover = race ? hide : "";
   const table = useCover();
   const scale = Math.max(
     1,
@@ -388,16 +389,22 @@ export const TimingTower = ({
             >
               {race ? "Gap" : cut ? "Cut" : "Diff"}
             </th>
-            {race && <th className="px-1 py-2 text-right sm:px-2">Int</th>}
-            <th className="px-1 py-2 text-right sm:px-2">Last</th>
-            <th className="hidden px-1 py-2 text-right sm:table-cell sm:px-2">
+            {race && (
+              <th data-tyres className={`px-1 py-2 text-right sm:px-2 ${hide}`}>
+                Int
+              </th>
+            )}
+            <th data-tyres className={`px-1 py-2 text-right sm:px-2 ${hide}`}>
+              Last
+            </th>
+            <th
+              data-tyres
+              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${hide}`}
+            >
               Best
             </th>
             {!race && (
-              <th
-                data-tyres
-                className={`px-1 py-2 sm:px-2 ${tyres ? "invisible" : ""}`}
-              >
+              <th data-tyres className={`px-1 py-2 sm:px-2 ${hide}`}>
                 {tyres && <Cover>Stints</Cover>}
                 Sectors
               </th>
@@ -439,7 +446,7 @@ export const TimingTower = ({
               selected={selected.has(r.number)}
               favourite={r.tla === favourite?.code}
               relative={relative !== rows}
-              tyres={tyres}
+              hide={hide}
               scale={scale}
               swap={swaps[r.number]}
               bind={bind(r.number)}

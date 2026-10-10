@@ -89,13 +89,13 @@ export const useCover = () => {
 interface TyreCellsProps {
   row: Row;
   race: boolean;
-  tyres: boolean;
+  hide: string;
   scale: number;
 }
 
-export const TyreCells = ({ row, race, tyres, scale }: TyreCellsProps) => {
+export const TyreCells = ({ row, race, hide, scale }: TyreCellsProps) => {
   const set = row.stints.at(-1);
-  const cover = race && tyres ? "invisible" : "";
+  const cover = race ? hide : "";
   return (
     <>
       <td className={`px-1 py-1 sm:table-cell sm:px-2 ${race ? "" : "hidden"}`}>
