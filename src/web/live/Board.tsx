@@ -96,6 +96,18 @@ const Status = ({
   </div>
 );
 
+const RACE_LAYOUT = {
+  grid: "lg:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] xl:grid-rows-none",
+  tower: "lg:col-span-1",
+  side: "lg:row-span-2 xl:row-span-1",
+};
+
+const SESSION_LAYOUT = {
+  grid: "min-[72rem]:grid-cols-[auto_minmax(0,1fr)] 2xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] 2xl:grid-rows-none",
+  tower: "min-[72rem]:col-span-1",
+  side: "min-[72rem]:row-span-2 2xl:row-span-1",
+};
+
 export const Board = ({
   feed,
   laps,
@@ -115,6 +127,7 @@ export const Board = ({
   const bests = useMemo(() => sessionBests(state, rows), [state, rows]);
   const race = isRace(state.SessionInfo);
   const qualifying = isQualifying(state.SessionInfo);
+  const layout = race ? RACE_LAYOUT : SESSION_LAYOUT;
   const status = trackStatus(state);
   const part = qualifyingPart(state);
   const toggle = (n: string) =>
@@ -158,9 +171,9 @@ export const Board = ({
         </button>
       </Status>
       <div
-        className={`grid grid-rows-[auto_1fr] gap-4 md:grid-cols-2 lg:grid-cols-[auto_minmax(0,1fr)] ${race ? "xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] xl:grid-rows-none" : "2xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] 2xl:grid-rows-none"}`}
+        className={`grid grid-rows-[auto_1fr] gap-4 md:grid-cols-2 ${layout.grid}`}
       >
-        <div className="grid min-w-0 md:col-span-2 lg:col-span-1">
+        <div className={`grid min-w-0 md:col-span-2 ${layout.tower}`}>
           <TimingTower
             rows={rows}
             race={race}
@@ -172,9 +185,7 @@ export const Board = ({
             onToggle={toggle}
           />
         </div>
-        <div
-          className={`flex flex-col gap-4 lg:row-span-2 ${race ? "xl:row-span-1" : "2xl:row-span-1"}`}
-        >
+        <div className={`flex flex-col gap-4 ${layout.side}`}>
           <TrackMap
             outline={outline}
             positions={state.Position}
