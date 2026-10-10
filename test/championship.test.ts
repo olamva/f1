@@ -27,8 +27,8 @@ const standings = (leader: number, rival: number) => ({
   },
 });
 
-const at = (start: string) => ({
-  SessionInfo: { StartDate: start, GmtOffset: "04:00:00" },
+const at = (start: string, GmtOffset = "04:00:00") => ({
+  SessionInfo: { StartDate: start, GmtOffset },
 });
 
 test("the title stays open while the current session can close the gap, and a sprint run the day before no longer counts", () => {
@@ -51,6 +51,23 @@ test("the title stays open while the current session can close the gap, and a sp
       finale,
     ]),
     true,
+  );
+});
+
+test("the title check reads a session start west of Greenwich", () => {
+  const sprint = at("2026-12-05T08:00:00", "-04:00:00");
+  const race = at("2026-12-06T09:00:00", "-04:00:00");
+  assert.equal(
+    titleOpen({ ...sprint, ChampionshipPrediction: standings(100, 70) }, [
+      finale,
+    ]),
+    true,
+  );
+  assert.equal(
+    titleOpen({ ...race, ChampionshipPrediction: standings(100, 70) }, [
+      finale,
+    ]),
+    false,
   );
 });
 
