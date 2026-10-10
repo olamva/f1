@@ -59,6 +59,9 @@ export type Snapshot = {
 
 export type Delta = [topic: string, data: unknown, t: number];
 
+export const isRace = (info: Record<string, any> | undefined): boolean =>
+  /Race|Sprint$/.test(info?.Type ?? "") || info?.Name === "Sprint";
+
 export const lapSeconds = (s: string): number | null => {
   const m = /^(?:(\d+):)?(\d+(?:\.\d+)?)$/.exec(s.trim());
   return m ? Number(m[1] ?? 0) * 60 + Number(m[2]) : null;

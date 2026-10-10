@@ -75,9 +75,8 @@ test("a recorded session replays as live at the current time", (t) => {
   );
   assert.equal(shared.session.state.TimingData, undefined);
   t.mock.timers.tick(MINUTE);
-  assert.deepEqual(sent().at(-1), [
-    "TimingData",
-    { Lines: { "1": { Position: "1" } } },
-    NOW + MINUTE - 1000,
-  ]);
+  assert.deepEqual(
+    sent().find(([topic]) => topic === "TimingData"),
+    ["TimingData", { Lines: { "1": { Position: "1" } } }, NOW + MINUTE - 1000],
+  );
 });

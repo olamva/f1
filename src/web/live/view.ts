@@ -1,5 +1,5 @@
-import { lapSeconds, type LapRow } from "../../shared/timing.ts";
-import { towerStints } from "./stints.ts";
+import { towerStints } from "../../shared/stints.ts";
+import { isRace, lapSeconds, type LapRow } from "../../shared/timing.ts";
 import { clockLeft } from "./sync.ts";
 
 type Obj = Record<string, any>;
@@ -112,10 +112,10 @@ function row(
   info: Obj | undefined,
   part: number,
   race: boolean,
+  exits: number[] | null | undefined,
 ): Row {
   const { gap, interval } = diffs(line, part);
   const position = Number(line.Position ?? driver.Line ?? 99);
-  const pits = Number(line.NumberOfPitStops ?? 0);
   return {
     number,
     tla: driver.Tla ?? number,
@@ -137,8 +137,8 @@ function row(
       mark: mark(s),
       segments: values(s.Segments).map((g) => SEGMENT[g.Status] ?? "none"),
     })),
-    stints: towerStints(values(app?.Stints), pits, race),
-    pits,
+    stints: towerStints(values(app?.Stints), line, exits, race),
+    pits: Number(line.NumberOfPitStops ?? 0),
     pitTime: values(stops).at(-1)?.PitStop?.PitStopTime ?? "",
     status: statusOf(line),
   };
@@ -164,6 +164,7 @@ export function rows(state: Obj): Row[] {
         info[n],
         state.TimingData.SessionPart ?? 1,
         isRace(state.SessionInfo),
+        state.PitExits?.[n],
       ),
     )
     .map((r) => ({ ...r, ...calls.get(r.number), overtake: mode[r.number] }))
@@ -202,9 +203,6 @@ export const sessionBests = (state: Obj, drivers: Row[]): SessionBests => {
 
 export const isQualifying = (info: Obj | undefined): boolean =>
   /Qualifying|Shootout/i.test(info?.Name ?? "");
-
-export const isRace = (info: Obj | undefined): boolean =>
-  /Race|Sprint$/.test(info?.Type ?? "") || info?.Name === "Sprint";
 
 export type Message = {
   utc: string;
