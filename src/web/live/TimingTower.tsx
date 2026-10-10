@@ -255,11 +255,11 @@ const TowerRow = ({
             : "–"}
       </td>
     )}
-    <td className="box-content min-w-[7ch] px-1 py-1 text-right sm:px-2">
+    <td className="box-content w-[8ch] px-1 py-1 text-right sm:px-2">
       {row.position === 1 && race && !relative ? "Leader" : row.gap}
     </td>
     {race && (
-      <td className="px-1 py-1 text-right text-zinc-400 sm:px-2">
+      <td className="box-content w-[calc(7ch+2rem)] px-1 py-1 text-right text-zinc-400 sm:px-2">
         <span className={`flex items-center justify-between gap-1 ${hide}`}>
           <span className="flex gap-1">
             <span className="inline-block w-3">
