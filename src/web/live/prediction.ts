@@ -15,6 +15,7 @@ export type Prediction = {
   position: number;
   points: number;
   gained: number;
+  gain: number;
 };
 
 export const prediction = (state: Obj): Prediction[] => {
@@ -30,6 +31,7 @@ export const prediction = (state: Obj): Prediction[] => {
         position: p.PredictedPosition,
         points: p.PredictedPoints,
         gained: p.CurrentPosition - p.PredictedPosition,
+        gain: p.PredictedPoints - p.CurrentPoints,
       };
     })
     .sort((a, b) => a.position - b.position);

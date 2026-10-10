@@ -314,7 +314,7 @@ export const sessionStart = (state: Obj): number | null => {
   const offset = String(info?.GmtOffset ?? "00:00");
   return info?.StartDate
     ? Date.parse(
-        `${info.StartDate}${offset.startsWith("-") ? "" : "+"}${offset.slice(0, 5)}`,
+        `${info.StartDate}${offset.replace(/^(?!-)/, "+").slice(0, 6)}`,
       )
     : null;
 };

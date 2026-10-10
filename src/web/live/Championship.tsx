@@ -21,6 +21,12 @@ export const Championship = ({ drivers }: ChampionshipProps) => (
               +/−
             </th>
             <th className="px-2 py-1 text-right">Pts</th>
+            <th
+              className="px-2 py-1 text-right"
+              title="Points from this session"
+            >
+              +Pts
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -45,6 +51,11 @@ export const Championship = ({ drivers }: ChampionshipProps) => (
                   : "–"}
               </td>
               <td className="px-2 py-1 text-right">{d.points}</td>
+              <td
+                className={`px-2 py-1 text-right ${d.gain ? "text-emerald-400" : "text-zinc-500"}`}
+              >
+                {d.gain ? `+${d.gain}` : "–"}
+              </td>
             </tr>
           ))}
         </tbody>
