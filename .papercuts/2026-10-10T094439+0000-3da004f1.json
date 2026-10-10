@@ -1,0 +1,14 @@
+{
+  "id": "3da004f1",
+  "ts": "2026-10-10T09:44:39+00:00",
+  "text": "Playwright page.evaluate grants user activation, so navigator.userActivation cannot test gesture-gated APIs such as wake lock",
+  "tags": [
+    "playwright",
+    "testing"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "7ae01117",
+  "where": "page.evaluate",
+  "branch": "t3/pwa-screen-wake-lock"
+}

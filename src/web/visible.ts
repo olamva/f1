@@ -11,8 +11,19 @@ export const useVisible = () =>
 export const useAwake = () => {
   const visible = useVisible();
   useEffect(() => {
-    if (!visible) return;
-    const lock = navigator.wakeLock?.request("screen").catch(() => null);
-    return () => void lock?.then((l) => l?.release());
+    if (!visible || !navigator.wakeLock) return;
+    let lock: Promise<WakeLockSentinel | void> | undefined;
+    const request = () => {
+      lock ??= navigator.wakeLock.request("screen").then(
+        (l) => ((l.onrelease = () => (lock = undefined)), l),
+        () => void (lock = undefined),
+      );
+    };
+    request();
+    addEventListener("pointerup", request);
+    return () => {
+      removeEventListener("pointerup", request);
+      void lock?.then((l) => l?.release());
+    };
   }, [visible]);
 };
