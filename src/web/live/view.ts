@@ -1,4 +1,5 @@
 import { lapSeconds, type LapRow } from "../../shared/timing.ts";
+import { towerStints } from "./stints.ts";
 import { clockLeft } from "./sync.ts";
 
 type Obj = Record<string, any>;
@@ -110,9 +111,11 @@ function row(
   stops: unknown,
   info: Obj | undefined,
   part: number,
+  race: boolean,
 ): Row {
   const { gap, interval } = diffs(line, part);
   const position = Number(line.Position ?? driver.Line ?? 99);
+  const pits = Number(line.NumberOfPitStops ?? 0);
   return {
     number,
     tla: driver.Tla ?? number,
@@ -134,13 +137,8 @@ function row(
       mark: mark(s),
       segments: values(s.Segments).map((g) => SEGMENT[g.Status] ?? "none"),
     })),
-    stints: values(app?.Stints).map((s) => ({
-      compound: s.Compound ?? "",
-      age: s.TotalLaps ?? 0,
-      laps: Math.max(0, (s.TotalLaps ?? 0) - (s.StartLaps ?? 0)),
-      new: s.New === "true",
-    })),
-    pits: Number(line.NumberOfPitStops ?? 0),
+    stints: towerStints(values(app?.Stints), pits, race),
+    pits,
     pitTime: values(stops).at(-1)?.PitStop?.PitStopTime ?? "",
     status: statusOf(line),
   };
@@ -165,6 +163,7 @@ export function rows(state: Obj): Row[] {
         stops[n],
         info[n],
         state.TimingData.SessionPart ?? 1,
+        isRace(state.SessionInfo),
       ),
     )
     .map((r) => ({ ...r, ...calls.get(r.number), overtake: mode[r.number] }))
