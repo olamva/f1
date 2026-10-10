@@ -196,22 +196,30 @@ test("tower stints count the laps on each set since it was fitted", () => {
   ]);
 });
 
-const bahrain = ["TimingAppData", "TimingData"].flatMap((topic) =>
-  parseStream(
-    fixture(`bahrain-2026-race-cars-3-81.${topic}.jsonStream`),
-    topic,
-  ),
-);
+const bahrain = ["TimingAppData", "TimingData"]
+  .flatMap((topic) =>
+    parseStream(
+      fixture(`bahrain-2026-race-cars-3-81.${topic}.jsonStream`),
+      topic,
+    ),
+  )
+  .sort((a, b) => a.t - b.t);
+
+const bahrainSession = (clock: string) => {
+  const session = new Session();
+  session.apply({ t: 0, topic: "SessionInfo", data: { Type: "Race" } });
+  for (const e of bahrain.filter(
+    (e) => e.t <= Date.parse(`1970-01-01T${clock}Z`),
+  ))
+    session.apply(e);
+  return session;
+};
 
 const bahrainStints = (clock: string, number: string) =>
-  rows(
-    bahrain
-      .filter((e) => e.t <= Date.parse(`1970-01-01T${clock}Z`))
-      .reduce<Record<string, Json>>(
-        (state, e) => ({ ...state, [e.topic]: merge(state[e.topic], e.data) }),
-        { SessionInfo: { Type: "Race" }, DriverList: { "3": {}, "81": {} } },
-      ),
-  ).find((r) => r.number === number)!.stints;
+  rows({
+    ...bahrainSession(clock).state,
+    DriverList: { "3": {}, "81": {} },
+  }).find((r) => r.number === number)!.stints;
 
 test("race stints drop the copies of the start set from before a delayed start", () => {
   assert.deepEqual(bahrainStints("03:20:30", "81"), [
@@ -219,6 +227,24 @@ test("race stints drop the copies of the start set from before a delayed start",
     { compound: "INTERMEDIATE", age: 7, laps: 7, new: true },
     { compound: "HARD", age: 18, laps: 18, new: true },
   ]);
+});
+
+test("race stints count the laps on each set from the pit exits when the feed misses laps", () => {
+  assert.deepEqual(bahrainStints("02:40:00", "3"), [
+    { compound: "INTERMEDIATE", age: 6, laps: 6, new: true },
+  ]);
+  assert.deepEqual(bahrainStints("03:19:30", "3"), [
+    { compound: "INTERMEDIATE", age: 9, laps: 9, new: true },
+    { compound: "SOFT", age: 18, laps: 18, new: true },
+  ]);
+});
+
+test("race lap rows take the compound of the set on the car", () => {
+  const { laps } = bahrainSession("23:59:59");
+  const compounds = (n: string, from: number, to: number) =>
+    laps[n]!.filter((l) => l.lap >= from && l.lap <= to).map((l) => l.compound);
+  assert.deepEqual(compounds("3", 9, 10), ["INTERMEDIATE", "SOFT"]);
+  assert.deepEqual(compounds("81", 45, 46), ["HARD", "MEDIUM"]);
 });
 
 test("race stints drop the old entries that stay after the feed moves the stints down", () => {

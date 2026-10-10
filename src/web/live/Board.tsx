@@ -1,7 +1,12 @@
 import { ArrowDownToLine } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import type { Round } from "../../shared/season.ts";
-import type { LapRow, Outline, Period } from "../../shared/timing.ts";
+import {
+  isRace,
+  type LapRow,
+  type Outline,
+  type Period,
+} from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 import { Championship } from "./Championship.tsx";
 import { cutGaps, knockout } from "./knockout.ts";
@@ -17,7 +22,6 @@ import { rejoin } from "./rejoin.ts";
 import {
   deletedLaps,
   isQualifying,
-  isRace,
   messages,
   qualifyingPart,
   radios,

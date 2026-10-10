@@ -1,13 +1,16 @@
 import { inflateRawSync } from "node:zlib";
 import { merge, type Json } from "../shared/merge.ts";
-import type {
-  Delta,
-  LapRow,
-  Outline,
-  Period,
-  Point,
+import { towerStints } from "../shared/stints.ts";
+import {
+  isRace,
+  type Delta,
+  type LapRow,
+  type Outline,
+  type Period,
+  type Point,
 } from "../shared/timing.ts";
 import { Overtake } from "./overtake.ts";
+import { PitExits } from "./pitExits.ts";
 import type { Message } from "./push.ts";
 import { seconds } from "./season.ts";
 
@@ -121,13 +124,20 @@ export class Session {
   private lastPosition = -Infinity;
   private outLaps = new Set<string>();
   private overtake = new Overtake();
+  private pitExits = new PitExits();
 
   apply(e: Event): Event[] {
     const out = this.keep(e) ? [e] : [];
-    const data = this.overtake.see(e, this.state);
-    return data
-      ? [...out, ...this.apply({ t: e.t, topic: "OvertakeMode", data })]
-      : out;
+    const derived = {
+      OvertakeMode: this.overtake.see(e, this.state),
+      PitExits: this.pitExits.see(e, this.state),
+    };
+    return [
+      ...out,
+      ...Object.entries(derived).flatMap(([topic, data]) =>
+        data ? this.apply({ t: e.t, topic, data }) : [],
+      ),
+    ];
   }
 
   private keep(e: Event): boolean {
@@ -187,7 +197,13 @@ export class Session {
       position: line.Position ?? "",
       gap: line.GapToLeader ?? line.TimeDiffToFastest ?? "",
       sectors: sectors(line),
-      compound: Object.values<any>(stints ?? {}).at(-1)?.Compound ?? "",
+      compound:
+        towerStints(
+          Object.values<any>(stints ?? {}),
+          line,
+          (this.state.PitExits as any)?.[n],
+          isRace(this.state.SessionInfo as any),
+        ).at(-1)?.compound ?? "",
       pit: line.InPit || line.PitOut ? "in" : out ? "out" : undefined,
     };
   }
