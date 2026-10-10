@@ -50,9 +50,18 @@ interface StatusProps {
   banner: React.ReactNode;
   clock: string;
   onLap: (lap: number) => void;
+  children: React.ReactNode;
 }
 
-const Status = ({ ref, lap, part, banner, clock, onLap }: StatusProps) => (
+const Status = ({
+  ref,
+  lap,
+  part,
+  banner,
+  clock,
+  onLap,
+  children,
+}: StatusProps) => (
   <div ref={ref} className="flex scroll-mt-4 flex-wrap items-center gap-3">
     {lap && (
       <span className="tabular font-f1 text-2xl font-black">
@@ -76,7 +85,10 @@ const Status = ({ ref, lap, part, banner, clock, onLap }: StatusProps) => (
         {banner}
       </div>
     )}
-    <span className="tabular ml-auto font-mono text-xl">{clock}</span>
+    <div className="ml-auto flex items-center gap-3">
+      {children}
+      <span className="tabular font-mono text-xl">{clock}</span>
+    </div>
   </div>
 );
 
@@ -119,21 +131,10 @@ export const Board = ({
   );
   return (
     <div className="board space-y-4">
-      <header className="flex flex-wrap items-center gap-3">
-        <h1 className="font-f1 text-xl font-bold">
-          <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
-          {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
-        </h1>
-        <button
-          type="button"
-          onClick={() => top.current!.scrollIntoView({ behavior: "smooth" })}
-          title="Scroll the timing to the top of the screen"
-          className="glass-gear ml-auto flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm"
-        >
-          <ArrowDownToLine aria-hidden="true" size={16} />
-          Focus
-        </button>
-      </header>
+      <h1 className="font-f1 text-xl font-bold">
+        <Flag country={state.SessionInfo?.Meeting?.Country?.Name} />
+        {state.SessionInfo?.Meeting?.Name} · {state.SessionInfo?.Name}
+      </h1>
       <Status
         ref={top}
         lap={state.LapCount}
@@ -141,7 +142,17 @@ export const Board = ({
         banner={banner}
         clock={remaining(state, utc)}
         onLap={onLap}
-      />
+      >
+        <button
+          type="button"
+          onClick={() => top.current!.scrollIntoView({ behavior: "smooth" })}
+          title="Scroll the timing to the top of the screen"
+          className="glass-gear flex cursor-pointer items-center gap-2 px-3 py-1.5 text-sm"
+        >
+          <ArrowDownToLine aria-hidden="true" size={16} />
+          Focus
+        </button>
+      </Status>
       <div
         className={`grid grid-rows-[auto_1fr] gap-4 md:grid-cols-2 lg:grid-cols-[auto_minmax(0,1fr)] ${race ? "xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] xl:grid-rows-none" : "2xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] 2xl:grid-rows-none"}`}
       >
