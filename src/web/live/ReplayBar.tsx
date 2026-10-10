@@ -159,7 +159,7 @@ export const ReplayBar = ({
           <Play aria-hidden="true" className="size-4" />
         )}
       </button>
-      <div className="flex min-w-0 flex-1 basis-60 items-center gap-3 sm:order-1">
+      <div className="order-first flex min-w-0 flex-1 basis-full items-center gap-3 sm:order-1 sm:basis-60">
         <div
           className="glass-seek relative min-w-0 flex-1"
           data-held={held}
