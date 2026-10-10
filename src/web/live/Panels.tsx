@@ -167,7 +167,7 @@ const Sparkline = ({ values }: { values: number[] }) => {
     <svg
       viewBox={`0 0 ${values.length - 1} 1`}
       preserveAspectRatio="none"
-      className="block h-4 w-full overflow-visible text-orange-400"
+      className="block h-4 w-0 min-w-full overflow-visible text-orange-400"
       role="img"
       aria-label={`Track temperature ${lo}–${hi} °C`}
     >
