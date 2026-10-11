@@ -16,6 +16,7 @@ export default defineConfig({
       srcDir: ".",
       filename: "sw.js",
       includeAssets: ["apple-touch-icon.png"],
+      injectManifest: { globPatterns: ["**/*.{js,css,html,woff2}"] },
       manifest: {
         id: "/",
         name: "F1 Pitwall",
