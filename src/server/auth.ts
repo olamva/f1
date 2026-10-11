@@ -37,8 +37,15 @@ export const user = (c: Context): string | null => {
   return address && allowed(address) ? address : null;
 };
 
+const KEEP = `; Max-Age=${30 * 24 * 3600}; Path=/; Secure; HttpOnly; SameSite=Lax`;
+
 export const requireGoogle: MiddlewareHandler = async (c, next) => {
-  if (user(c)) return next();
+  if (user(c)) {
+    for (const pair of c.req.header("cookie")?.split(/;\s*/) ?? [])
+      if (pair.startsWith("AppServiceAuthSession"))
+        c.header("Set-Cookie", pair + KEEP, { append: true });
+    return next();
+  }
   return c.req.header("x-ms-client-principal")
     ? c.json({ error: "This Google account has no access." }, 403)
     : c.json({ error: "Sign in with Google to use this." }, 401);
