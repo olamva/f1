@@ -38,6 +38,26 @@ test("only invited Google accounts reach the token routes", async () => {
   assert.equal(await status("/api/live"), 200);
 });
 
+test("an invited Google sign-in outlives the browser session", async () => {
+  process.env.ALLOWED_EMAILS = "ola@example.com";
+  const app = new Hono()
+    .use("/api/token", requireGoogle)
+    .get("/api/token", (c) => c.text("ok"));
+  const res = await app.request("/api/token", {
+    headers: {
+      "x-ms-client-principal": principal("ola@example.com"),
+      cookie:
+        "theme=dark; AppServiceAuthSession=a+b/c==; AppServiceAuthSession1=d",
+    },
+  });
+  const cookies = res.headers.getSetCookie().map((c) => c.split("; "));
+  assert.deepEqual(
+    cookies.map(([pair]) => pair),
+    ["AppServiceAuthSession=a+b/c==", "AppServiceAuthSession1=d"],
+  );
+  assert.ok(cookies.every((c) => c.includes("Max-Age=2592000")));
+});
+
 test("a saved F1TV token belongs to one user", async () => {
   const value = jwt({ exp: Date.now() / 1000 + 3600 });
   await token.save(token.key("ola@example.com"), value);
