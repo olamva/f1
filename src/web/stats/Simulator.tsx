@@ -3,6 +3,7 @@ import { RotateCcw, Trophy } from "lucide-react";
 import {
   simulate,
   type Championship,
+  type Decided,
   type Standing,
   type Upcoming,
 } from "../../shared/clinch.ts";
@@ -77,6 +78,17 @@ export const Simulator = ({
   const [grid, setGrid] = useState<Row[]>([]);
   const cars = champ === "drivers" ? 1 : 2;
   const code = (id: string) => who.get(id)?.code ?? id;
+  const name = (id: string) => who.get(id)?.name ?? id;
+  const why = ({ id, rival, left, countback }: Decided) =>
+    [
+      left ? `Only ${left} points remain.` : "No points remain.",
+      countback && left ? `At best, ${name(rival)} ties on points.` : "",
+      countback
+        ? `${name(id)} wins the tie on countback, with more ${countback.position === 1 ? "wins" : `P${countback.position} finishes`}: ${countback.mine} to ${countback.theirs}.`
+        : "",
+    ]
+      .filter(Boolean)
+      .join(" ");
   const set = (
     only: number | null,
     id: string,
@@ -156,12 +168,19 @@ export const Simulator = ({
         ))}
       </div>
       <div
-        className={`flex items-center gap-2 rounded-lg px-3 py-2 text-sm ${decided ? "bg-emerald-950 text-emerald-300" : "bg-zinc-800/60 text-zinc-300"}`}
+        className={`flex items-start gap-2 rounded-lg px-3 py-2 text-sm ${decided ? "bg-emerald-950 text-emerald-300" : "bg-zinc-800/60 text-zinc-300"}`}
       >
-        <Trophy aria-hidden="true" className="size-4 shrink-0" />
-        {decided
-          ? `${who.get(decided.id)?.name ?? decided.id} is champion after ${events[decided.index]!.name}.`
-          : "With these results, the title is not decided before the final event."}
+        <Trophy aria-hidden="true" className="mt-0.5 size-4 shrink-0" />
+        <div>
+          <p>
+            {decided
+              ? `${name(decided.id)} is champion after ${events[decided.index]!.name}.`
+              : "With these results, the title is not decided before the final event."}
+          </p>
+          {decided && (
+            <p className="text-xs text-emerald-300/70">{why(decided)}</p>
+          )}
+        </div>
       </div>
       <div className="space-y-3 lg:flex lg:items-start lg:gap-4 lg:space-y-0">
         <ol className="tabular grid gap-1 text-sm lg:order-last lg:w-72 lg:shrink-0">

@@ -1,0 +1,14 @@
+{
+  "id": "c3a4059d",
+  "ts": "2026-10-14T13:46:13+00:00",
+  "text": "preview_snapshot save returns blurred 640x400 PNGs for a 1280x800 viewport after a new tab opens; the first tab in the session gave sharp 1280x800",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "e62496b1",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/explain-championship-clincher"
+}

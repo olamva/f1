@@ -35,12 +35,18 @@ export const addResult = (
     kind === "race" ? withFinishes(s.countback, positions) : s.countback,
 });
 
+type Edge = { position: number; mine: number; theirs: number };
+
+const edge = (a: number[], b: number[]): Edge => {
+  const i = Array.from({ length: Math.max(a.length, b.length) }).findIndex(
+    (_, i) => (a[i] ?? 0) !== (b[i] ?? 0),
+  );
+  return { position: i + 1, mine: a[i] ?? 0, theirs: b[i] ?? 0 };
+};
+
 export function beatsOnCountback(a: number[], b: number[]): boolean {
-  for (let i = 0; i < Math.max(a.length, b.length); i++) {
-    const d = (a[i] ?? 0) - (b[i] ?? 0);
-    if (d !== 0) return d > 0;
-  }
-  return false;
+  const { mine, theirs } = edge(a, b);
+  return mine > theirs;
 }
 
 const ahead = (a: Standing, b: Standing): boolean =>
@@ -217,10 +223,21 @@ export function constructorNeeds(
   });
 }
 
+export type Decided = {
+  index: number;
+  id: string;
+  rival: string;
+  left: number;
+  countback: Edge | null;
+};
+
 export type Simulation = {
   final: Standing[];
-  decided: { index: number; id: string } | null;
+  decided: Decided | null;
 };
+
+const rank = (table: Standing[]): Standing[] =>
+  [...table].sort((a, b) => (ahead(a, b) ? -1 : ahead(b, a) ? 1 : 0));
 
 export function simulate(
   table: Standing[],
@@ -234,14 +251,21 @@ export function simulate(
     current = current.map((s) => addResult(s, e.kind, picks[i]?.[s.id] ?? []));
     const rest = events.slice(i + 1);
     const winner = current.find((s) => hasClinched(current, rest, s.id, champ));
-    if (!decided && winner) decided = { index: i, id: winner.id };
+    if (decided || !winner) return;
+    const [lead, next] = rank(current) as [Standing, Standing];
+    const best = ceiling(next, rest, champ);
+    decided = {
+      index: i,
+      id: winner.id,
+      rival: next.id,
+      left: best.points - next.points,
+      countback:
+        lead.points === best.points
+          ? edge(lead.countback, best.countback)
+          : null,
+    };
   });
-  return {
-    final: [...current].sort((a, b) =>
-      ahead(a, b) ? -1 : ahead(b, a) ? 1 : 0,
-    ),
-    decided,
-  };
+  return { final: rank(current), decided };
 }
 
 export const maxGain = (events: Upcoming[], champ: Championship): number =>
