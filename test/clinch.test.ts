@@ -106,7 +106,14 @@ test("2025 finale simulated with the real result crowns Norris", () => {
     { max_verstappen: [1], piastri: [2], norris: [3], russell: [5] },
   ];
   const r = simulate(beforeAbuDhabi2025, abuDhabi, picks, "drivers");
-  assert.deepEqual(r.decided, { index: 0, id: "norris" });
+  assert.deepEqual(r.decided, {
+    index: 0,
+    id: "norris",
+    rival: "max_verstappen",
+    gap: 2,
+    left: 0,
+    countback: null,
+  });
   assert.equal(r.final[0]!.points, 423);
 });
 
@@ -159,8 +166,32 @@ test("2025 constructors: McLaren clinched at Singapore with the real result", ()
     { mercedes: [1, 5], red_bull: [2], mclaren: [3, 4], ferrari: [6, 8] },
   ];
   const r = simulate(afterBaku2025, restOf2025, picks, "constructors");
-  assert.deepEqual(r.decided, { index: 0, id: "mclaren" });
+  assert.deepEqual(r.decided, {
+    index: 0,
+    id: "mclaren",
+    rival: "mercedes",
+    gap: 325,
+    left: 303,
+    countback: null,
+  });
   assert.equal(r.final[0]!.points, 650);
+});
+
+test("a title won on a tie names the countback place against the rival's best case", () => {
+  const table: Standing[] = [
+    { id: "lead", points: 75, countback: [2, 2] },
+    { id: "rival", points: 75, countback: [2, 1] },
+  ];
+  const events = [race(1, "A"), race(2, "B")];
+  const r = simulate(table, events, [{ lead: [1] }], "drivers");
+  assert.deepEqual(r.decided, {
+    index: 0,
+    id: "lead",
+    rival: "rival",
+    gap: 25,
+    left: 25,
+    countback: { position: 2, mine: 2, theirs: 1 },
+  });
 });
 
 test("2025 constructors: McLaren's real 27 points met the need against Mercedes' 35", () => {
