@@ -110,7 +110,6 @@ test("2025 finale simulated with the real result crowns Norris", () => {
     index: 0,
     id: "norris",
     rival: "max_verstappen",
-    gap: 2,
     left: 0,
     countback: null,
   });
@@ -170,7 +169,6 @@ test("2025 constructors: McLaren clinched at Singapore with the real result", ()
     index: 0,
     id: "mclaren",
     rival: "mercedes",
-    gap: 325,
     left: 303,
     countback: null,
   });
@@ -188,7 +186,6 @@ test("a title won on a tie names the countback place against the rival's best ca
     index: 0,
     id: "lead",
     rival: "rival",
-    gap: 25,
     left: 25,
     countback: { position: 2, mine: 2, theirs: 1 },
   });

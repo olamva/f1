@@ -227,7 +227,6 @@ export type Decided = {
   index: number;
   id: string;
   rival: string;
-  gap: number;
   left: number;
   countback: Edge | null;
 };
@@ -259,7 +258,6 @@ export function simulate(
       index: i,
       id: winner.id,
       rival: next.id,
-      gap: lead.points - next.points,
       left: best.points - next.points,
       countback:
         lead.points === best.points

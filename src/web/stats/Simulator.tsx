@@ -79,13 +79,9 @@ export const Simulator = ({
   const cars = champ === "drivers" ? 1 : 2;
   const code = (id: string) => who.get(id)?.code ?? id;
   const name = (id: string) => who.get(id)?.name ?? id;
-  const points = (n: number) => `${n} point${n === 1 ? "" : "s"}`;
-  const why = ({ id, rival, gap, left, countback }: Decided) =>
+  const why = ({ id, rival, left, countback }: Decided) =>
     [
-      gap
-        ? `${name(rival)} is ${points(gap)} behind.`
-        : `${name(rival)} is level on points.`,
-      left ? `Only ${points(left)} remain.` : "No points remain.",
+      left ? `Only ${left} points remain.` : "No points remain.",
       countback && left ? `At best, ${name(rival)} ties on points.` : "",
       countback
         ? `${name(id)} wins the tie on countback, with more ${countback.position === 1 ? "wins" : `P${countback.position} finishes`}: ${countback.mine} to ${countback.theirs}.`
