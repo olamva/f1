@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
   clinchMatrix,
   constructorNeeds,
@@ -6,6 +6,8 @@ import {
   isEliminated,
   maxGain,
   OUTSIDE,
+  othersAfterWin,
+  type Cell,
   type Championship,
   type Earliest,
   type Standing,
@@ -40,12 +42,12 @@ interface PickProps {
 }
 
 const Pick = ({ label, value, ids, who, onChange }: PickProps) => (
-  <label className="flex items-center gap-2 text-sm text-zinc-400">
+  <label className="flex min-w-0 flex-col gap-1 text-xs text-zinc-500">
     {label}
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-md bg-zinc-800 px-2 py-1 text-zinc-100"
+      className="w-full cursor-pointer truncate rounded-md bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100 ring-1 ring-zinc-700 focus:ring-zinc-400 focus:outline-none"
     >
       {ids.map((id) => (
         <option key={id} value={id}>
@@ -67,67 +69,104 @@ interface MatrixProps {
 const pos = (p: number | null) =>
   p === null ? "P11+ / DNF" : p === OUTSIDE ? "P11+" : `P${p}`;
 
+const STYLE: Record<NonNullable<Cell>, string> = {
+  clinched: "bg-emerald-600 font-semibold text-white",
+  "rival-out": "bg-emerald-950 text-emerald-300",
+  open: "bg-zinc-800/50 text-zinc-400",
+};
+
+const list = (items: string[]) =>
+  items.length > 1
+    ? `${items.slice(0, -1).join(", ")} and ${items.at(-1)}`
+    : (items[0] ?? "");
+
 const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
   const m = useMemo(
     () => clinchMatrix(table, events, focus, rival),
     [table, events, focus, rival],
   );
-  const any = m.cells.some((r) => r.some(Boolean));
-  const [a, b] = [who.get(focus)?.code ?? focus, who.get(rival)?.code ?? rival];
+  const limits = useMemo(
+    () => othersAfterWin(table, events, focus, rival),
+    [table, events, focus, rival],
+  );
+  const code = (id: string) => who.get(id)?.code ?? id;
+  const [a, b] = [code(focus), code(rival)];
+  const states = new Set(m.cells.flat());
+  const blocker = limits.find((l) => l.from === null);
   const gap =
     table.find((s) => s.id === focus)!.points -
     table.find((s) => s.id === rival)!.points;
   const margin = (mine: number | null, theirs: number) =>
     gap + pointsFor(events[0]!.kind, mine) - pointsFor(events[0]!.kind, theirs);
+  const legend = {
+    clinched: `${a} is champion`,
+    "rival-out": `${b} is out, ${a} needs other results`,
+    open: "Title still open",
+  };
   return (
-    <div>
-      <p className="mb-2 text-sm text-zinc-400">
-        {`Each cell shows ${a}'s points gap to ${b} after ${events[0]!.name}. Positive numbers mean ${a} leads. `}
-        {any
-          ? `Green means ${a} secures the title. Other drivers take the best free position.`
-          : `${a} cannot secure the title at this event.`}
+    <div className="space-y-3">
+      <p className="text-sm text-zinc-400">
+        {`Each cell shows ${a}'s lead over ${b} after ${events[0]!.name}. Negative numbers mean ${b} leads.`}
       </p>
-      <div className="overflow-x-auto">
-        <table className="tabular text-xs">
-          <thead>
-            <tr>
-              <th className="p-1 text-left text-zinc-500">
-                {a} ↓ / {b} →
-              </th>
-              {m.theirs.map((t) => (
-                <th key={t} className="p-1 text-zinc-400">
-                  {pos(t)}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {m.mine.map((mine, i) => (
-              <tr key={String(mine)}>
-                <th className="p-1 text-right text-zinc-400">{pos(mine)}</th>
-                {m.cells[i]!.map((c, j) => (
-                  <td key={j} className="p-0.5">
-                    <div
-                      title={
-                        c === null
-                          ? "Same finish position"
-                          : `${a} ${pos(mine)}, ${b} ${pos(m.theirs[j]!)}: ${margin(mine, m.theirs[j]!)} points${c ? " (title secured)" : ""}`
-                      }
-                      className={`flex size-9 items-center justify-center rounded ${c === null ? "" : c ? "bg-emerald-600 text-white" : "bg-zinc-800 text-zinc-200"}`}
-                    >
-                      {c === null
-                        ? ""
-                        : margin(mine, m.theirs[j]!) > 0
-                          ? `+${margin(mine, m.theirs[j]!)}`
-                          : margin(mine, m.theirs[j]!)}
-                    </div>
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="grid max-w-lg grid-cols-[auto_auto_repeat(11,minmax(0,1fr))] gap-0.5 text-[11px] tracking-tight">
+        <span className="col-span-2" />
+        <span className="col-span-11 pb-1 text-center text-[10px] tracking-wider text-zinc-500 uppercase">
+          {b} finish
+        </span>
+        <span className="col-start-1 row-span-12 row-start-2 rotate-180 pl-1 text-center text-[10px] tracking-wider text-zinc-500 uppercase [writing-mode:vertical-rl]">
+          {a} finish
+        </span>
+        <span />
+        {m.theirs.map((t) => (
+          <span
+            key={t}
+            className="pb-0.5 text-center text-[10px] text-zinc-500"
+          >
+            {t === OUTSIDE ? "P11+" : `P${t}`}
+          </span>
+        ))}
+        {m.mine.map((mine, i) => (
+          <Fragment key={String(mine)}>
+            <span className="flex items-center justify-end pr-1 text-[10px] text-zinc-500">
+              {mine === null ? "P11+" : `P${mine}`}
+            </span>
+            {m.cells[i]!.map((c, j) => {
+              const n = margin(mine, m.theirs[j]!);
+              return (
+                <span
+                  key={j}
+                  title={
+                    c === null
+                      ? "Same finish position"
+                      : `${a} ${pos(mine)}, ${b} ${pos(m.theirs[j]!)}: ${n} points. ${legend[c]}.`
+                  }
+                  className={`tabular flex h-7 items-center justify-center rounded ${c === null ? "" : STYLE[c]}`}
+                >
+                  {c === null ? "" : n < 0 ? `−${-n}` : n}
+                </span>
+              );
+            })}
+          </Fragment>
+        ))}
       </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-zinc-400">
+        {(["clinched", "rival-out", "open"] as const)
+          .filter((k) => states.has(k))
+          .map((k) => (
+            <span key={k} className="flex items-center gap-1.5">
+              <span className={`size-3 rounded-sm ${STYLE[k]}`} />
+              {legend[k]}
+            </span>
+          ))}
+      </div>
+      <p className="text-sm text-zinc-400">
+        {blocker
+          ? `${a} cannot secure the title at this event. ${code(blocker.id)} can still win the title with no points here.`
+          : states.has("rival-out")
+            ? `If ${a} wins, ${a} also needs ${list(limits.map((l) => `${code(l.id)} to finish P${l.from} or lower`))}.`
+            : !states.has("clinched") &&
+              `${a} cannot secure the title at this event.`}
+      </p>
     </div>
   );
 };
@@ -242,7 +281,7 @@ export const TitleFight = ({ champ, table, events, who }: TitleFightProps) => {
           <h2 className="font-f1 text-xs tracking-wider text-zinc-400 uppercase">
             What it takes at {events[0]!.name}
           </h2>
-          <div className="flex flex-wrap gap-4">
+          <div className="grid max-w-lg grid-cols-2 gap-3">
             <Pick
               label="Title for"
               value={focus}

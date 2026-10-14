@@ -114,6 +114,8 @@ const firstFree = (taken: Set<number>): number => {
   return p;
 };
 
+export type Cell = "clinched" | "rival-out" | "open" | null;
+
 function cell(
   table: Standing[],
   events: Upcoming[],
@@ -121,22 +123,25 @@ function cell(
   rivalId: string,
   mine: number | null,
   theirs: number,
-): boolean | null {
+): Cell {
   if (mine === theirs) return null;
   const [next, ...rest] = events as [Upcoming, ...Upcoming[]];
   const taken = new Set([mine ?? 0, theirs]);
   const me = addResult(find(table, id), next.kind, mine === null ? [] : [mine]);
-  return table.every((r) => {
-    if (r.id === id) return true;
-    const pos = r.id === rivalId ? theirs : firstFree(taken);
-    return ahead(me, ceiling(addResult(r, next.kind, [pos]), rest, "drivers"));
-  });
+  const safe = (r: Standing, pos: number) =>
+    ahead(me, ceiling(addResult(r, next.kind, [pos]), rest, "drivers"));
+  if (!safe(find(table, rivalId), theirs)) return "open";
+  return table.every(
+    (r) => r.id === id || r.id === rivalId || safe(r, firstFree(taken)),
+  )
+    ? "clinched"
+    : "rival-out";
 }
 
 export type Matrix = {
   mine: (number | null)[];
   theirs: number[];
-  cells: (boolean | null)[][];
+  cells: Cell[][];
 };
 
 export function clinchMatrix(
@@ -155,6 +160,28 @@ export function clinchMatrix(
       theirs.map((t) => cell(table, events, id, rivalId, m, t)),
     ),
   };
+}
+
+export type Limit = { id: string; from: number | null };
+
+export function othersAfterWin(
+  table: Standing[],
+  events: Upcoming[],
+  id: string,
+  rivalId: string,
+): Limit[] {
+  const [next, ...rest] = events as [Upcoming, ...Upcoming[]];
+  const me = addResult(find(table, id), next.kind, [1]);
+  return table
+    .filter((r) => r.id !== id && r.id !== rivalId)
+    .map((r) => ({
+      id: r.id,
+      from:
+        Array.from({ length: OUTSIDE - 1 }, (_, i) => i + 2).find((p) =>
+          ahead(me, ceiling(addResult(r, next.kind, [p]), rest, "drivers")),
+        ) ?? null,
+    }))
+    .filter((l) => l.from !== 2);
 }
 
 const teamScores = (kind: EventKind): number[] => {

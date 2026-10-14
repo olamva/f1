@@ -3,6 +3,7 @@ import { test } from "node:test";
 import {
   clinchMatrix,
   constructorNeeds,
+  othersAfterWin,
   earliestClinch,
   hasClinched,
   isEliminated,
@@ -60,11 +61,44 @@ test("2025 finale matrix: P3 behind a Verstappen win was enough, P4 was not", ()
   );
   const at = (mine: number | null, theirs: number) =>
     m.cells[m.mine.indexOf(mine)]![m.theirs.indexOf(theirs)];
-  assert.equal(at(3, 1), true);
-  assert.equal(at(4, 1), false);
-  assert.equal(at(4, 2), true);
-  assert.equal(at(null, 11), false);
+  assert.equal(at(3, 1), "clinched");
+  assert.equal(at(4, 1), "open");
+  assert.equal(at(4, 2), "clinched");
+  assert.equal(at(null, 11), "rival-out");
   assert.equal(at(2, 2), null);
+});
+
+const beforeAustin2026 = [
+  s("antonelli", 340, 8),
+  s("russell", 238, 3),
+  s("hamilton", 229, 1),
+  s("max_verstappen", 221, 2),
+];
+const austinOnwards = [
+  race(18, "United States"),
+  race(19, "Mexico City"),
+  race(20, "Brazil"),
+  race(21, "Las Vegas"),
+  race(22, "Qatar"),
+  race(23, "Abu Dhabi"),
+];
+
+test("2026 Austin: a win with Russell P9 puts Russell out, and Hamilton must finish P5 or lower", () => {
+  const m = clinchMatrix(
+    beforeAustin2026,
+    austinOnwards,
+    "antonelli",
+    "russell",
+  );
+  const at = (mine: number | null, theirs: number) =>
+    m.cells[m.mine.indexOf(mine)]![m.theirs.indexOf(theirs)];
+  assert.equal(at(1, 8), "open");
+  assert.equal(at(1, 9), "rival-out");
+  assert.equal(at(2, 11), "open");
+  assert.deepEqual(
+    othersAfterWin(beforeAustin2026, austinOnwards, "antonelli", "russell"),
+    [{ id: "hamilton", from: 5 }],
+  );
 });
 
 test("2025 finale simulated with the real result crowns Norris", () => {

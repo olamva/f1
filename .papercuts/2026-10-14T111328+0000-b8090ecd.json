@@ -1,0 +1,14 @@
+{
+  "id": "b8090ecd",
+  "ts": "2026-10-14T11:13:28+00:00",
+  "text": "pnpm exec playwright install hung over 5 min; a usable chrome-headless-shell already sits in ~/.t3/tools/chrome-headless-shell",
+  "tags": [
+    "playwright",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "56d5282e",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-d913efaa",
+  "branch": "t3/fix-title-clinch-card-layout"
+}
