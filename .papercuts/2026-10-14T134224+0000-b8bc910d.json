@@ -1,0 +1,14 @@
+{
+  "id": "b8bc910d",
+  "ts": "2026-10-14T13:42:24+00:00",
+  "text": "preview_click on the Title fight tab timed out in scrollIntoViewIfNeeded with no hint that the spoiler Reveal gate hid the page",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "e62496b1",
+  "where": "mcp__t3-code__preview_click",
+  "branch": "t3/explain-championship-clincher"
+}
