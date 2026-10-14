@@ -37,11 +37,14 @@ const StandingsTable = ({
       </h2>
       {rows.length >= 3 && (
         <Podium
-          entries={rows.map((row) => ({
+          entries={rows.map((row, i) => ({
             id: row.id,
             name: row.name,
             color: teamColor(row.team),
             value: `${row.points} pts`,
+            detail: [i && `-${lead - row.points}`, row.wins && `${row.wins} 🏆`]
+              .filter(Boolean)
+              .join(" · "),
           }))}
           crowned={crowned}
           onSelect={onSelect}
