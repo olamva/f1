@@ -2,7 +2,7 @@ import { DefaultAzureCredential } from "@azure/identity";
 import type { Pace } from "../shared/season.ts";
 import { sessionPath } from "./archive.ts";
 import { get } from "./jolpica.ts";
-import { F1_ORIGIN } from "./origin.ts";
+import { archive } from "./origin.ts";
 import { racePace, seconds } from "./season.ts";
 import { parseStream, Session } from "./timing.ts";
 
@@ -29,7 +29,7 @@ const blob = async (path: string, init: RequestInit = {}) => {
 };
 
 const archiveText = async (path: string, topic: string) => {
-  const res = await fetch(`${F1_ORIGIN}/static/${path}${topic}.jsonStream`);
+  const res = await archive(`${path}${topic}.jsonStream`);
   if (!res.ok) throw new Error(`archive ${res.status} ${topic}`);
   return res.text();
 };

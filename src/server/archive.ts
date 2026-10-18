@@ -3,7 +3,7 @@ import type { LapPositions, Qualifying, Stints } from "../shared/season.ts";
 import type { Outline, SessionRef } from "../shared/timing.ts";
 import circuits from "./circuits.json" with { type: "json" };
 import { get } from "./jolpica.ts";
-import { F1_ORIGIN } from "./origin.ts";
+import { archive } from "./origin.ts";
 import {
   expand,
   parseStream,
@@ -13,24 +13,22 @@ import {
   type State,
 } from "./timing.ts";
 
-const BASE = `${F1_ORIGIN}/static/`;
 const CHECKPOINT_MS = 30_000;
 
-const text = async (url: string): Promise<string> => {
-  const res = await fetch(url);
-  if (!res.ok)
-    throw new Error(`archive ${res.status} ${url.replace(BASE, "")}`);
+const text = async (path: string): Promise<string> => {
+  const res = await archive(path);
+  if (!res.ok) throw new Error(`archive ${res.status} ${path}`);
   return res.text();
 };
 
-const json = async (url: string): Promise<any> =>
-  JSON.parse((await text(url)).replace(/^﻿/, ""));
+const json = async (path: string): Promise<any> =>
+  JSON.parse((await text(path)).replace(/^﻿/, ""));
 
 const local = (date: string, offset: string) =>
   `${date}${offset.startsWith("-") ? "" : "+"}${offset.replace(/:\d\d$/, "")}`;
 
 export async function seasonSessions(year: number): Promise<SessionRef[]> {
-  const index = await json(`${BASE}${year}/Index.json`);
+  const index = await json(`${year}/Index.json`);
   return index.Meetings.flatMap((m: any) =>
     m.Sessions.filter(
       (s: any) =>
@@ -88,7 +86,7 @@ export async function stints(
   kind: "race" | "sprint",
 ): Promise<Stints> {
   const path = await sessionPath(year, round, kind);
-  const data = await json(`${BASE}${path}TyreStintSeries.json`);
+  const data = await json(`${path}TyreStintSeries.json`);
   return Object.fromEntries(
     Object.entries(data.Stints ?? {}).map(([number, list]) => {
       let lap = 0;
@@ -118,7 +116,7 @@ export async function positions(
   kind: "race" | "sprint",
 ): Promise<LapPositions> {
   const path = await sessionPath(year, round, kind);
-  const data = await json(`${BASE}${path}LapSeries.json`);
+  const data = await json(`${path}LapSeries.json`);
   return Object.fromEntries(
     Object.entries(data ?? {}).map(([number, line]: [string, any]) => [
       number,
@@ -137,7 +135,7 @@ export async function qualifying(
     round,
     kind === "race" ? "qualifying" : "sprintQualifying",
   );
-  const data = await json(`${BASE}${path}TimingData.json`);
+  const data = await json(`${path}TimingData.json`);
   return Object.entries(data.Lines ?? {})
     .map(([number, line]: [string, any]) => ({
       number,
@@ -223,7 +221,7 @@ async function load(path: string): Promise<Replay> {
   const streams = await Promise.all(
     TOPICS.map(async (topic) =>
       parseStream(
-        await text(`${BASE}${path}${topic}.jsonStream`).catch(() => ""),
+        await text(`${path}${topic}.jsonStream`).catch(() => ""),
         topic,
       ),
     ),
