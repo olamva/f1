@@ -11,7 +11,7 @@ export const Loading = ({ label, error }: LoadingProps) => (
     className="flex min-h-48 flex-col items-center justify-center gap-3 text-sm text-zinc-400"
   >
     {error ? (
-      <p className="text-red-400">{error}</p>
+      <p className="text-center wrap-anywhere text-red-400">{error}</p>
     ) : (
       <>
         <LoaderCircle className="size-8 animate-spin text-red-500" />
