@@ -18,7 +18,8 @@ const CHECKPOINT_MS = 30_000;
 
 const text = async (url: string): Promise<string> => {
   const res = await fetch(url);
-  if (!res.ok) throw new Error(`archive ${res.status} ${url}`);
+  if (!res.ok)
+    throw new Error(`archive ${res.status} ${url.replace(BASE, "")}`);
   return res.text();
 };
 
