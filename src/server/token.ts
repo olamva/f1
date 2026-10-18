@@ -68,6 +68,8 @@ export function current(key: string): string | null {
   return token && (expiry(token) ?? 0) > Date.now() ? token : null;
 }
 
+export const valid = () => keys().map(current).find(Boolean) ?? null;
+
 export function status(key: string): TokenStatus {
   const token = tokens.get(key);
   const session = token ? claims(token).SessionId : undefined;
@@ -97,7 +99,9 @@ async function renew(key: string) {
     body: "{}",
   });
   if (!res.ok) throw new Error(`renew ${res.status}`);
-  const next = (await res.json())?.data?.subscriptionToken;
+  const body = await res.json();
+  if (body?.Fault) throw new Error(`renew ${body.Fault.Message}`);
+  const next = body?.data?.subscriptionToken;
   if (typeof next === "string" && (expiry(next) ?? 0) > (s.expiresAt ?? 0))
     await store(key, next);
 }

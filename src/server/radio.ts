@@ -1,5 +1,5 @@
 import { DefaultAzureCredential } from "@azure/identity";
-import { F1_ORIGIN } from "./origin.ts";
+import { archive } from "./origin.ts";
 
 const STATIC = "https://livetiming.formula1.com/static/";
 const ENDPOINT = process.env.SPEECH_ENDPOINT;
@@ -31,7 +31,7 @@ const pathOf = (url: string) =>
 
 export const audio = (url: string) => {
   const path = pathOf(url);
-  return path ? fetch(`${F1_ORIGIN}/static/${path}`) : null;
+  return path ? archive(path) : null;
 };
 
 const post = async (url: string, body: FormData | string): Promise<any> => {
@@ -152,7 +152,7 @@ export const split = (text: string, words: Word[], phrases: Phrase[]) => {
 };
 
 async function transcribe(path: string): Promise<Turn[]> {
-  const audio = await fetch(`${F1_ORIGIN}/static/${path}`);
+  const audio = await archive(path);
   if (!audio.ok) throw new Error(`radio ${audio.status}`);
   const file = new File([await audio.blob()], "radio.mp3", {
     type: "audio/mpeg",
