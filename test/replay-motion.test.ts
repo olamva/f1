@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { deflateRawSync } from "node:zlib";
+import { replay } from "../src/server/archive.ts";
 import { positionEvents } from "../src/server/timing.ts";
 import type { Delta } from "../src/shared/timing.ts";
 import { applyDelta, positionsAt, type Feed } from "../src/web/live/useFeed.ts";
@@ -53,5 +55,36 @@ test("position samples end at the time of their message", () => {
   assert.deepEqual(
     events.map((e) => e.t),
     [9600, 10_000],
+  );
+});
+
+test("an archive replay keeps one car position each 500 ms", async (t) => {
+  const position = (ms: number) => ({
+    Timestamp: `2026-09-26T11:00:0${ms / 1000}Z`,
+    Entries: { "1": { X: ms, Y: 0 } },
+  });
+  const message = deflateRawSync(
+    JSON.stringify({ Position: [1000, 1250, 1500, 1750, 2000].map(position) }),
+  ).toString("base64");
+  t.mock.method(
+    globalThis,
+    "fetch",
+    async (url: string) =>
+      new Response(
+        url.endsWith("/Position.z.jsonStream")
+          ? `\ufeff00:00:02.000${JSON.stringify(message)}\r\n`
+          : "",
+      ),
+  );
+
+  const r = await replay("2026/meeting/positions/");
+
+  assert.deepEqual(
+    r.events.filter((e) => e.topic === "Position"),
+    [1000, 1500, 2000].map((t) => ({
+      t,
+      topic: "Position",
+      data: { "1": [t, 0] },
+    })),
   );
 });

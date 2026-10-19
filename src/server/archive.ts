@@ -1,3 +1,5 @@
+import { createInterface } from "node:readline";
+import { Readable } from "node:stream";
 import { merge } from "../shared/merge.ts";
 import type { LapPositions, Qualifying, Stints } from "../shared/season.ts";
 import type { Outline, SessionRef } from "../shared/timing.ts";
@@ -6,7 +8,7 @@ import { get } from "./jolpica.ts";
 import { archive } from "./origin.ts";
 import {
   expand,
-  parseStream,
+  parseLine,
   Session,
   TOPICS,
   type Event,
@@ -217,15 +219,22 @@ export async function outlineFor(
   return bundled ?? fallback();
 }
 
+async function parse(path: string, topic: string): Promise<Event[]> {
+  const res = await archive(`${path}${topic}.jsonStream`);
+  if (!res.ok || !res.body) throw new Error(`archive ${res.status} ${path}`);
+  const out: Event[] = [];
+  for await (const line of createInterface({
+    input: Readable.from(res.body),
+    crlfDelay: Infinity,
+  }))
+    out.push(...parseLine(line, topic));
+  return out;
+}
+
 async function load(path: string): Promise<Replay> {
-  const streams = await Promise.all(
-    TOPICS.map(async (topic) =>
-      parseStream(
-        await text(`${path}${topic}.jsonStream`).catch(() => ""),
-        topic,
-      ),
-    ),
-  );
+  const streams: Event[][] = [];
+  for (const topic of TOPICS)
+    streams.push(await parse(path, topic).catch(() => []));
   const events: Event[] = [];
   const session = new Session();
   const checkpoints: Replay["checkpoints"] = [{ t: 0, index: 0, state: {} }];
@@ -236,9 +245,11 @@ async function load(path: string): Promise<Replay> {
         index: events.length,
         state: { ...session.state },
       });
+    const applied = expand(e).flatMap((x) => session.apply(x));
     events.push(
-      e,
-      ...expand(e).flatMap((x) => session.apply(x).filter((y) => y !== x)),
+      ...(e.topic === "CarData.z"
+        ? [e, ...applied.filter((x) => x.topic !== "CarData")]
+        : applied),
     );
   }
   return {
@@ -250,7 +261,7 @@ async function load(path: string): Promise<Replay> {
   };
 }
 
-const CACHED = 3;
+const CACHED = 2;
 const cache = new Map<string, Promise<Replay>>();
 
 export function replay(path: string): Promise<Replay> {
