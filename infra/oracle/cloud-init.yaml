@@ -3,6 +3,7 @@ package_update: true
 packages:
   - podman
   - caddy
+  - rsync
   - iptables-persistent
 swap:
   filename: /swapfile
