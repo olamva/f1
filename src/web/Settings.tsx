@@ -125,7 +125,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
     status?.sessionExpiresAt &&
     status.sessionExpiresAt - Date.now() < 3 * 24 * 3600_000;
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid gap-4 md:grid-cols-2">
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Spoiler mode</h2>
         <GlassSwitch
@@ -224,7 +224,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
               <GuideSheet title="Add to Home Screen" steps={INSTALL_STEPS} />
             )}
           </section>
-          <section className="bg-surface space-y-2 rounded-xl p-4 lg:col-span-2">
+          <section className="bg-surface space-y-2 rounded-xl p-4 md:col-span-2">
             <h2 className="font-f1 text-lg font-bold">F1TV token</h2>
             <p className="text-sm">Show the cars on the track map</p>
             <form
