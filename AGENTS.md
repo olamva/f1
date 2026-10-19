@@ -67,11 +67,13 @@ Request renewed approval if later changes materially alter the reviewed appearan
 Keep deployment on `main` through the existing workflow. The workflow does not run Terraform.
 Do not watch the deployment run. Start cleanup as soon as the PR state is `MERGED`.
 Let GitHub delete the merged remote branch. Preserve thread history.
+Push visual review images only to a `screenshots/pr-<pr-number>` branch. Cleanup does not delete other branch names.
 Stop every dev server and preview process that you started before the final response.
 Create each temporary checkout, such as a visual review "before" state, with `git worktree add --detach` under `/tmp`.
 Remove a temporary checkout with `git worktree remove <path>` after checking for local files.
 After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` in the task worktree.
 This verifies the merged PR, detaches the checkout, and deletes the local task branch.
+It also deletes the remote `screenshots/pr-<pr-number>` branch.
 Keep the active T3 worktree and thread. Remove the worktree only after T3 stops.
 Run `pnpm worktree:cleanup <path> <pr-number> --apply` from another checkout to remove an idle worktree.
 Include the cleanup status in the final response.
