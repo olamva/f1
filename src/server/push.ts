@@ -1,4 +1,4 @@
-import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
+import { createHash } from "node:crypto";
 import webpush, { type PushSubscription } from "web-push";
 import { DATA_DIR, list, readJson, remove, writeJson } from "./data.ts";
 
@@ -13,19 +13,7 @@ export type Message = {
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
 
-const point = ({ x, y }: JsonWebKey) =>
-  Buffer.concat([
-    Buffer.from([4]),
-    Buffer.from(x!, "base64url"),
-    Buffer.from(y!, "base64url"),
-  ]).toString("base64url");
-
-export const publicKey =
-  DATA_DIR && process.env.VAPID_PUBLIC_KEY
-    ? point(
-        createPublicKey(process.env.VAPID_PUBLIC_KEY).export({ format: "jwk" }),
-      )
-    : null;
+export const publicKey = (DATA_DIR && process.env.VAPID_PUBLIC_KEY) || null;
 
 const file = (user: string, endpoint: string) =>
   `push/${hash(user.toLowerCase())}/${hash(endpoint)}.json`;
@@ -52,14 +40,11 @@ const expired = (e: any) => {
 };
 
 export async function notify(messages: Message[], owner?: string) {
-  if (!DATA_DIR || !process.env.VAPID_PRIVATE_KEY || !messages.length) return;
-  const key = createPrivateKey(process.env.VAPID_PRIVATE_KEY).export({
-    format: "jwk",
-  });
+  if (!publicKey || !process.env.VAPID_PRIVATE_KEY || !messages.length) return;
   const vapidDetails = {
     subject: process.env.VAPID_SUBJECT!,
-    publicKey: point(key),
-    privateKey: key.d!,
+    publicKey,
+    privateKey: process.env.VAPID_PRIVATE_KEY,
   };
   for (const name of await list(owner ? `push/${owner}` : "push")) {
     const s = await readJson(name);
