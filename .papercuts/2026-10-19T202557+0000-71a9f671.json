@@ -1,0 +1,13 @@
+{
+  "id": "71a9f671",
+  "ts": "2026-10-19T20:25:57+00:00",
+  "text": "Ubuntu 26.04 uutils install rejects a numeric owner (install -o 65532)",
+  "tags": [
+    "ubuntu"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "59520db8",
+  "where": "cloud-init.yaml",
+  "branch": ""
+}

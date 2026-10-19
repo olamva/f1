@@ -1,0 +1,13 @@
+{
+  "id": "afa35b92",
+  "ts": "2026-10-19T20:25:57+00:00",
+  "text": "python3 -m http.server drops parallel requests (backlog 5); a replay load silently lost topics",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "59520db8",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-2cb9c86b",
+  "branch": ""
+}

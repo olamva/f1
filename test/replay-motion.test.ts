@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { deflateRawSync } from "node:zlib";
 import { replay } from "../src/server/archive.ts";
-import { positionEvents } from "../src/server/timing.ts";
+import { expand, positionEvents } from "../src/server/timing.ts";
 import type { Delta } from "../src/shared/timing.ts";
 import { applyDelta, positionsAt, type Feed } from "../src/web/live/useFeed.ts";
 
@@ -80,7 +80,7 @@ test("an archive replay keeps one car position each 500 ms", async (t) => {
   const r = await replay("2026/meeting/positions/");
 
   assert.deepEqual(
-    r.events.filter((e) => e.topic === "Position"),
+    r.events.flatMap(expand).filter((e) => e.topic === "Position"),
     [1000, 1500, 2000].map((t) => ({
       t,
       topic: "Position",

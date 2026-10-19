@@ -11,6 +11,7 @@ import {
   parseLine,
   Session,
   TOPICS,
+  unpack,
   type Event,
   type State,
 } from "./timing.ts";
@@ -245,10 +246,10 @@ async function load(path: string): Promise<Replay> {
         index: events.length,
         state: { ...session.state },
       });
-    const applied = expand(e).flatMap((x) => session.apply(x));
+    const applied = unpack(e).flatMap((x) => session.apply(x));
     events.push(
-      ...(e.topic === "CarData.z"
-        ? [e, ...applied.filter((x) => x.topic !== "CarData")]
+      ...(e.topic.endsWith(".z")
+        ? [e, ...applied.filter((x) => x.topic !== e.topic.slice(0, -2))]
         : applied),
     );
   }

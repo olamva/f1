@@ -1,0 +1,14 @@
+{
+  "id": "5bed4530",
+  "ts": "2026-10-19T20:25:57+00:00",
+  "text": "Auto-mode classifier blocks Key Vault reads, Azure role grants and VM writes that the approved migration plan requires",
+  "tags": [
+    "permissions",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "59520db8",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-2cb9c86b",
+  "branch": ""
+}

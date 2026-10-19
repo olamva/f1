@@ -9,7 +9,7 @@ The server keeps the tokens in `$DATA_DIR/tokens.json` with mode 0600, under a h
 
 - React + Vite + Tailwind in `src/web`, Hono server in `src/server`, shared logic in `src/shared`.
 - Live timing comes from `livetiming.formula1.com`. Results and standings come from Jolpica-F1.
-- It runs on the Oracle A1 VM of the Minecraft server as the podman quadlet `f1`. The repository `olamva/minecraft-server` holds the VM setup in `cloud-init.yaml`.
+- It runs on the Always Free Oracle VM `f1` (`VM.Standard.E2.1.Micro`, 1 GB memory, 1/8 OCPU) as the podman quadlet `f1`. `infra/oracle/` holds the VM setup.
 
 ## Run it
 
@@ -48,9 +48,11 @@ Keep the worktree while its T3 thread is active. Remove it from another checkout
 
 ## Deploy
 
-Push to `main`. CI refreshes the bundled calendar and builds an arm64 image on the `ubuntu-24.04-arm` runner. It pushes `ghcr.io/olamva/f1:latest`. On the VM, `podman-auto-update.timer` pulls a new image every five minutes and restarts the app.
+Push to `main`. CI refreshes the bundled calendar, builds the amd64 image and pushes `ghcr.io/olamva/f1:latest`. On the VM, `podman-auto-update.timer` pulls a new image every five minutes and restarts the app.
 
-The quadlet `/etc/containers/systemd/f1.container` runs the app on `127.0.0.1:8080`. Caddy serves it at `f1.ola-vassbotn.no`. The unit has idle CPU and disk priority and `MemoryMax=1G`, so the Minecraft server keeps priority. Run `sudo systemctl status f1` and `sudo journalctl -u f1 -f` on the VM for the state and the logs.
+`infra/oracle/launch.sh` launches the VM with `infra/oracle/cloud-init.yaml`. It retries until Oracle has capacity. `F1_SSH=ubuntu@<VM IP> infra/oracle/configure.sh` installs the quadlet `infra/oracle/f1.container` and the Caddy site, and restarts both. Caddy serves the app at `f1.ola-vassbotn.no`. The container uses the host network on port 8080, because the host firewall rejects traffic from the podman bridge. The firewall also blocks port 8080 from outside.
+
+The unit has `MemoryMax=700M`, and the VM has a 1 GB swap file. Run `sudo systemctl status f1` and `sudo journalctl -u f1 -f` on the VM for the memory, the state and the logs.
 
 The quadlet sets `DATA_DIR=/srv/f1`. The server keeps the F1TV tokens, the push subscriptions, the transcripts and the pace cache in that directory. Without `DATA_DIR`, the server keeps the tokens in memory and turns off notifications.
 
