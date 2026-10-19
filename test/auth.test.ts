@@ -9,7 +9,7 @@ const SECRET = "a-session-secret-of-at-least-32-characters";
 Object.assign(process.env, {
   ALLOWED_EMAILS: "ola@example.com",
   OIDC_AUTH_SECRET: SECRET,
-  OIDC_CLIENT_ID: "client",
+  OIDC_CLIENT_ID: "123-abc.apps.googleusercontent.com",
   OIDC_CLIENT_SECRET: "secret",
 });
 
@@ -88,4 +88,84 @@ test("a signed-out request never starts a transcript", async (t) => {
     "https://livetiming.formula1.com/static/2026/x/TeamRadio/MAXVER01_1_20260301_120000.mp3";
   assert.equal(await transcript(url, false), null);
   assert.equal(fetch.mock.callCount(), 0);
+});
+
+test("a Google sign-in completes and opens the token routes", async (t) => {
+  const google = "https://accounts.google.com";
+  const tokenUrl = "https://oauth2.googleapis.com/token";
+  const sent: { body: URLSearchParams; authorization: string | null }[] = [];
+  let nonce = "";
+  const json = (value: object) =>
+    new Response(JSON.stringify(value), {
+      headers: { "content-type": "application/json" },
+    });
+  const part = (value: object) =>
+    Buffer.from(JSON.stringify(value)).toString("base64url");
+  t.mock.method(
+    globalThis,
+    "fetch",
+    async (url: string | URL | Request, init?: RequestInit) => {
+      const href = String(url instanceof Request ? url.url : url);
+      if (href === `${google}/.well-known/openid-configuration`)
+        return json({
+          issuer: google,
+          authorization_endpoint: `${google}/o/oauth2/v2/auth`,
+          token_endpoint: tokenUrl,
+          scopes_supported: ["openid", "email"],
+        });
+      const request = new Request(url, init);
+      sent.push({
+        body: new URLSearchParams(await request.text()),
+        authorization: request.headers.get("authorization"),
+      });
+      const now = Math.floor(Date.now() / 1000);
+      return json({
+        access_token: "access",
+        token_type: "Bearer",
+        expires_in: 3600,
+        id_token: `${part({ alg: "RS256" })}.${part({
+          iss: google,
+          aud: process.env.OIDC_CLIENT_ID,
+          sub: "1",
+          email: "ola@example.com",
+          email_verified: true,
+          iat: now,
+          exp: now + 3600,
+          nonce,
+        })}.c2ln`,
+      });
+    },
+  );
+
+  const login = await app.request(
+    "https://f1.example.com/.auth/login/google?post_login_redirect_uri=/settings",
+  );
+  const cookies = login.headers
+    .getSetCookie()
+    .map((c) => c.split(";")[0]!)
+    .join("; ");
+  nonce = /nonce=([^;]+)/.exec(cookies)![1]!;
+  const state = new URL(login.headers.get("location")!).searchParams.get(
+    "state",
+  );
+  const callback = await app.request(
+    `https://f1.example.com/.auth/login/google/callback?code=code&state=${state}`,
+    { headers: { cookie: cookies } },
+  );
+  const session = callback.headers
+    .getSetCookie()
+    .find((c) => c.startsWith("oidc-auth="))!
+    .split(";")[0]!;
+
+  assert.equal(sent[0]!.body.get("client_id"), process.env.OIDC_CLIENT_ID);
+  assert.equal(sent[0]!.body.get("client_secret"), "secret");
+  assert.equal(sent[0]!.authorization, null);
+  assert.equal(
+    (
+      await app.request("https://f1.example.com/api/token", {
+        headers: { cookie: session },
+      })
+    ).status,
+    200,
+  );
 });
