@@ -1,0 +1,14 @@
+{
+  "id": "f3547ce0",
+  "ts": "2026-10-19T20:25:57+00:00",
+  "text": "Oracle image iptables INPUT/FORWARD reject rules break podman bridge DNS and egress (EAI_AGAIN)",
+  "tags": [
+    "oracle",
+    "podman"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "59520db8",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-2cb9c86b",
+  "branch": ""
+}

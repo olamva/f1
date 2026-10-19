@@ -1,0 +1,13 @@
+{
+  "id": "2dbf8eb4",
+  "ts": "2026-10-19T20:25:57+00:00",
+  "text": "podman --env-file keeps only the first line of a quoted multi-line value, so PEM keys in /etc/f1/env break",
+  "tags": [
+    "podman"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "59520db8",
+  "where": "/etc/f1/env",
+  "branch": ""
+}

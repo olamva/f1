@@ -99,8 +99,24 @@ function carEvents(t: number, raw: Json): Event[] {
   }));
 }
 
+const spaced = (events: Event[]): Event[] => {
+  let last = -Infinity;
+  return events.filter((e) => {
+    if (e.t - last < POSITION_SPACING_MS) return false;
+    last = e.t;
+    return true;
+  });
+};
+
+export const unpack = (e: Event): Event[] =>
+  e.topic === "CarData.z"
+    ? carEvents(e.t, inflate(e.data as string))
+    : e.topic === "Position.z"
+      ? positionEvents(e.t, inflate(e.data as string))
+      : [e];
+
 export const expand = (e: Event): Event[] =>
-  e.topic === "CarData.z" ? carEvents(e.t, inflate(e.data as string)) : [e];
+  e.topic === "Position.z" ? spaced(unpack(e)) : unpack(e);
 
 const sectors = (line: any): string[] =>
   Object.values<any>(line.Sectors ?? {}).map((s) => s.Value ?? "");
@@ -119,7 +135,7 @@ const lapNumber = (
 export class Session {
   state: State = {};
   laps: Record<string, LapRow[]> = {};
-  track: Record<string, Point[]> = {};
+  track: Record<string, number[]> = {};
   periods: Period[] = [];
   private lastPosition = -Infinity;
   private outLaps = new Set<string>();
@@ -147,7 +163,7 @@ export class Session {
       for (const [n, p] of Object.entries(
         e.data as Record<string, [number, number]>,
       ))
-        (this.track[n] ??= []).push([e.t, p[0], p[1]]);
+        (this.track[n] ??= []).push(e.t, p[0], p[1]);
     }
     this.state[e.topic] = merge(this.state[e.topic], e.data);
     if (e.topic === "TimingData") this.trackLaps(e);
@@ -221,7 +237,11 @@ export class Session {
       .sort((a, b) => a.time - b.time)[0];
     if (!best) return null;
     const { n, from, to } = best;
-    const points = this.track[n]!.filter(([t]) => t >= from && t <= to);
+    const track = this.track[n]!;
+    const points: Point[] = [];
+    for (let i = 0; i < track.length; i += 3)
+      if (track[i]! >= from && track[i]! <= to)
+        points.push([track[i]!, track[i + 1]!, track[i + 2]!]);
     if (points.length < 20) return null;
     return {
       x: points.map((p) => p[1]),
@@ -333,11 +353,8 @@ export function parseLine(line: string, topic: string): Event[] {
   const m = /^﻿?(\d+):(\d+):(\d+\.\d+)(.+)$/.exec(line);
   if (!m) return [];
   const t = (Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])) * 1000;
-  const raw = JSON.parse(m[4]!) as Json;
-  return topic === "Position.z"
-    ? positionEvents(t, inflate(raw as string))
-    : [{ t, topic, data: raw }];
+  return [{ t, topic, data: JSON.parse(m[4]!) as Json }];
 }
 
 export const parseStream = (text: string, topic: string): Event[] =>
-  text.split(/\r?\n/).flatMap((line) => parseLine(line, topic));
+  text.split(/\r?\n/).flatMap((line) => parseLine(line, topic).flatMap(unpack));

@@ -1,0 +1,34 @@
+#cloud-config
+package_update: true
+packages:
+  - podman
+  - caddy
+  - iptables-persistent
+swap:
+  filename: /swapfile
+  size: 1G
+users:
+  - default
+  - name: f1
+    uid: 65532
+    system: true
+    homedir: /srv/f1
+    shell: /usr/sbin/nologin
+write_files:
+  - path: /etc/systemd/system/podman-auto-update.timer.d/f1.conf
+    content: |
+      [Timer]
+      OnCalendar=
+      OnCalendar=*:0/5
+      RandomizedDelaySec=0
+  - path: /etc/systemd/system/podman-auto-update.service.d/f1.conf
+    content: |
+      [Service]
+      ExecStartPost=/usr/bin/podman image prune -f
+runcmd:
+  - install -d -o f1 -g f1 -m 0700 /srv/f1
+  - install -d -m 0700 /etc/f1
+  - iptables -I INPUT -p tcp -m multiport --dports 80,443 -m state --state NEW -j ACCEPT
+  - netfilter-persistent save
+  - systemctl daemon-reload
+  - systemctl enable --now podman-auto-update.timer
