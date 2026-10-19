@@ -1,7 +1,6 @@
 import { createHash, createPrivateKey, createPublicKey } from "node:crypto";
-import { DefaultAzureCredential } from "@azure/identity";
-import { ContainerClient } from "@azure/storage-blob";
 import webpush, { type PushSubscription } from "web-push";
+import { DATA_DIR, list, readJson, remove, writeJson } from "./data.ts";
 
 export type Message = {
   title: string;
@@ -10,15 +9,6 @@ export type Message = {
   ttl: number;
   start?: number;
 };
-
-const container = process.env.PUSH_STORE
-  ? new ContainerClient(
-      process.env.PUSH_STORE,
-      new DefaultAzureCredential({
-        managedIdentityClientId: process.env.AZURE_CLIENT_ID,
-      }),
-    )
-  : null;
 
 const hash = (value: string) =>
   createHash("sha256").update(value).digest("hex");
@@ -31,16 +21,14 @@ const point = ({ x, y }: JsonWebKey) =>
   ]).toString("base64url");
 
 export const publicKey =
-  container && process.env.VAPID_PUBLIC_KEY
+  DATA_DIR && process.env.VAPID_PUBLIC_KEY
     ? point(
         createPublicKey(process.env.VAPID_PUBLIC_KEY).export({ format: "jwk" }),
       )
     : null;
 
-const blob = (user: string, endpoint: string) =>
-  container!.getBlockBlobClient(
-    `${hash(user.toLowerCase())}/${hash(endpoint)}.json`,
-  );
+const file = (user: string, endpoint: string) =>
+  `push/${hash(user.toLowerCase())}/${hash(endpoint)}.json`;
 
 export const valid = (s: any): s is PushSubscription =>
   typeof s?.endpoint === "string" &&
@@ -48,18 +36,14 @@ export const valid = (s: any): s is PushSubscription =>
   typeof s.keys?.p256dh === "string" &&
   typeof s.keys?.auth === "string";
 
-export const subscribed = (user: string, endpoint: string) =>
-  blob(user, endpoint).exists();
+export const subscribed = async (user: string, endpoint: string) =>
+  !!(await readJson(file(user, endpoint)));
 
-export async function subscribe(user: string, s: PushSubscription) {
-  const body = JSON.stringify({ endpoint: s.endpoint, keys: s.keys });
-  await blob(user, s.endpoint).upload(body, Buffer.byteLength(body), {
-    blobHTTPHeaders: { blobContentType: "application/json" },
-  });
-}
+export const subscribe = (user: string, s: PushSubscription) =>
+  writeJson(file(user, s.endpoint), { endpoint: s.endpoint, keys: s.keys });
 
 export const unsubscribe = (user: string, endpoint: string) =>
-  blob(user, endpoint).deleteIfExists();
+  remove(file(user, endpoint));
 
 const expired = (e: any) => {
   if (e.statusCode === 404 || e.statusCode === 410) return true;
@@ -68,7 +52,7 @@ const expired = (e: any) => {
 };
 
 export async function notify(messages: Message[], owner?: string) {
-  if (!container || !process.env.VAPID_PRIVATE_KEY || !messages.length) return;
+  if (!DATA_DIR || !process.env.VAPID_PRIVATE_KEY || !messages.length) return;
   const key = createPrivateKey(process.env.VAPID_PRIVATE_KEY).export({
     format: "jwk",
   });
@@ -77,11 +61,8 @@ export async function notify(messages: Message[], owner?: string) {
     publicKey: point(key),
     privateKey: key.d!,
   };
-  for await (const { name } of container.listBlobsFlat({
-    prefix: owner && `${owner}/`,
-  })) {
-    const item = container.getBlockBlobClient(name);
-    const s = JSON.parse((await item.downloadToBuffer()).toString("utf8"));
+  for (const name of await list(owner ? `push/${owner}` : "push")) {
+    const s = await readJson(name);
     const gone = await messages.reduce<Promise<boolean>>(
       async (done, { ttl, ...data }) =>
         (await done) ||
@@ -90,6 +71,6 @@ export async function notify(messages: Message[], owner?: string) {
           .then(() => false, expired),
       Promise.resolve(false),
     );
-    if (gone) await item.deleteIfExists();
+    if (gone) await remove(name);
   }
 }

@@ -5,11 +5,11 @@ F1 Pitwall is an F1 site: live timing, replays of recent sessions, and season st
 Everyone can use live timing, replays, results, and stats without sign-in.
 Google sign-in is necessary only for new radio transcripts, session reminders, and F1TV tokens. Transcripts use Azure Speech, so only signed-in users can start them. Everyone can read saved transcripts. `ALLOWED_EMAILS` lists the accounts that can sign in.
 Each user saves an own F1TV token in Settings. The server opens a separate live connection for each token. Only that user gets the car positions.
-The server keeps each token in Key Vault under a hash of the email address.
+The server keeps the tokens in `$DATA_DIR/tokens.json` with mode 0600, under a hash of the email address.
 
 - React + Vite + Tailwind in `src/web`, Hono server in `src/server`, shared logic in `src/shared`.
 - Live timing comes from `livetiming.formula1.com`. Results and standings come from Jolpica-F1.
-- It runs on Azure Container Apps. It scales to zero after 20 minutes without requests. A scheduled Container Apps job checks the calendar and wakes it for sessions. Hidden browser tabs stop polling and close their streams, so an open tab does not keep the app awake.
+- It runs on the Oracle A1 VM of the Minecraft server as the podman quadlet `f1`. The repository `olamva/minecraft-server` holds the VM setup in `cloud-init.yaml`.
 
 ## Run it
 
@@ -48,26 +48,39 @@ Keep the worktree while its T3 thread is active. Remove it from another checkout
 
 ## Deploy
 
+Push to `main`. CI refreshes the bundled calendar and builds an arm64 image on the `ubuntu-24.04-arm` runner. It pushes `ghcr.io/olamva/f1:latest`. On the VM, `podman-auto-update.timer` pulls a new image every five minutes and restarts the app.
+
+The quadlet `/etc/containers/systemd/f1.container` runs the app on `127.0.0.1:8080`. Caddy serves it at `f1.ola-vassbotn.no`. The unit has idle CPU and disk priority and `MemoryMax=1G`, so the Minecraft server keeps priority. Run `sudo systemctl status f1` and `sudo journalctl -u f1 -f` on the VM for the state and the logs.
+
+The quadlet sets `DATA_DIR=/srv/f1`. The server keeps the F1TV tokens, the push subscriptions, the transcripts and the pace cache in that directory. Without `DATA_DIR`, the server keeps the tokens in memory and turns off notifications.
+
+Keep the other settings in `/etc/f1/env` on the VM, with mode 0600:
+
+| Variable                                                 | Use                                                   |
+| -------------------------------------------------------- | ----------------------------------------------------- |
+| `ALLOWED_EMAILS`                                         | The accounts that can sign in                         |
+| `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`                   | The Google OAuth client                               |
+| `OIDC_AUTH_SECRET`                                       | The key of the session cookie, at least 32 characters |
+| `F1_ORIGIN`                                              | The relay origin for F1 archives and live timing      |
+| `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | Web Push                                              |
+| `SPEECH_ENDPOINT`, `SPEECH_KEY`                          | The Azure OpenAI account for transcripts              |
+| `VOICE_ENDPOINT`, `VOICE_KEY`                            | The Azure Speech account for transcripts              |
+
+Google sign-in uses the callback `https://<host>/.auth/login/google/callback`. The Google OAuth client must list it as an authorized redirect URI. A session lasts 30 days.
+
+The server uses `F1_ORIGIN` as the base URL for F1 archives and live timing. The default is `https://livetiming.formula1.com`. That host refuses Oracle IP addresses, so `F1_ORIGIN` points to the Cloudflare relay in `relay/`.
+
+Terraform in `infra/` manages the Azure resources:
+
 1. Create `infra/terraform.tfvars` with `test -f infra/terraform.tfvars || cp infra/terraform.tfvars.example infra/terraform.tfvars`.
 2. Fill the placeholders in that ignored file. Each worktree needs its own values. Keep existing values when the file exists.
 3. Run `az login --scope https://storage.azure.com/.default` before `terraform -chdir=infra init` if storage authentication requires login.
 4. Run `terraform -chdir=infra init`, then `terraform -chdir=infra apply`.
-5. Set the values of `terraform -chdir=infra output github_variables` as GitHub Actions variables.
-6. Push to `main`. CI refreshes the bundled calendar, builds the image, and updates the app and wake job.
-7. For a custom domain, add the records from `terraform -chdir=infra output custom_domain_dns`, set `custom_domain`, and apply. Terraform creates the certificate but does not bind it. Bind it with `az containerapp hostname bind -g f1 -n f1 --hostname <domain> --environment f1 --certificate <certificate name> --validation-method CNAME`.
-
-Use the existing Azure account and backend permissions. See the [Azure CLI login options](https://learn.microsoft.com/en-us/cli/azure/reference-index#az-login).
-
-The wake job checks the current and next season calendars every five minutes. It wakes the app from 15 minutes before each session until two hours after its expected end. The two hours cover delayed sessions. The app scales to zero after the wake requests stop. No year-specific cron rule remains.
-
-A calendar change takes effect at the next five-minute check. If the calendar source fails, the job uses the schedule bundled during the last deployment. A deployment stops if it cannot refresh that schedule. The bundled schedule covers the seasons available when the image was built. Run `pnpm sessions` to refresh `infra/sessions.json` during local work. Terraform creates the wake job. The deployment workflow updates its image.
-
-The Container Apps environment keeps no console logs. A finished job run shows an empty log. Run `az containerapp job logs show -g f1 -n f1-wake --container wake --follow` during a run to see its output. The job runs every five minutes.
-
-The server uses `F1_ORIGIN` as the base URL for F1 archives and live timing. Terraform sets it from `f1_origin`. The default is `https://livetiming.formula1.com`.
-
-If F1 blocks Azure egress, set `f1_origin` in the ignored `infra/terraform.tfvars` to a reachable proxy origin. Serve both `/static/` and `/signalrcore` through that origin. Run `terraform -chdir=infra apply`, then verify an archive and a live session through the deployed app.
 
 ## Notifications
 
-Signed-in users can turn on session reminders in Settings. On iOS, the app must be on the Home Screen. The wake job sends a Web Push notification 15 minutes and 5 minutes before each session. It also sends a notification to a user one day before the F1TV login of that user expires. It removes subscriptions that the push service reports as expired. The app stores subscriptions in the `push` blob container. Terraform generates the VAPID key. A new key makes current subscriptions invalid, so users must turn notifications on again.
+Signed-in users can turn on session reminders in Settings. On iOS, the app must be on the Home Screen. The server checks the current and next season calendars every five minutes. It sends a Web Push notification 15 minutes and 5 minutes before each session. It also sends a notification to a user one day before the F1TV login of that user expires. It removes subscriptions that the push service reports as expired.
+
+If the calendar source fails, the server uses the schedule bundled during the last deployment. A deployment stops if it cannot refresh that schedule. Run `pnpm sessions` to refresh `infra/sessions.json` during local work.
+
+The server keeps the subscriptions in `$DATA_DIR/push`. A new VAPID key makes current subscriptions invalid, so users must turn notifications on again. Keep the VAPID key when you move the app.

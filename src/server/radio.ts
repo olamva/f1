@@ -1,13 +1,9 @@
-import { DefaultAzureCredential } from "@azure/identity";
+import { DATA_DIR, readJson, writeJson } from "./data.ts";
 import { archive } from "./origin.ts";
 
 const STATIC = "https://livetiming.formula1.com/static/";
 const ENDPOINT = process.env.SPEECH_ENDPOINT;
 const VOICE = process.env.VOICE_ENDPOINT;
-const STORE = process.env.TRANSCRIPT_STORE;
-const credential = new DefaultAzureCredential({
-  managedIdentityClientId: process.env.AZURE_CLIENT_ID,
-});
 const cache = new Map<string, Promise<Turn[]>>();
 
 export interface Turn {
@@ -35,13 +31,12 @@ export const audio = (url: string) => {
 };
 
 const post = async (url: string, body: FormData | string): Promise<any> => {
-  const { token } = await credential.getToken(
-    "https://cognitiveservices.azure.com/.default",
-  );
   const res = await fetch(url, {
     method: "POST",
     headers: {
-      authorization: `Bearer ${token}`,
+      ...(url.startsWith(VOICE!)
+        ? { "ocp-apim-subscription-key": process.env.VOICE_KEY! }
+        : { "api-key": process.env.SPEECH_KEY! }),
       ...(typeof body === "string" && { "content-type": "application/json" }),
     },
     body,
@@ -56,40 +51,17 @@ const post = async (url: string, body: FormData | string): Promise<any> => {
   return res.json();
 };
 
-const blob = async (path: string, init: RequestInit = {}) => {
-  const { token } = await credential.getToken(
-    "https://storage.azure.com/.default",
-  );
-  return fetch(`${STORE}/voice/${encodeURI(path)}.json`, {
-    ...init,
-    headers: {
-      authorization: `Bearer ${token}`,
-      "x-ms-version": "2023-11-03",
-      ...init.headers,
-    },
-  });
-};
-
-async function saved(path: string): Promise<Turn[] | null> {
-  const hit = STORE ? await blob(path) : null;
-  return hit?.ok ? hit.json() : null;
-}
+const saved = async (path: string): Promise<Turn[] | null> =>
+  DATA_DIR ? readJson(`voice/${path}.json`).catch(() => null) : null;
 
 async function stored(path: string): Promise<Turn[]> {
   const hit = await saved(path);
   if (hit) return hit;
   const turns = await transcribe(path);
-  if (STORE) {
-    const res = await blob(path, {
-      method: "PUT",
-      headers: {
-        "x-ms-blob-type": "BlockBlob",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify(turns),
-    });
-    if (!res.ok) console.error("transcript store:", res.status);
-  }
+  if (DATA_DIR)
+    await writeJson(`voice/${path}.json`, turns).catch((e) =>
+      console.error("transcript store:", e.message),
+    );
   return turns;
 }
 

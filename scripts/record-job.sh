@@ -10,7 +10,9 @@ PUB=/tmp/f1-$NAME
 TITLE="feat: add $NAME recording"
 export PATH=/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin
 rm -f "$HOME/Library/LaunchAgents/$LABEL.plist"
-trap 'launchctl bootout "gui/$(id -u)/$LABEL"' EXIT
+export DATA_DIR=$(mktemp -d)
+trap 'rm -rf "$DATA_DIR"; launchctl bootout "gui/$(id -u)/$LABEL"' EXIT
+ssh -o BatchMode=yes ubuntu@82.70.43.201 'sudo cat /srv/f1/tokens.json' > "$DATA_DIR/tokens.json" || echo "no F1TV tokens from the VM"
 echo "start $(date -u +%FT%TZ)"
 cd "$REPO" || exit 1
 caffeinate -i node scripts/record.ts "$OUT" "$UNTIL" || exit 1

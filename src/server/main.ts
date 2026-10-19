@@ -13,7 +13,7 @@ import {
   stints,
   type Replay,
 } from "./archive.ts";
-import { requireGoogle, user } from "./auth.ts";
+import { requireGoogle, sessions, user } from "./auth.ts";
 import * as live from "./live.ts";
 import {
   circuitFacts,
@@ -24,6 +24,7 @@ import {
 import { audio, transcript } from "./radio.ts";
 import { pace, type PaceKind } from "./pace.ts";
 import * as push from "./push.ts";
+import * as reminders from "./reminders.ts";
 import { season } from "./season.ts";
 import { expand } from "./timing.ts";
 import * as token from "./token.ts";
@@ -38,6 +39,7 @@ app.get(
   "/:asset{(apple-touch-icon|icon-192|icon-512)\\.png|manifest\\.webmanifest|privacy\\.html}",
   serveStatic({ root: DIST }),
 );
+app.route("/", sessions);
 app.use("/api/token", requireGoogle);
 app.use("/api/push", requireGoogle);
 
@@ -283,7 +285,10 @@ app.onError((e, c) => {
 token
   .start()
   .catch((e) => console.error("token:", e.message))
-  .finally(live.start);
+  .finally(() => {
+    live.start();
+    if (push.publicKey) reminders.start();
+  });
 
 serve({ fetch: app.fetch, port: Number(process.env.PORT ?? 8787) }, (info) =>
   console.log(`listening on ${info.port}`),
