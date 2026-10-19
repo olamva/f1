@@ -83,4 +83,4 @@ Signed-in users can turn on session reminders in Settings. On iOS, the app must 
 
 If the calendar source fails, the server uses the schedule bundled during the last deployment. A deployment stops if it cannot refresh that schedule. Run `pnpm sessions` to refresh `infra/sessions.json` during local work.
 
-The server keeps the subscriptions in `$DATA_DIR/push`. A new VAPID key makes current subscriptions invalid, so users must turn notifications on again. Keep the VAPID key when you move the app.
+The server keeps the subscriptions in `$DATA_DIR/push`. `VAPID_PUBLIC_KEY` is the base64url public point and `VAPID_PRIVATE_KEY` is the base64url private value, as `web-push generate-vapid-keys` prints them. A new VAPID key makes current subscriptions invalid, so users must turn notifications on again. Keep the VAPID key when you move the app.
