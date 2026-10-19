@@ -329,16 +329,15 @@ export class History {
   }
 }
 
-export function parseStream(text: string, topic: string): Event[] {
-  const out: Event[] = [];
-  for (const line of text.replace(/^﻿/, "").split(/\r?\n/)) {
-    const m = /^(\d+):(\d+):(\d+\.\d+)(.+)$/.exec(line);
-    if (!m) continue;
-    const t = (Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])) * 1000;
-    const raw = JSON.parse(m[4]!) as Json;
-    if (topic === "Position.z")
-      out.push(...positionEvents(t, inflate(raw as string)));
-    else out.push({ t, topic, data: raw });
-  }
-  return out;
+export function parseLine(line: string, topic: string): Event[] {
+  const m = /^﻿?(\d+):(\d+):(\d+\.\d+)(.+)$/.exec(line);
+  if (!m) return [];
+  const t = (Number(m[1]) * 3600 + Number(m[2]) * 60 + Number(m[3])) * 1000;
+  const raw = JSON.parse(m[4]!) as Json;
+  return topic === "Position.z"
+    ? positionEvents(t, inflate(raw as string))
+    : [{ t, topic, data: raw }];
 }
+
+export const parseStream = (text: string, topic: string): Event[] =>
+  text.split(/\r?\n/).flatMap((line) => parseLine(line, topic));
