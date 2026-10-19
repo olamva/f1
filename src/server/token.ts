@@ -1,7 +1,6 @@
 import { createHash } from "node:crypto";
-import { DefaultAzureCredential } from "@azure/identity";
-import { SecretClient } from "@azure/keyvault-secrets";
 import type { TokenStatus } from "../shared/token.ts";
+import { DATA_DIR, readJson, writeJson } from "./data.ts";
 
 const PREFIX = "f1tv-user-";
 const RENEW_URL =
@@ -10,17 +9,11 @@ const F1_WEB_API_KEY = "fCUCjWrKPu9ylJwRAv8BpGLEgiAuThx7";
 const F1_SYSTEM_ID = "60a9ad84-e93d-480f-80d6-af37494f2e22";
 const RENEW_BEFORE_MS = 24 * 60 * 60_000;
 
-const vault = process.env.KEY_VAULT_NAME
-  ? new SecretClient(
-      `https://${process.env.KEY_VAULT_NAME}.vault.azure.net`,
-      new DefaultAzureCredential({
-        managedIdentityClientId: process.env.AZURE_CLIENT_ID,
-      }),
-    )
-  : null;
+const FILE = "tokens.json";
 
 const tokens = new Map<string, string>();
 const listeners = new Set<(key: string) => void>();
+let saving = Promise.resolve();
 
 export const onChange = (fn: (key: string) => void) => listeners.add(fn);
 
@@ -56,8 +49,9 @@ export function extract(value: string): string {
 async function store(key: string, jwt: string) {
   const exp = expiry(jwt);
   if (!exp || exp < Date.now()) throw new Error("That token has expired.");
-  await vault?.setSecret(key, jwt);
   tokens.set(key, jwt);
+  const write = () => writeJson(FILE, Object.fromEntries(tokens));
+  if (DATA_DIR) await (saving = saving.then(write, write));
   listeners.forEach((fn) => fn(key));
 }
 
@@ -107,12 +101,10 @@ async function renew(key: string) {
 }
 
 export async function load() {
-  if (vault)
-    for await (const p of vault.listPropertiesOfSecrets()) {
-      if (!p.enabled || !p.name.startsWith(PREFIX)) continue;
-      const value = (await vault.getSecret(p.name).catch(() => null))?.value;
-      if (value) tokens.set(p.name, value);
-    }
+  if (!DATA_DIR) return;
+  for (const [key, value] of Object.entries((await readJson(FILE)) ?? {}))
+    if (key.startsWith(PREFIX) && typeof value === "string")
+      tokens.set(key, value);
 }
 
 export async function start() {

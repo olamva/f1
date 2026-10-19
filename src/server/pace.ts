@@ -1,6 +1,6 @@
-import { DefaultAzureCredential } from "@azure/identity";
 import type { Pace } from "../shared/season.ts";
 import { sessionPath } from "./archive.ts";
+import { DATA_DIR, readJson, writeJson } from "./data.ts";
 import { get } from "./jolpica.ts";
 import { archive } from "./origin.ts";
 import { racePace, seconds } from "./season.ts";
@@ -8,25 +8,7 @@ import { parseStream, Session } from "./timing.ts";
 
 export type PaceKind = "race" | "sprint";
 
-const store = process.env.TRANSCRIPT_STORE;
-const credential = new DefaultAzureCredential({
-  managedIdentityClientId: process.env.AZURE_CLIENT_ID,
-});
 const cache = new Map<string, Promise<Pace>>();
-
-const blob = async (path: string, init: RequestInit = {}) => {
-  const { token } = await credential.getToken(
-    "https://storage.azure.com/.default",
-  );
-  return fetch(`${store}/${path}`, {
-    ...init,
-    headers: {
-      authorization: `Bearer ${token}`,
-      "x-ms-version": "2023-11-03",
-      ...init.headers,
-    },
-  });
-};
 
 const archiveText = async (path: string, topic: string) => {
   const res = await archive(`${path}${topic}.jsonStream`);
@@ -85,14 +67,12 @@ async function load(
   kind: PaceKind,
 ): Promise<Pace> {
   const path = `pace/v1/${year}/${round}/${kind}.json`;
-  if (store) {
-    try {
-      const hit = await blob(path);
-      if (hit.ok) return hit.json();
-      if (hit.status !== 404) console.error("pace store read:", hit.status);
-    } catch (error) {
+  if (DATA_DIR) {
+    const hit = await readJson(path).catch((error) => {
       console.error("pace store read:", error);
-    }
+      return null;
+    });
+    if (hit) return hit;
   }
   const result =
     kind === "race"
@@ -100,21 +80,10 @@ async function load(
       : await loadSprint(year, round);
   if (!Object.values(result).some((laps) => laps.length > 5))
     throw new Error("Pace data is not available yet");
-  if (store) {
-    try {
-      const saved = await blob(path, {
-        method: "PUT",
-        headers: {
-          "x-ms-blob-type": "BlockBlob",
-          "content-type": "application/json",
-        },
-        body: JSON.stringify(result),
-      });
-      if (!saved.ok) console.error("pace store write:", saved.status);
-    } catch (error) {
-      console.error("pace store write:", error);
-    }
-  }
+  if (DATA_DIR)
+    await writeJson(path, result).catch((error) =>
+      console.error("pace store write:", error),
+    );
   return result;
 }
 

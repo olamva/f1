@@ -4,7 +4,6 @@ import {
   loginReminders,
   reminders,
   schedule,
-  shouldWake,
   windows,
 } from "../scripts/sessions.ts";
 
@@ -28,10 +27,6 @@ test("calendar changes take effect on the next check", async () => {
   assert.ok((await schedule(now, request)).some((w) => w.start === now));
   start = "18:00:00Z";
   assert.ok(!(await schedule(now, request)).some((w) => w.start === now));
-  assert.equal(
-    shouldWake(await schedule(now, request), at("2026-10-04T18:05:00Z")),
-    true,
-  );
 });
 
 test("the next season loads without changing the year in code", async () => {
@@ -45,15 +40,8 @@ test("the next season loads without changing the year in code", async () => {
     );
   };
   const result = await schedule(at("2027-12-31T00:00:00Z"), request);
-  assert.equal(shouldWake(result, at("2028-03-01T13:45:00Z")), true);
+  assert.ok(result.some((w) => w.at === at("2028-03-01T14:00:00Z")));
   assert.ok(years.some((url) => url.includes("/2028.json")));
-});
-
-test("a delayed session wakes until two hours after its expected end, and the app sleeps between sessions", () => {
-  const result = windows([race("2026-10-04")]);
-  assert.equal(shouldWake(result, at("2026-10-04T18:00:00Z")), true);
-  assert.equal(shouldWake(result, at("2026-10-04T18:05:00Z")), false);
-  assert.equal(shouldWake(result, at("2026-10-04T13:30:00Z")), false);
 });
 
 test("a failed next-season request keeps the current schedule", async () => {
@@ -61,18 +49,11 @@ test("a failed next-season request keeps the current schedule", async () => {
     if (String(url).includes("/2027.json")) throw new Error("unavailable");
     return response([race("2026-10-04")]);
   };
-  assert.equal(
-    shouldWake(
-      await schedule(at("2026-10-04T14:00:00Z"), request),
-      at("2026-10-04T14:00:00Z"),
+  assert.ok(
+    (await schedule(at("2026-10-04T14:00:00Z"), request)).some(
+      (w) => w.at === at("2026-10-04T14:00:00Z"),
     ),
-    true,
   );
-});
-
-test("past calendar dates do not wake the app in later years", () => {
-  const result = windows([race("2026-10-04")]);
-  assert.equal(shouldWake(result, at("2027-10-04T14:00:00Z")), false);
 });
 
 test("each session gets one reminder 15 minutes and one 5 minutes before it starts", () => {

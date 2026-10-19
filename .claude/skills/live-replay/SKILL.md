@@ -58,5 +58,5 @@ pnpm record recordings/<year>-<event>-<session>.jsonl <end time in ISO format>
 - Find the session times in `infra/sessions.json`.
 - Start the command at least 15 minutes before the session. Set the end time at least 20 minutes after the scheduled end.
 - The command writes `<file>.gz` at the end time and deletes the raw file. Commit the `.gz` file.
-- Set `KEY_VAULT_NAME` in `.env.local` to record car positions. The command then uses an F1TV token from Key Vault. Without a token, the recording has no car positions.
+- The command reads the F1TV tokens from `$DATA_DIR/tokens.json` to record car positions. `scripts/record-job.sh` copies that file from the VM. Without a token, the recording has no car positions.
 - The command records only the topics in `TOPICS` in `src/server/timing.ts`. A new topic needs a new recording.

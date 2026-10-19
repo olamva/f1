@@ -177,68 +177,6 @@ resource "azurerm_container_app" "f1" {
   }
 }
 
-resource "azurerm_container_app_job" "wake" {
-  name                         = "${var.name}-wake"
-  location                     = azurerm_resource_group.f1.location
-  resource_group_name          = azurerm_resource_group.f1.name
-  container_app_environment_id = azurerm_container_app_environment.f1.id
-  replica_timeout_in_seconds   = 60
-  replica_retry_limit          = 1
-
-  identity {
-    type         = "UserAssigned"
-    identity_ids = [azurerm_user_assigned_identity.app.id]
-  }
-
-  secret {
-    name  = "vapid-private-key"
-    value = tls_private_key.vapid.private_key_pem
-  }
-
-  schedule_trigger_config {
-    cron_expression = "*/5 * * * *"
-  }
-
-  template {
-    container {
-      name    = "wake"
-      image   = var.image
-      cpu     = 0.25
-      memory  = "0.5Gi"
-      command = ["node", "scripts/wake.ts"]
-
-      env {
-        name  = "WAKE_URL"
-        value = "https://${azurerm_container_app.f1.ingress[0].fqdn}/"
-      }
-      env {
-        name  = "AZURE_CLIENT_ID"
-        value = azurerm_user_assigned_identity.app.client_id
-      }
-      env {
-        name  = "KEY_VAULT_NAME"
-        value = azurerm_key_vault.f1.name
-      }
-      env {
-        name  = "PUSH_STORE"
-        value = local.push_store
-      }
-      env {
-        name        = "VAPID_PRIVATE_KEY"
-        secret_name = "vapid-private-key"
-      }
-      env {
-        name  = "VAPID_SUBJECT"
-        value = "https://${local.push_host}"
-      }
-    }
-  }
-
-  lifecycle {
-    ignore_changes = [template[0].container[0].image]
-  }
-}
-
 resource "azapi_resource" "auth" {
   count     = var.google_client_id == "" ? 0 : 1
   type      = "Microsoft.App/containerApps/authConfigs@2024-03-01"
@@ -318,12 +256,6 @@ resource "azurerm_role_assignment" "deploy" {
   principal_id         = azurerm_user_assigned_identity.deploy.principal_id
 }
 
-resource "azurerm_role_assignment" "deploy_wake" {
-  scope                = azurerm_container_app_job.wake.id
-  role_definition_name = "Contributor"
-  principal_id         = azurerm_user_assigned_identity.deploy.principal_id
-}
-
 resource "azurerm_cognitive_account" "speech" {
   name                  = "${var.name}-speech-${local.digest}"
   resource_group_name   = azurerm_resource_group.f1.name
@@ -331,7 +263,7 @@ resource "azurerm_cognitive_account" "speech" {
   kind                  = "OpenAI"
   sku_name              = "S0"
   custom_subdomain_name = "${var.name}-speech-${local.digest}"
-  local_auth_enabled    = false
+  local_auth_enabled    = true
 }
 
 resource "azurerm_cognitive_deployment" "whisper" {
@@ -373,7 +305,7 @@ resource "azurerm_cognitive_account" "voice" {
   kind                  = "SpeechServices"
   sku_name              = "S0"
   custom_subdomain_name = "${var.name}-voice-se-${local.digest}"
-  local_auth_enabled    = false
+  local_auth_enabled    = true
 }
 
 resource "azurerm_role_assignment" "app_voice" {

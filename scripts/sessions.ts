@@ -51,10 +51,6 @@ export function windows(races: Race[]): Window[] {
   );
 }
 
-export function shouldWake(schedule: Window[], now: number): boolean {
-  return schedule.some((w) => now >= w.start && now <= w.end);
-}
-
 const due = (at: number, now: number) => {
   const slot = Math.floor(now / (5 * MINUTE)) * 5 * MINUTE;
   return at > slot - 5 * MINUTE && at <= slot;

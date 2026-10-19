@@ -33,15 +33,15 @@ Run `CI=true pnpm install --frozen-lockfile` in the checkout.
 
 ## 3. Check the car position token
 
-Find the Key Vault name with `az keyvault list --query "[?starts_with(name, 'f1-vault')].name" -o tsv`. Set it as `VAULT`.
+The F1 server on the Minecraft A1 VM keeps the F1TV tokens in `/srv/f1/tokens.json`. `scripts/record-job.sh` copies that file into a temporary directory at the start and deletes the directory at the end.
 
-Run this command in the checkout. It prints only `true` or `false`:
+Run this command. It prints only `true` or `false`:
 
 ```sh
-KEY_VAULT_NAME=$VAULT node -e 'const t=await import("./src/server/token.ts");await t.load();console.log(t.keys().some((k)=>t.current(k)))'
+ssh -o BatchMode=yes ubuntu@82.70.43.201 'sudo cat /srv/f1/tokens.json' | node -e 'let s="";process.stdin.on("data",(c)=>(s+=c)).on("end",()=>console.log(Object.values(JSON.parse(s||"{}")).some((t)=>JSON.parse(Buffer.from(t.split(".")[1],"base64url")).exp*1000>Date.now())))'
 ```
 
-If it prints `false`, or `az` fails, tell the user that the recording will have no car positions. Continue.
+If it prints `false`, or `ssh` fails, tell the user that the recording will have no car positions. Continue.
 
 ## 4. Write and load the launchd job
 
@@ -58,7 +58,6 @@ Write `~/Library/LaunchAgents/$LABEL.plist`:
   <key>EnvironmentVariables</key>
   <dict>
     <key>PATH</key><string>/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin</string>
-    <key>KEY_VAULT_NAME</key><string>VAULT</string>
   </dict>
   <key>ProgramArguments</key>
   <array>
