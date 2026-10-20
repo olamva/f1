@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { execFileSync, spawn } from "node:child_process";
 import { once } from "node:events";
 import { createServer, type AddressInfo } from "node:net";
 
@@ -72,6 +72,7 @@ if (import.meta.main) {
   process.exitCode = await runDev([
     [
       ...(process.env.DEV_WATCH === "0" ? [] : ["--watch"]),
+      `--env-file-if-exists=${execFileSync("git", ["rev-parse", "--path-format=absolute", "--git-common-dir"], { encoding: "utf8" }).trim()}/../.env.local`,
       "--env-file-if-exists=.env.local",
       "src/server/main.ts",
     ],
