@@ -110,6 +110,9 @@ const schedule = (r: any): Round => ({
   },
 });
 
+export const seasonYear = async (): Promise<number> =>
+  Number((await get("current.json?limit=100")).RaceTable.season);
+
 export async function season(): Promise<Season> {
   const [calendar, results, sprints, qualifying, ds, cs] = await Promise.all([
     get("current.json?limit=100"),
