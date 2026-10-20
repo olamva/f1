@@ -51,7 +51,7 @@ Keep the worktree while its T3 thread is active. Remove it from another checkout
 
 Push to `main`. CI refreshes the bundled calendar, builds the amd64 image and pushes `ghcr.io/olamva/f1:latest`. On the VM, `podman-auto-update.timer` pulls a new image every five minutes and restarts the app.
 
-`infra/oracle/launch.sh` launches the VM with `infra/oracle/cloud-init.yaml`. It retries until Oracle has capacity. `F1_SSH=ubuntu@<VM IP> infra/oracle/configure.sh` installs the quadlet `infra/oracle/f1.container` and the Caddy site, and restarts both. Caddy serves the app at `f1.ola-vassbotn.no`. The container uses the host network on port 8080, because the host firewall rejects traffic from the podman bridge. The firewall also blocks port 8080 from outside.
+`infra/oracle/launch.sh` launches the VM with `infra/oracle/cloud-init.yaml`. It retries until Oracle has capacity. `F1_SSH=ubuntu@<VM IP> infra/oracle/configure.sh` installs the quadlet `infra/oracle/f1.container` and the Caddy site, and restarts both. Caddy serves the app at `f1.ola-vassbotn.no`. Caddy compresses all responses except the `/api/*/stream` event streams. Caddy 2.6 holds compressed events in a buffer, so the browser gets no events. The container uses the host network on port 8080, because the host firewall rejects traffic from the podman bridge. The firewall also blocks port 8080 from outside.
 
 The unit has `MemoryMax=700M`, and the VM has a 1 GB swap file. Run `sudo systemctl status f1` and `sudo journalctl -u f1 -f` on the VM for the memory, the state and the logs.
 
