@@ -21,6 +21,7 @@ pnpm test
 
 `pnpm dev` turns off Google sign-in. Set `PORT` and `VITE_PORT` to run more than one dev server, such as `PORT=0 VITE_PORT=0 pnpm dev`. The value 0 selects an unused port. Set `NO_LIVE=1` to turn off live timing, so that the app shows replays during a live session.
 Set `LIVE_REPLAY` to a file in `recordings/` to replay a recorded session as a live session. See the [live replay skill](.claude/skills/live-replay/SKILL.md).
+The F1 archive returns HTTP 401 to local requests, so replays and the session list need the relay. Put `F1_ORIGIN=<relay URL>` in `.env.local` in the main checkout. `pnpm dev` reads that file in each worktree. A `.env.local` in the worktree overrides it.
 
 Stop `pnpm dev` with Ctrl+C. The command stops both servers and the Node watcher.
 The command checks both ports before startup.

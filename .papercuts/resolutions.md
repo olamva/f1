@@ -80,3 +80,28 @@ This review covers 70 open reports.
 
 The personal tool-failures skill holds the new tool workarounds. Its symlinks expose it to Claude Code, Codex, and Gemini.
 The review changes no global instruction file.
+
+## Review of 20 October 2026
+
+This review covers 20 open reports.
+
+| IDs | Type | Fault and resolution |
+| --- | --- | --- |
+| `86fa4777` | fixed | DNS to Azure. `f1.ola-vassbotn.no` now resolves to the Oracle VM, and Caddy answers. |
+| `c4acaf14` | fixed | Compressed event streams. Commit `1db06f0` excludes `/api/*/stream` from compression. The live stream sends events uncompressed. |
+| `71a9f671` | fixed | Numeric owner in `install`. `cloud-init.yaml` creates the `f1` user and passes the user name. |
+| `f3547ce0` | fixed | Podman bridge firewall. The quadlet uses the host network. |
+| `51e8f85e` | avoided | Local archive 401. `pnpm dev` also reads `.env.local` from the main checkout. The README tells the user to put the relay URL there. |
+| `c1ab4327`, `11e64651`, `c3a4059d`, `b8090ecd` | skill | Small T3 captures and a stalled browser install. Check the PNG size. Capture at 2x with the installed T3 headless shell. |
+| `3da004f1` | skill | User activation from Playwright evaluation. Read the state through a CDP session. |
+| `446acbe6` | skill | Old Vite module after navigation. Reload through `preview_evaluate`. |
+| `b8bc910d` | skill | Click timeout on a hidden target. Check visibility first. |
+| `37efe9be` | skill | Docker `cannot overwrite digest`. Remove the cached platform before a run for another platform. |
+| `2dbf8eb4` | skill | Multi-line podman env values. Write each value on one line. |
+| `afa35b92` | skill | Dropped requests from the Python server. Use `http-server`. |
+| `579dfb24`, `dca9e369`, `5bed4530` | skill | Missing `timeout`, zsh globs, and blocked commands. The skill already holds these workarounds. |
+| `19248a02` | left open | Two-driver season data. The report has no fixture. |
+| `34cbc34b` | left open | 2025 race control AccessDenied. The archive now returns 401 to all direct requests. A check needs the relay URL. |
+
+The personal tool-failures skill holds the new tool workarounds. Its symlinks expose it to Claude Code, Codex, and Gemini.
+The review changes no global instruction file.
