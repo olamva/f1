@@ -31,6 +31,7 @@ Give the command network permission if the sandbox blocks local ports.
 
 Jolpica requests share one queue per server, including sprint qualifying requests.
 The server retries HTTP 429 twice and follows `Retry-After` for waits of at most one minute.
+When a cached response is old, the server sends it and refreshes it in the background.
 The server preserves cached responses after a failed refresh. Longer cooldowns fail without sending more requests.
 Start preview servers one at a time. Multiple servers share the upstream IP limit, but keep separate caches.
 See the [Jolpica rate limits](https://github.com/jolpica/jolpica-f1/blob/main/docs/rate_limits.md).

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-test("Jolpica retries rate limits, shares its queue, and preserves cached data", async (t) => {
+test("Jolpica retries rate limits, shares its queue, and serves cached data while it refreshes", async (t) => {
   let now = Date.parse("2026-09-26T12:00:00Z");
   t.mock.method(Date, "now", () => now);
   t.mock.method(
@@ -58,18 +58,26 @@ test("Jolpica retries rate limits, shares its queue, and preserves cached data",
     );
   }
 
-  responses = Array.from(
-    { length: 3 },
-    () => new Response(null, { status: 429, headers: { "Retry-After": "1" } }),
-  );
+  const fresh = { MRData: { total: "23" } };
+  responses = [
+    ...Array.from(
+      { length: 3 },
+      () =>
+        new Response(null, { status: 429, headers: { "Retry-After": "1" } }),
+    ),
+    Response.json(fresh),
+  ];
   const first = calls.length;
   assert.deepEqual(await Promise.all([get("test.json", 0), get("test.json")]), [
     data.MRData,
     data.MRData,
   ]);
-  assert.equal(calls.length - first, 3);
-  responses = [Response.json(data)];
+  assert.deepEqual(await get("after-failed.json"), fresh.MRData);
+  assert.equal(calls.length - first, 4);
+  responses = [Response.json(fresh), Response.json(data)];
   assert.deepEqual(await get("test.json", 0), data.MRData);
+  await get("after-refresh.json");
+  assert.deepEqual(await get("test.json"), fresh.MRData);
 
   responses = [new Response(null, { status: 403 })];
   await assert.rejects(get("forbidden.json"), /403/);
