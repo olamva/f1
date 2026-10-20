@@ -25,7 +25,7 @@ import { audio, transcript } from "./radio.ts";
 import { pace, type PaceKind } from "./pace.ts";
 import * as push from "./push.ts";
 import * as reminders from "./reminders.ts";
-import { season } from "./season.ts";
+import { season, seasonYear } from "./season.ts";
 import { expand } from "./timing.ts";
 import * as token from "./token.ts";
 
@@ -215,10 +215,9 @@ app.get("/api/radio/transcript", async (c) => {
     : c.json({ error: "Sign in with Google to transcribe radio." }, 401);
 });
 
-app.get("/api/replay/sessions", async (c) => {
-  const s = await season();
-  return c.json(await seasonSessions(s.year));
-});
+app.get("/api/replay/sessions", async (c) =>
+  c.json(await seasonSessions(await seasonYear())),
+);
 
 const withReplay = async (path: string | undefined): Promise<Replay> =>
   replay(path ?? "");

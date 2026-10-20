@@ -1,0 +1,14 @@
+{
+  "id": "86fa4777",
+  "ts": "2026-10-19T22:52:12+00:00",
+  "text": "f1.ola-vassbotn.no DNS is a CNAME to the Azure Container App, not the Oracle VM, so the VM gets no user traffic",
+  "tags": [
+    "docs",
+    "infra"
+  ],
+  "who": "agent",
+  "model": "haiku-5-5",
+  "session": "647f9eb6",
+  "where": "infra/oracle/configure.sh",
+  "branch": "t3/investigate-vm-page-latency"
+}
