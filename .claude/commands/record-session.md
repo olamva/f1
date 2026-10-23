@@ -33,15 +33,15 @@ Run `CI=true pnpm install --frozen-lockfile` in the checkout.
 
 ## 3. Check the car position token
 
-The F1 server on the Minecraft A1 VM keeps the F1TV tokens in `/srv/f1/tokens.json`. `scripts/record-job.sh` copies that file into a temporary directory at the start and deletes the directory at the end.
+The F1 server on the Minecraft A1 VM keeps the F1TV tokens in `/srv/f1/tokens.json`. If the VM has no such file, `scripts/record-job.sh` uses `tokens.json` in the `DATA_DIR` of `.env.local` in the main checkout. The job copies the file into a temporary directory at the start and deletes the directory at the end. `scripts/record.ts` renews a token whose F1TV session is valid.
 
-Run this command. It prints only `true` or `false`:
+Run this command from this worktree. It prints only `true` or `false`:
 
 ```sh
-ssh -o BatchMode=yes ubuntu@82.70.43.201 'sudo cat /srv/f1/tokens.json' | node -e 'let s="";process.stdin.on("data",(c)=>(s+=c)).on("end",()=>console.log(Object.values(JSON.parse(s||"{}")).some((t)=>JSON.parse(Buffer.from(t.split(".")[1],"base64url")).exp*1000>Date.now())))'
+{ ssh -o BatchMode=yes ubuntu@82.70.43.201 'sudo cat /srv/f1/tokens.json' || cat "$(sed -n 's/^DATA_DIR=//p' "$(git rev-parse --path-format=absolute --git-common-dir)/../.env.local")/tokens.json"; } 2>/dev/null | node -e 'let s="";const c=(j)=>JSON.parse(Buffer.from(String(j).split(".")[1]??"e30","base64url"));process.stdin.on("data",(d)=>(s+=d)).on("end",()=>console.log(Object.values(JSON.parse(s||"{}")).some((t)=>[c(t).exp,c(c(t).SessionId).exp].some((e)=>e*1000>Date.now()))))'
 ```
 
-If it prints `false`, or `ssh` fails, tell the user that the recording will have no car positions. Continue.
+If it prints `false`, tell the user that the recording will have no car positions. Continue.
 
 ## 4. Write and load the launchd job
 
