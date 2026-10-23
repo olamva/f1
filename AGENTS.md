@@ -91,4 +91,4 @@ Run `terraform -chdir=infra apply -input=false tfplan`. Then run `rm infra/tfpla
 If the apply fails, run the plan and the apply again one time. If it fails again, report the error as a blocker.
 Terraform locks the state during an apply. If another agent holds the lock, wait and try again.
 Do not run `terraform destroy`, `terraform apply -destroy`, or `terraform force-unlock`.
-Include the apply result in the final response.
+Include the apply result in the final response only when the task changes `infra/`. Otherwise, do not mention Terraform.
