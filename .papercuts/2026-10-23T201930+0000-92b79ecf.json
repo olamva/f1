@@ -1,0 +1,14 @@
+{
+  "id": "92b79ecf",
+  "ts": "2026-10-23T20:19:30+00:00",
+  "text": "T3 preview_snapshot times out after 15s on every call while preview_evaluate works on the same tab (tab not visible)",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "496b3d28",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/free-practice-race-results"
+}
