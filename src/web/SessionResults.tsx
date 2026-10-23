@@ -36,9 +36,13 @@ type Entry = Pick<
   "driver" | "name" | "team" | "teamName" | "positionText"
 >;
 
-const entrants = (race: Race) =>
+const entrants = (races: Race[], round: number) =>
   new Map(
-    [...race.sprint, ...race.results].map((result) => [result.number, result]),
+    races
+      .filter((race) => race.round <= round)
+      .toReversed()
+      .flatMap((race) => [...race.sprint, ...race.results])
+      .map((result) => [result.number, result]),
   );
 
 interface ResultsTableProps<T extends Entry> {
@@ -213,6 +217,7 @@ const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
 interface QualifyingBodyProps {
   year: string;
   race: Race;
+  races: Race[];
   kind: "qualifying" | "sprintQualifying";
   favourite?: string;
 }
@@ -220,6 +225,7 @@ interface QualifyingBodyProps {
 const QualifyingBody = ({
   year,
   race,
+  races,
   kind,
   favourite,
 }: QualifyingBodyProps) => {
@@ -236,7 +242,7 @@ const QualifyingBody = ({
         }
       />
     );
-  const known = entrants(race);
+  const known = entrants(races, race.round);
   const prefix = kind === "qualifying" ? "Q" : "SQ";
   return (
     <Classification
@@ -267,11 +273,18 @@ const QualifyingBody = ({
 interface PracticeBodyProps {
   year: string;
   race: Race;
+  races: Race[];
   kind: "fp1" | "fp2" | "fp3";
   favourite?: string;
 }
 
-const PracticeBody = ({ year, race, kind, favourite }: PracticeBodyProps) => {
+const PracticeBody = ({
+  year,
+  race,
+  races,
+  kind,
+  favourite,
+}: PracticeBodyProps) => {
   const practice = useJson<Practice>(
     `/api/practice/${year}/${race.round}/${kind}`,
   );
@@ -285,7 +298,7 @@ const PracticeBody = ({ year, race, kind, favourite }: PracticeBodyProps) => {
         }
       />
     );
-  const known = entrants(race);
+  const known = entrants(races, race.round);
   const teams = new Map(
     practice.data.flatMap((row) => {
       const entrant = known.get(row.number);
@@ -323,6 +336,7 @@ const PracticeBody = ({ year, race, kind, favourite }: PracticeBodyProps) => {
 interface SessionResultsProps {
   year: string;
   race: Race;
+  races: Race[];
   kind: Kind;
   favourite?: string;
 }
@@ -330,6 +344,7 @@ interface SessionResultsProps {
 export const SessionResults = ({
   year,
   race,
+  races,
   kind,
   favourite,
 }: SessionResultsProps) =>
@@ -346,6 +361,7 @@ export const SessionResults = ({
       key={`${race.round}:${kind}`}
       year={year}
       race={race}
+      races={races}
       kind={kind}
       favourite={favourite}
     />
@@ -354,6 +370,7 @@ export const SessionResults = ({
       key={`${race.round}:${kind}`}
       year={year}
       race={race}
+      races={races}
       kind={kind}
       favourite={favourite}
     />

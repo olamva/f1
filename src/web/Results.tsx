@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import type { RaceArchive, Season } from "../shared/season.ts";
+import { SESSION_MS, type RaceArchive, type Season } from "../shared/season.ts";
 import { useJson } from "./api.ts";
 import { useFavourite } from "./favourite.ts";
 import { Flag } from "./Flag.tsx";
@@ -64,18 +64,26 @@ const Races = ({ year, season, round, onRound }: RacesProps) => {
       </p>
     );
   const archived = Number(year) >= 2018;
-  const sprint = race.sprint.length > 0;
+  const times =
+    season?.year === Number(year)
+      ? season.rounds.find((entry) => entry.round === race.round)?.sessions
+      : undefined;
+  const sprint = race.sprint.length > 0 || !!times?.sprint;
   const available: Record<Kind, boolean> = {
     fp1: archived,
     fp2: archived && !(sprint && Number(year) >= 2023),
     fp3: archived && !sprint,
     sprintQualifying: sprint && Number(year) >= 2023,
-    sprint,
+    sprint: race.sprint.length > 0,
     qualifying: archived,
     race: race.results.length > 0,
   };
-  const sessions = SESSIONS.filter((kind) => available[kind]);
-  const shown = available[session] ? session : "sprint";
+  const sessions = SESSIONS.filter(
+    (kind) =>
+      available[kind] &&
+      !(Date.parse(times?.[kind] ?? "") + SESSION_MS > Date.now()),
+  );
+  const shown = sessions.includes(session) ? session : sessions.at(-1)!;
   return (
     <div className="grid gap-4 lg:grid-cols-[18rem_minmax(0,1fr)]">
       <aside className="bg-surface rounded-xl p-3">
@@ -147,6 +155,7 @@ const Races = ({ year, season, round, onRound }: RacesProps) => {
           <SessionResults
             year={year}
             race={race}
+            races={races}
             kind={shown}
             favourite={favourite?.id}
           />

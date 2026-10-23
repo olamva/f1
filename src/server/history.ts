@@ -1,11 +1,12 @@
-import type {
-  DriverProfile,
-  Fact,
-  RaceArchive,
-  SeasonStandings,
+import {
+  SESSION_MS,
+  type DriverProfile,
+  type Fact,
+  type RaceArchive,
+  type SeasonStandings,
 } from "../shared/season.ts";
 import { all, get, total } from "./jolpica.ts";
-import { seconds } from "./season.ts";
+import { seconds, when } from "./season.ts";
 
 const DAY = 24 * 60 * 60_000;
 const NON_START = new Set([
@@ -33,7 +34,8 @@ const result = (row: any): Result => ({
 
 export async function raceArchive(year: number): Promise<RaceArchive> {
   const freshMs = year === new Date().getUTCFullYear() ? undefined : DAY;
-  const [rows, sprintRows] = await Promise.all([
+  const [schedule, rows, sprintRows] = await Promise.all([
+    get(`${year}.json?limit=100`, freshMs),
     all<any>(`${year}/results.json`, (data) => data.RaceTable.Races, freshMs),
     all<any>(`${year}/sprint.json`, (data) => data.RaceTable.Races, freshMs),
   ]);
@@ -51,6 +53,12 @@ export async function raceArchive(year: number): Promise<RaceArchive> {
       });
     return races.get(round)!;
   };
+  for (const race of schedule.RaceTable.Races)
+    if (
+      Date.parse(when(race.FirstPractice ?? race)!) + SESSION_MS <=
+      Date.now()
+    )
+      entry(race);
   for (const race of rows)
     entry(race).results.push(...race.Results.map(result));
   for (const race of sprintRows)
