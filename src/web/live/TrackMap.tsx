@@ -32,12 +32,11 @@ interface TrackMapProps {
   speed?: number;
   stream?: string;
   banner?: React.ReactNode;
-  circuit?: number;
   flags: Map<number, string>;
 }
 
-const projector = (outline: Outline, extra = 0) => {
-  const a = ((outline.rotation + extra) * Math.PI) / 180;
+const projector = (outline: Outline) => {
+  const a = (outline.rotation * Math.PI) / 180;
   const turn = (x: number, y: number): [number, number] => [
     x * Math.cos(a) - y * Math.sin(a),
     x * Math.sin(a) + y * Math.cos(a),
@@ -65,12 +64,6 @@ const projector = (outline: Outline, extra = 0) => {
     return [offX + (u - minX) * scale, SIZE - (offY + (v - minY) * scale)];
   };
   return { project, box };
-};
-
-const fitted = (outline: Outline, turn: number) => {
-  const span = (extra: number) =>
-    Math.max(...projector(outline, extra).box.slice(2));
-  return projector(outline, (span(0) > span(90) * 1.01 ? 90 : 0) - 90 * turn);
 };
 
 const Markers = ({
@@ -154,7 +147,6 @@ export const TrackMap = ({
   speed = 1,
   stream,
   banner,
-  circuit,
   flags,
 }: TrackMapProps) => {
   const svg = useRef<SVGSVGElement>(null);
@@ -166,16 +158,12 @@ export const TrackMap = ({
   } | null>(null);
   const hovered = hover?.number ?? null;
   const card = rows.find((r) => r.number === hovered);
-  const [turns, setTurns] = useState<Record<string, number>>(() =>
-    JSON.parse(localStorage.getItem("turns") ?? "{}"),
-  );
-  const turn = turns[circuit ?? ""] ?? 0;
   const { project, box } = useMemo(
     () =>
       outline
-        ? fitted(outline, turn)
+        ? projector(outline)
         : { project: null, box: [0, 0, SIZE, SIZE] as const },
-    [outline, turn],
+    [outline],
   );
   const cardX =
     hover && (hover.x > box[0] + box[2] / 2 ? hover.x - 260 : hover.x + 20);
@@ -248,14 +236,7 @@ export const TrackMap = ({
     ghost,
   });
   return (
-    <MapFrame
-      banner={banner}
-      onRotate={() => {
-        const next = { ...turns, [circuit ?? ""]: (turn + 1) % 4 };
-        localStorage.setItem("turns", JSON.stringify(next));
-        setTurns(next);
-      }}
-    >
+    <MapFrame banner={banner}>
       {(full) => (
         <>
           <svg

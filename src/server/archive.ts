@@ -201,6 +201,15 @@ export type Replay = {
   session: Session;
 };
 
+const ROTATION: Record<number, number> = {
+  2: 274,
+  4: 308,
+  46: 358,
+  65: 9,
+  144: 308,
+  153: 270,
+};
+
 const circuit = (key: number, date: string): Outline | null => {
   const c = circuits.find(
     (c) => c.key === key && c.from <= date && date <= c.to,
@@ -210,7 +219,7 @@ const circuit = (key: number, date: string): Outline | null => {
         x: c.x,
         y: c.y,
         time: [],
-        rotation: 0,
+        rotation: ROTATION[key] ?? 0,
         corners: c.corners,
         sectors: c.sectors,
         detection: c.detection,
@@ -245,7 +254,7 @@ export async function outlineFor(
         x: c.x,
         y: c.y,
         time: c.trackPositionTime ?? [],
-        rotation: c.rotation ?? 0,
+        rotation: ROTATION[key] ?? c.rotation ?? 0,
         corners: (c.corners ?? []).map((k: any) => ({
           number: k.number,
           ...k.trackPosition,

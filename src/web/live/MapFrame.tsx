@@ -1,13 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Maximize, Minimize, RotateCw } from "lucide-react";
+import { Maximize, Minimize } from "lucide-react";
 
 export const MapFrame = ({
   banner,
-  onRotate,
   children,
 }: {
   banner?: React.ReactNode;
-  onRotate: () => void;
   children: (full: boolean) => React.ReactNode;
 }) => {
   const frame = useRef<HTMLDivElement>(null);
@@ -26,14 +24,6 @@ export const MapFrame = ({
         className={`relative p-2 ${full ? "flex h-full flex-col gap-2 pt-[calc(env(safe-area-inset-top)+0.5rem)] pr-[calc(env(safe-area-inset-right)+0.5rem)] pl-[calc(env(safe-area-inset-left)+0.5rem)]" : ""}`}
       >
         {full && banner}
-        <button
-          type="button"
-          aria-label="Rotate the map"
-          onClick={onRotate}
-          className="glass-gear absolute right-14 bottom-3 z-10 cursor-pointer p-2"
-        >
-          <RotateCw size={18} />
-        </button>
         <button
           type="button"
           aria-label={full ? "Exit full screen" : "Show the map in full screen"}
