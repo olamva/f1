@@ -22,8 +22,11 @@ export const standalone = matchMedia("(display-mode: standalone)").matches;
 export const navigate = (url: string) =>
   history[standalone ? "replaceState" : "pushState"](null, "", url);
 
-export const openDriver = (id: string) => {
-  navigate(`/stats/drivers/${encodeURIComponent(id)}`);
+export const openPath = (url: string) => {
+  navigate(url);
   dispatchEvent(new PopStateEvent("popstate"));
   scrollTo(0, 0);
 };
+
+export const openDriver = (id: string) =>
+  openPath(`/stats/drivers/${encodeURIComponent(id)}`);

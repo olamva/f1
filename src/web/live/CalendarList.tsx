@@ -1,13 +1,14 @@
 import { Play } from "lucide-react";
 import { useEffect, useRef } from "react";
-import type { Round } from "../../shared/season.ts";
+import { SESSION_MS, type Season } from "../../shared/season.ts";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
+import { openPath } from "../path.ts";
 import { ScheduleWeekend, upcoming } from "./Schedule.tsx";
 
 interface CalendarListProps {
   sessions: SessionRef[];
-  rounds: Round[];
+  season: Season;
   onStart: (session: SessionRef) => void;
 }
 
@@ -20,6 +21,7 @@ interface SessionButtonProps {
 interface WeekendProps {
   sessions: SessionRef[];
   onStart: (session: SessionRef) => void;
+  results?: string;
   featured?: boolean;
 }
 
@@ -40,6 +42,20 @@ const ongoing = (sessions: SessionRef[]) =>
   !sessions.some((s) => s.name === "Race") &&
   Date.now() - +day(sessions[0]) < 4 * 864e5;
 
+const resultsPath = (season: Season, sessions: SessionRef[]) => {
+  const round = season.rounds.find((r) =>
+    Object.values(r.sessions).some(
+      (at) =>
+        at && Math.abs(Date.parse(at) - Date.parse(sessions[0].start)) < 864e5,
+    ),
+  );
+  return round &&
+    Date.parse(round.sessions.fp1 ?? round.sessions.race!) + SESSION_MS <=
+      Date.now()
+    ? `/results/${season.year}/${round.round}`
+    : undefined;
+};
+
 const dates = (sessions: SessionRef[]) =>
   new Intl.DateTimeFormat([], {
     day: "numeric",
@@ -52,13 +68,13 @@ const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
     <button
       onClick={() => onStart(session)}
       aria-label={`Start replay: ${session.meeting} · ${session.name}`}
-      className={`flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 hover:bg-red-600 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
+      className={`pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 hover:bg-red-600 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
     >
       <Play aria-hidden="true" className="size-3.5 shrink-0" />
       {session.name}
     </button>
   ) : (
-    <span className="group/pending relative flex">
+    <span className="group/pending pointer-events-auto relative flex">
       <button
         aria-disabled="true"
         aria-describedby={`pending-${session.start}`}
@@ -80,10 +96,17 @@ const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
 const weekday = (s: SessionRef, weekday: "long" | "short") =>
   day(s).toLocaleDateString([], { weekday, timeZone: "UTC" });
 
-const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
+const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
   <article
-    className={`h-full space-y-3 rounded-xl ${featured ? "to-surface bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+    className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
   >
+    {results && (
+      <button
+        onClick={() => openPath(results)}
+        aria-label={`Results: ${sessions[0].meeting}`}
+        className="absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-white/5"
+      />
+    )}
     <header className="flex items-baseline justify-between gap-2">
       <div className="min-w-0">
         {featured && (
@@ -105,7 +128,7 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
       </span>
     </header>
     <div
-      className={`space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
+      className={`pointer-events-none relative space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
     >
       {Object.values(Object.groupBy(sessions, (s) => s.start.slice(0, 10))).map(
         (group) => (
@@ -155,7 +178,7 @@ const leftover = (i: number, at: number, total: number, cols: number) => {
 
 export const CalendarList = ({
   sessions,
-  rounds,
+  season,
   onStart,
 }: CalendarListProps) => {
   const ref = useRef<HTMLLIElement>(null);
@@ -165,7 +188,7 @@ export const CalendarList = ({
   }, []);
   const past = weekends(sessions);
   const future = upcoming(
-    rounds,
+    season.rounds,
     +new Date(sessions.at(-1)?.start ?? 0),
   ).reverse();
   const anchor =
@@ -195,6 +218,7 @@ export const CalendarList = ({
           <Weekend
             sessions={w}
             onStart={onStart}
+            results={resultsPath(season, w)}
             featured={w[0].start === anchor}
           />
         </li>
