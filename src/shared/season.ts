@@ -85,6 +85,8 @@ export type Practice = {
   laps: number;
 }[];
 
+export const SESSION_MS = 60 * 60_000;
+
 export type RaceArchive = {
   year: number;
   races: {
