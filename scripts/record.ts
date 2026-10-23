@@ -25,6 +25,13 @@ class Recorder extends Feed {
 
 mkdirSync(dirname(file), { recursive: true });
 await token.load();
+await Promise.all(
+  token
+    .keys()
+    .map((k) =>
+      token.renew(k).catch((e) => console.error("f1tv renew:", e.message)),
+    ),
+);
 const key = token.keys().find((k) => token.current(k)) ?? null;
 console.log(
   `recording ${key ? "with" : "without"} car positions until ${new Date(end).toISOString()}`,
