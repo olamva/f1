@@ -41,7 +41,7 @@ const quali = (r: any): QualiResult => ({
   q3: r.Q3 ?? null,
 });
 
-const when = (s: any): string | null =>
+export const when = (s: any): string | null =>
   s ? `${s.date}T${s.time ?? "00:00:00Z"}` : null;
 
 const alpha = "https://api.jolpi.ca/f1/alpha";
