@@ -1,6 +1,6 @@
 import { Play, Trophy } from "lucide-react";
 import { useEffect, useRef } from "react";
-import type { Season } from "../../shared/season.ts";
+import { SESSION_MS, type Season } from "../../shared/season.ts";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 import { openPath } from "../path.ts";
@@ -48,9 +48,11 @@ const resultsPath = (season: Season, sessions: SessionRef[]) => {
       (at) =>
         at && Math.abs(Date.parse(at) - Date.parse(sessions[0].start)) < 864e5,
     ),
-  )?.round;
-  return [...season.races, ...season.sprints].some((r) => r.round === round)
-    ? `/results/${season.year}/${round}`
+  );
+  return round &&
+    Date.parse(round.sessions.fp1 ?? round.sessions.race!) + SESSION_MS <=
+      Date.now()
+    ? `/results/${season.year}/${round.round}`
     : undefined;
 };
 
@@ -139,7 +141,7 @@ const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
                 {weekday(group![0], "short")}
               </span>
             </h3>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex grow flex-wrap gap-1.5">
               {group!.map((s) => (
                 <SessionButton
                   key={s.start}
@@ -148,17 +150,17 @@ const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
                   featured={featured}
                 />
               ))}
+              {results && i === all.length - 1 && (
+                <button
+                  onClick={() => openPath(results)}
+                  aria-label={`Results: ${sessions[0].meeting}`}
+                  className={`ml-auto flex cursor-pointer items-center gap-1.5 rounded-md text-zinc-300 ring-1 ring-zinc-700 hover:bg-zinc-800 hover:text-white ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
+                >
+                  <Trophy aria-hidden="true" className="size-3.5 shrink-0" />
+                  Results
+                </button>
+              )}
             </div>
-            {results && i === all.length - 1 && (
-              <button
-                onClick={() => openPath(results)}
-                aria-label={`Results: ${sessions[0].meeting}`}
-                className="ml-auto flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-md px-2.5 py-1 text-zinc-300 ring-1 ring-zinc-700 hover:bg-zinc-800 hover:text-white"
-              >
-                <Trophy aria-hidden="true" className="size-3.5 shrink-0" />
-                Results
-              </button>
-            )}
           </div>
         ),
       )}
