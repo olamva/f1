@@ -452,7 +452,7 @@ export const Calendar = ({ season }: CalendarProps) => {
   return (
     <CalendarList
       sessions={sessions.data}
-      rounds={season.data.rounds}
+      season={season.data}
       onStart={open}
     />
   );

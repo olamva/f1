@@ -1,13 +1,14 @@
-import { Play } from "lucide-react";
+import { Play, Trophy } from "lucide-react";
 import { useEffect, useRef } from "react";
-import type { Round } from "../../shared/season.ts";
+import type { Season } from "../../shared/season.ts";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
+import { openPath } from "../path.ts";
 import { ScheduleWeekend, upcoming } from "./Schedule.tsx";
 
 interface CalendarListProps {
   sessions: SessionRef[];
-  rounds: Round[];
+  season: Season;
   onStart: (session: SessionRef) => void;
 }
 
@@ -20,6 +21,7 @@ interface SessionButtonProps {
 interface WeekendProps {
   sessions: SessionRef[];
   onStart: (session: SessionRef) => void;
+  results?: string;
   featured?: boolean;
 }
 
@@ -39,6 +41,18 @@ const weekends = (sessions: SessionRef[]) =>
 const ongoing = (sessions: SessionRef[]) =>
   !sessions.some((s) => s.name === "Race") &&
   Date.now() - +day(sessions[0]) < 4 * 864e5;
+
+const resultsPath = (season: Season, sessions: SessionRef[]) => {
+  const round = season.rounds.find((r) =>
+    Object.values(r.sessions).some(
+      (at) =>
+        at && Math.abs(Date.parse(at) - Date.parse(sessions[0].start)) < 864e5,
+    ),
+  )?.round;
+  return [...season.races, ...season.sprints].some((r) => r.round === round)
+    ? `/results/${season.year}/${round}`
+    : undefined;
+};
 
 const dates = (sessions: SessionRef[]) =>
   new Intl.DateTimeFormat([], {
@@ -80,7 +94,7 @@ const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
 const weekday = (s: SessionRef, weekday: "long" | "short") =>
   day(s).toLocaleDateString([], { weekday, timeZone: "UTC" });
 
-const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
+const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
   <article
     className={`h-full space-y-3 rounded-xl ${featured ? "to-surface bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
   >
@@ -108,7 +122,7 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
       className={`space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
     >
       {Object.values(Object.groupBy(sessions, (s) => s.start.slice(0, 10))).map(
-        (group) => (
+        (group, i, all) => (
           <div
             key={group![0].start}
             className={`flex items-center gap-2 ${featured ? "sm:block sm:space-y-1.5" : ""}`}
@@ -135,6 +149,16 @@ const Weekend = ({ sessions, onStart, featured }: WeekendProps) => (
                 />
               ))}
             </div>
+            {results && i === all.length - 1 && (
+              <button
+                onClick={() => openPath(results)}
+                aria-label={`Results: ${sessions[0].meeting}`}
+                className="ml-auto flex shrink-0 cursor-pointer items-center gap-1.5 self-start rounded-md px-2.5 py-1 text-zinc-300 ring-1 ring-zinc-700 hover:bg-zinc-800 hover:text-white"
+              >
+                <Trophy aria-hidden="true" className="size-3.5 shrink-0" />
+                Results
+              </button>
+            )}
           </div>
         ),
       )}
@@ -155,7 +179,7 @@ const leftover = (i: number, at: number, total: number, cols: number) => {
 
 export const CalendarList = ({
   sessions,
-  rounds,
+  season,
   onStart,
 }: CalendarListProps) => {
   const ref = useRef<HTMLLIElement>(null);
@@ -165,7 +189,7 @@ export const CalendarList = ({
   }, []);
   const past = weekends(sessions);
   const future = upcoming(
-    rounds,
+    season.rounds,
     +new Date(sessions.at(-1)?.start ?? 0),
   ).reverse();
   const anchor =
@@ -195,6 +219,7 @@ export const CalendarList = ({
           <Weekend
             sessions={w}
             onStart={onStart}
+            results={resultsPath(season, w)}
             featured={w[0].start === anchor}
           />
         </li>
