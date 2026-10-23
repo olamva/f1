@@ -1,4 +1,4 @@
-import { Play, Trophy } from "lucide-react";
+import { Play } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { SESSION_MS, type Season } from "../../shared/season.ts";
 import type { SessionRef } from "../../shared/timing.ts";
@@ -68,13 +68,13 @@ const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
     <button
       onClick={() => onStart(session)}
       aria-label={`Start replay: ${session.meeting} · ${session.name}`}
-      className={`flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 hover:bg-red-600 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
+      className={`pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 hover:bg-red-600 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
     >
       <Play aria-hidden="true" className="size-3.5 shrink-0" />
       {session.name}
     </button>
   ) : (
-    <span className="group/pending relative flex">
+    <span className="group/pending pointer-events-auto relative flex">
       <button
         aria-disabled="true"
         aria-describedby={`pending-${session.start}`}
@@ -98,8 +98,15 @@ const weekday = (s: SessionRef, weekday: "long" | "short") =>
 
 const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
   <article
-    className={`h-full space-y-3 rounded-xl ${featured ? "to-surface bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+    className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
   >
+    {results && (
+      <button
+        onClick={() => openPath(results)}
+        aria-label={`Results: ${sessions[0].meeting}`}
+        className="absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-white/5"
+      />
+    )}
     <header className="flex items-baseline justify-between gap-2">
       <div className="min-w-0">
         {featured && (
@@ -121,10 +128,10 @@ const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
       </span>
     </header>
     <div
-      className={`space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
+      className={`pointer-events-none relative space-y-2 ${featured ? "sm:grid sm:auto-cols-fr sm:grid-flow-col sm:gap-3 sm:space-y-0" : ""}`}
     >
       {Object.values(Object.groupBy(sessions, (s) => s.start.slice(0, 10))).map(
-        (group, i, all) => (
+        (group) => (
           <div
             key={group![0].start}
             className={`flex items-center gap-2 ${featured ? "sm:block sm:space-y-1.5" : ""}`}
@@ -141,7 +148,7 @@ const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
                 {weekday(group![0], "short")}
               </span>
             </h3>
-            <div className="flex grow flex-wrap gap-1.5">
+            <div className="flex flex-wrap gap-1.5">
               {group!.map((s) => (
                 <SessionButton
                   key={s.start}
@@ -150,16 +157,6 @@ const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
                   featured={featured}
                 />
               ))}
-              {results && i === all.length - 1 && (
-                <button
-                  onClick={() => openPath(results)}
-                  aria-label={`Results: ${sessions[0].meeting}`}
-                  className={`ml-auto flex cursor-pointer items-center gap-1.5 rounded-md text-zinc-300 ring-1 ring-zinc-700 hover:bg-zinc-800 hover:text-white ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
-                >
-                  <Trophy aria-hidden="true" className="size-3.5 shrink-0" />
-                  Results
-                </button>
-              )}
             </div>
           </div>
         ),
