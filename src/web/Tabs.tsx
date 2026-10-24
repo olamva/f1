@@ -159,6 +159,9 @@ export const Tabs = <T extends string>({
     for (const layer of nav.current.querySelectorAll<HTMLElement>(
       ".glass-lens",
     )) {
+      const base = layer.parentElement!.getBoundingClientRect();
+      const zoom = base.width / layer.offsetWidth;
+      layer.style.transformOrigin = `${(inner.left + inner.width / 2 - base.left) / zoom}px ${(inner.top + inner.height / 2 - base.top) / zoom}px`;
       const outer = layer.getBoundingClientRect();
       const scale = outer.width / layer.offsetWidth;
       layer.style.clipPath = `inset(${[
@@ -169,6 +172,21 @@ export const Tabs = <T extends string>({
       ]
         .map((edge) => `${Math.max(0, edge / scale)}px`)
         .join(" ")} round 9999px)`;
+    }
+    for (const label of nav.current.querySelectorAll<HTMLElement>(
+      ".glass-label",
+    )) {
+      const outer = label.getBoundingClientRect();
+      const scale = outer.width / label.offsetWidth;
+      const top = (inner.top - outer.top) / scale;
+      const bottom = (inner.bottom - outer.top) / scale;
+      const radius = (bottom - top) / 2;
+      const left = (inner.left - outer.left) / scale + radius;
+      const right = (inner.right - outer.left) / scale - radius;
+      label.style.setProperty(
+        "--hole",
+        `path(evenodd, "M-9999 -9999H9999V9999H-9999Z M${left} ${top}H${right}A${radius} ${radius} 0 0 1 ${right} ${bottom}H${left}A${radius} ${radius} 0 0 1 ${left} ${top}Z")`,
+      );
     }
   };
 
@@ -333,7 +351,9 @@ export const Tabs = <T extends string>({
             aria-pressed={value === i}
             className={`glass-tab relative z-10 flex shrink-0 items-center justify-center capitalize ${stretch ? "max-sm:flex-1" : ""} ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
           >
-            {content(i)}
+            <span className="glass-label flex items-center justify-center">
+              {content(i)}
+            </span>
             <span
               aria-hidden="true"
               className="glass-lens pointer-events-none absolute inset-0 flex items-center justify-center"
