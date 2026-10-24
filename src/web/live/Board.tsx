@@ -202,7 +202,6 @@ export const Board = ({
             speed={speed}
             stream={feed.src}
             banner={banner}
-            circuit={state.SessionInfo?.Meeting?.Circuit?.Key}
             flags={sectorFlags(state)}
           />
           <RaceControl
