@@ -35,6 +35,8 @@ interface TimingTowerProps {
 
 const VIEWS = ["Timing", "Tyres"] as const;
 
+const hiddenIf = (hidden: boolean) => (hidden ? "hidden" : "");
+
 interface Swap {
   up: boolean;
   id: number;
@@ -289,10 +291,14 @@ const TowerRow = ({
         </span>
       </td>
     )}
-    <td className={`px-1 py-1 text-right sm:px-2 ${MARK[row.lastMark]}`}>
+    <td
+      className={`px-1 py-1 text-right sm:table-cell sm:px-2 ${hiddenIf(qualifying)} ${MARK[row.lastMark]}`}
+    >
       <span className={hide}>{row.lastLap}</span>
     </td>
-    <td className="hidden px-1 py-1 text-right text-zinc-300 sm:table-cell sm:px-2">
+    <td
+      className={`px-1 py-1 text-right text-zinc-300 sm:table-cell sm:px-2 ${hiddenIf(!qualifying)}`}
+    >
       <span className={hide}>{row.bestLap}</span>
     </td>
     {!race && (
@@ -394,12 +400,15 @@ export const TimingTower = ({
                 Int
               </th>
             )}
-            <th data-tyres className={`px-1 py-2 text-right sm:px-2 ${hide}`}>
+            <th
+              data-tyres
+              className={`px-1 py-2 text-right sm:table-cell sm:px-2 ${hiddenIf(qualifying)} ${hide}`}
+            >
               Last
             </th>
             <th
               data-tyres
-              className={`hidden px-1 py-2 text-right sm:table-cell sm:px-2 ${hide}`}
+              className={`px-1 py-2 text-right sm:table-cell sm:px-2 ${hiddenIf(!qualifying)} ${hide}`}
             >
               Best
             </th>
