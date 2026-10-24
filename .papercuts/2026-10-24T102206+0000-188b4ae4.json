@@ -1,0 +1,14 @@
+{
+  "id": "188b4ae4",
+  "ts": "2026-10-24T10:22:06+00:00",
+  "text": "T3 preview_snapshot times out after 15s on a hidden agent tab, even though preview_evaluate works",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "9a6401d5",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/liquid-glass-slider-colors"
+}

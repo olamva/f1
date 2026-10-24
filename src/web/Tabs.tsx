@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -35,6 +36,8 @@ export const Tabs = <T extends string>({
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const blob = useRef<HTMLSpanElement>(null);
+  const slab = useRef<SVGSVGElement>(null);
+  const fade = `glass${useId().replace(/\W/g, "")}`;
   const drag = useRef<{
     pointerId: number;
     startX: number;
@@ -159,6 +162,9 @@ export const Tabs = <T extends string>({
     for (const layer of nav.current.querySelectorAll<HTMLElement>(
       ".glass-lens",
     )) {
+      const base = layer.parentElement!.getBoundingClientRect();
+      const zoom = base.width / layer.offsetWidth;
+      layer.style.transformOrigin = `${(inner.left + inner.width / 2 - base.left) / zoom}px ${(inner.top + inner.height / 2 - base.top) / zoom}px`;
       const outer = layer.getBoundingClientRect();
       const scale = outer.width / layer.offsetWidth;
       layer.style.clipPath = `inset(${[
@@ -170,6 +176,48 @@ export const Tabs = <T extends string>({
         .map((edge) => `${Math.max(0, edge / scale)}px`)
         .join(" ")} round 9999px)`;
     }
+    for (const label of [
+      nav.current,
+      ...nav.current.querySelectorAll<HTMLElement>(".glass-label"),
+    ]) {
+      const outer = label.getBoundingClientRect();
+      const scale = outer.width / label.offsetWidth;
+      const top = (inner.top - outer.top) / scale;
+      const bottom = (inner.bottom - outer.top) / scale;
+      const radius = (bottom - top) / 2;
+      const left = (inner.left - outer.left) / scale + radius;
+      const right = (inner.right - outer.left) / scale - radius;
+      label.style.setProperty(
+        "--hole",
+        `path(evenodd, "M-9999 -9999H9999V9999H-9999Z M${left} ${top}H${right}A${radius} ${radius} 0 0 1 ${right} ${bottom}H${left}A${radius} ${radius} 0 0 1 ${left} ${top}Z")`,
+      );
+    }
+    const track = nav.current.getBoundingClientRect();
+    const width = indicator.offsetWidth;
+    const height = indicator.offsetHeight;
+    const lift = inner.height / height;
+    const radius = height / 2;
+    const run = height * 0.13;
+    const edge = (depth: number, sign: number) => {
+      const y = sign > 0 ? depth : height - depth;
+      const x =
+        radius - Math.sqrt(Math.max(0, radius ** 2 - (radius - depth) ** 2));
+      const shift = sign * Math.max(0, Math.min(height * 0.055, depth));
+      return `M-1 ${y}H${x}C${x + run / 2} ${y} ${x + run / 2} ${y + shift} ${x + run} ${y + shift}H${width - x - run}C${width - x - run / 2} ${y + shift} ${width - x - run / 2} ${y} ${width - x} ${y}H${width + 1}V${height + 1}H-1Z`;
+    };
+    const edges =
+      edge((track.top - inner.top) / lift + 1, 1) +
+      edge((inner.bottom - track.bottom) / lift + 1, -1);
+    for (const path of slab.current?.querySelectorAll(".glass-edge") ?? [])
+      path.setAttribute("d", edges);
+    slab.current?.querySelectorAll(".glass-fringe").forEach((path, index) => {
+      const inset = 1.2 * (index + 1);
+      const arc = radius - inset;
+      path.setAttribute(
+        "d",
+        `M${radius} ${inset}H${width - radius}A${arc} ${arc} 0 0 1 ${width - radius} ${height - inset}H${radius}A${arc} ${arc} 0 0 1 ${radius} ${inset}Z`,
+      );
+    });
   };
 
   useLayoutEffect(() => {
@@ -208,20 +256,6 @@ export const Tabs = <T extends string>({
     );
   };
 
-  const shine = (event: PointerEvent<HTMLElement>) => {
-    const track = nav.current!;
-    const bounds = track.getBoundingClientRect();
-    const scale = bounds.width / track.offsetWidth;
-    track.style.setProperty(
-      "--glass-x",
-      `${(event.clientX - bounds.left) / scale}px`,
-    );
-    track.style.setProperty(
-      "--glass-y",
-      `${(event.clientY - bounds.top) / scale}px`,
-    );
-  };
-
   const content = (i: T) => {
     const Icon: LucideIcon | undefined = icons?.[i];
     return (
@@ -255,7 +289,6 @@ export const Tabs = <T extends string>({
     <nav
       ref={nav}
       onPointerMove={(event) => {
-        shine(event);
         if (drag.current?.pointerId !== event.pointerId) return;
         if (
           !suppressClick.current &&
@@ -309,7 +342,28 @@ export const Tabs = <T extends string>({
             width: size ?? highlight.width,
             translate: active ? undefined : `${highlight.left}px`,
           }}
-        />
+        >
+          <svg ref={slab} aria-hidden="true" className="glass-slab">
+            <defs>
+              <linearGradient id={`${fade}-ends`}>
+                <stop offset="0" stopColor="white" />
+                <stop offset="0.25" stopColor="white" stopOpacity="0" />
+                <stop offset="0.75" stopColor="white" stopOpacity="0" />
+                <stop offset="1" stopColor="white" />
+              </linearGradient>
+              <mask id={fade} maskContentUnits="objectBoundingBox">
+                <rect width="1" height="1" fill={`url(#${fade}-ends)`} />
+              </mask>
+            </defs>
+            <path className="glass-edge" />
+            <g mask={`url(#${fade})`}>
+              <path className="glass-edge glass-split" />
+              <path className="glass-edge glass-split" />
+            </g>
+            <path className="glass-fringe" />
+            <path className="glass-fringe" />
+          </svg>
+        </span>
       )}
       {items.map((i, index) => {
         return (
@@ -320,7 +374,6 @@ export const Tabs = <T extends string>({
             }}
             onPointerDown={(event) => {
               if (!event.isPrimary || event.button !== 0) return;
-              shine(event);
               suppressClick.current = false;
               const button = event.currentTarget;
               drag.current = {
@@ -349,7 +402,9 @@ export const Tabs = <T extends string>({
             aria-pressed={value === i}
             className={`glass-tab relative z-10 flex shrink-0 items-center justify-center capitalize ${stretch ? "max-sm:flex-1" : ""} ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
           >
-            {content(i)}
+            <span className="glass-label flex items-center justify-center">
+              {content(i)}
+            </span>
             <span
               aria-hidden="true"
               className="glass-lens pointer-events-none absolute inset-0 flex items-center justify-center"
