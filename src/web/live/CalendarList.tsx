@@ -4,7 +4,15 @@ import { SESSION_MS, type Season } from "../../shared/season.ts";
 import type { SessionRef } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
 import { openPath } from "../path.ts";
-import { ScheduleWeekend, upcoming } from "./Schedule.tsx";
+import { LABEL } from "./Countdown.tsx";
+import {
+  ScheduleWeekend,
+  sessions as schedule,
+  time,
+  upcoming,
+} from "./Schedule.tsx";
+
+type Entry = SessionRef & { time?: string };
 
 interface CalendarListProps {
   sessions: SessionRef[];
@@ -13,13 +21,13 @@ interface CalendarListProps {
 }
 
 interface SessionButtonProps {
-  session: SessionRef;
+  session: Entry;
   onStart: (session: SessionRef) => void;
   featured?: boolean;
 }
 
 interface WeekendProps {
-  sessions: SessionRef[];
+  sessions: Entry[];
   onStart: (session: SessionRef) => void;
   results?: string;
   featured?: boolean;
@@ -42,13 +50,31 @@ const ongoing = (sessions: SessionRef[]) =>
   !sessions.some((s) => s.name === "Race") &&
   Date.now() - +day(sessions[0]) < 4 * 864e5;
 
-const resultsPath = (season: Season, sessions: SessionRef[]) => {
-  const round = season.rounds.find((r) =>
+const roundOf = (season: Season, sessions: SessionRef[]) =>
+  season.rounds.find((r) =>
     Object.values(r.sessions).some(
       (at) =>
         at && Math.abs(Date.parse(at) - Date.parse(sessions[0].start)) < 864e5,
     ),
   );
+
+const remaining = (season: Season, sessions: SessionRef[]): Entry[] => {
+  const round = roundOf(season, sessions);
+  return round
+    ? schedule(round)
+        .filter((s) => +s.at > Date.parse(sessions.at(-1)!.start))
+        .map((s) => ({
+          ...sessions[0],
+          path: "",
+          name: (LABEL[s.key] ?? s.key).replace(/^Practice /, "FP"),
+          start: `${s.at.toLocaleDateString("sv")}T${time(s.at)}`,
+          time: time(s.at),
+        }))
+    : [];
+};
+
+const resultsPath = (season: Season, sessions: SessionRef[]) => {
+  const round = roundOf(season, sessions);
   return round &&
     Date.parse(round.sessions.fp1 ?? round.sessions.race!) + SESSION_MS <=
       Date.now()
@@ -64,7 +90,16 @@ const dates = (sessions: SessionRef[]) =>
   }).formatRange(day(sessions[0]), day(sessions.at(-1)!));
 
 const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
-  session.path ? (
+  session.time ? (
+    <span
+      className={`flex items-center gap-1.5 rounded-md bg-zinc-800/50 text-zinc-300 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
+    >
+      {session.name}
+      <span className="tabular font-mono text-xs text-zinc-400">
+        {session.time}
+      </span>
+    </span>
+  ) : session.path ? (
     <button
       onClick={() => onStart(session)}
       aria-label={`Start replay: ${session.meeting} · ${session.name}`}
@@ -216,7 +251,7 @@ export const CalendarList = ({
       {past.map((w) => (
         <li key={w[0].start} {...item(w[0].start)}>
           <Weekend
-            sessions={w}
+            sessions={[...w, ...remaining(season, w)]}
             onStart={onStart}
             results={resultsPath(season, w)}
             featured={w[0].start === anchor}
