@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
 import {
+  useId,
   useLayoutEffect,
   useRef,
   useState,
@@ -35,7 +36,8 @@ export const Tabs = <T extends string>({
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const blob = useRef<HTMLSpanElement>(null);
-  const slab = useRef<SVGPathElement>(null);
+  const slab = useRef<SVGSVGElement>(null);
+  const fade = `glass${useId().replace(/\W/g, "")}`;
   const drag = useRef<{
     pointerId: number;
     startX: number;
@@ -203,11 +205,19 @@ export const Tabs = <T extends string>({
       const shift = sign * Math.max(0, Math.min(height * 0.055, depth));
       return `M-1 ${y}H${x}C${x + run / 2} ${y} ${x + run / 2} ${y + shift} ${x + run} ${y + shift}H${width - x - run}C${width - x - run / 2} ${y + shift} ${width - x - run / 2} ${y} ${width - x} ${y}H${width + 1}V${height + 1}H-1Z`;
     };
-    slab.current?.setAttribute(
-      "d",
+    const edges =
       edge((track.top - inner.top) / lift + 1, 1) +
-        edge((inner.bottom - track.bottom) / lift + 1, -1),
-    );
+      edge((inner.bottom - track.bottom) / lift + 1, -1);
+    for (const path of slab.current?.querySelectorAll(".glass-edge") ?? [])
+      path.setAttribute("d", edges);
+    slab.current?.querySelectorAll(".glass-fringe").forEach((path, index) => {
+      const inset = 1.2 * (index + 1);
+      const arc = radius - inset;
+      path.setAttribute(
+        "d",
+        `M${radius} ${inset}H${width - radius}A${arc} ${arc} 0 0 1 ${width - radius} ${height - inset}H${radius}A${arc} ${arc} 0 0 1 ${radius} ${inset}Z`,
+      );
+    });
   };
 
   useLayoutEffect(() => {
@@ -333,8 +343,25 @@ export const Tabs = <T extends string>({
             translate: active ? undefined : `${highlight.left}px`,
           }}
         >
-          <svg aria-hidden="true" className="glass-slab">
-            <path ref={slab} />
+          <svg ref={slab} aria-hidden="true" className="glass-slab">
+            <defs>
+              <linearGradient id={`${fade}-ends`}>
+                <stop offset="0" stopColor="white" />
+                <stop offset="0.25" stopColor="white" stopOpacity="0" />
+                <stop offset="0.75" stopColor="white" stopOpacity="0" />
+                <stop offset="1" stopColor="white" />
+              </linearGradient>
+              <mask id={fade} maskContentUnits="objectBoundingBox">
+                <rect width="1" height="1" fill={`url(#${fade}-ends)`} />
+              </mask>
+            </defs>
+            <path className="glass-edge" />
+            <g mask={`url(#${fade})`}>
+              <path className="glass-edge glass-split" />
+              <path className="glass-edge glass-split" />
+            </g>
+            <path className="glass-fringe" />
+            <path className="glass-fringe" />
           </svg>
         </span>
       )}
