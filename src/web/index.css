@@ -201,22 +201,22 @@ textarea {
 
 .glass-split {
   fill: none;
-  stroke: rgb(248 113 113 / 0.3);
-  transform: translate(-0.6px, 0.6px);
+  stroke: rgb(248 113 113 / 0.15);
+  transform: translate(-0.4px, 0.4px);
 }
 
 .glass-split + .glass-split {
-  stroke: rgb(96 165 250 / 0.4);
-  transform: translate(0.6px, -0.6px);
+  stroke: rgb(96 165 250 / 0.2);
+  transform: translate(0.4px, -0.4px);
 }
 
 .glass-fringe {
-  stroke: rgb(96 165 250 / 0.16);
+  stroke: rgb(96 165 250 / 0.08);
   stroke-width: 1.2px;
 }
 
 .glass-fringe + .glass-fringe {
-  stroke: rgb(190 242 100 / 0.12);
+  stroke: rgb(190 242 100 / 0.06);
 }
 
 .glass-tabs[data-glass="true"] .glass-slab {
