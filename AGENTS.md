@@ -59,7 +59,7 @@ Copy other images to `~/.t3/userdata/attachments` before you embed them. T3 does
 For required review, capture the changed UI in the running app. Include the before and after states.
 Show the screenshots to the user and ask for approval after the change is complete.
 Do not enable auto-merge before the user approves the reviewed change.
-Record the approval in the PR description. Treat a missing required approval as a blocker.
+Treat a missing required approval as a blocker.
 Request renewed approval if later changes materially alter the reviewed appearance.
 
 ## Deployment and cleanup
