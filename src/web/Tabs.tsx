@@ -208,20 +208,6 @@ export const Tabs = <T extends string>({
     );
   };
 
-  const shine = (event: PointerEvent<HTMLElement>) => {
-    const track = nav.current!;
-    const bounds = track.getBoundingClientRect();
-    const scale = bounds.width / track.offsetWidth;
-    track.style.setProperty(
-      "--glass-x",
-      `${(event.clientX - bounds.left) / scale}px`,
-    );
-    track.style.setProperty(
-      "--glass-y",
-      `${(event.clientY - bounds.top) / scale}px`,
-    );
-  };
-
   const content = (i: T) => {
     const Icon: LucideIcon | undefined = icons?.[i];
     return (
@@ -255,7 +241,6 @@ export const Tabs = <T extends string>({
     <nav
       ref={nav}
       onPointerMove={(event) => {
-        shine(event);
         if (drag.current?.pointerId !== event.pointerId) return;
         if (
           !suppressClick.current &&
@@ -320,7 +305,6 @@ export const Tabs = <T extends string>({
             }}
             onPointerDown={(event) => {
               if (!event.isPrimary || event.button !== 0) return;
-              shine(event);
               suppressClick.current = false;
               const button = event.currentTarget;
               drag.current = {
