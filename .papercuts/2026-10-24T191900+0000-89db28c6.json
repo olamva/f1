@@ -1,0 +1,14 @@
+{
+  "id": "89db28c6",
+  "ts": "2026-10-24T19:19:00+00:00",
+  "text": "Playwright recordVideo and headless CDP screencast ignore deviceScaleFactor, so zoomed motion checks need a screenshot loop",
+  "tags": [
+    "playwright",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "4e595a19",
+  "where": "playwright-core",
+  "branch": "t3/refine-liquid-glass-controls"
+}

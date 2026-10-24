@@ -371,8 +371,9 @@ textarea {
   border-radius: 9999px;
   background: #f4f4f5;
   box-shadow:
-    inset 0 1px 1px white,
-    0 2px 6px rgb(0 0 0 / 0.3);
+    0 2px 6px rgb(0 0 0 / 0.3),
+    0 0 transparent,
+    inset 0 1px 1px white;
   pointer-events: none;
   transition:
     scale 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -382,14 +383,11 @@ textarea {
 
 .glass-seek[data-held="true"] .glass-seek-thumb {
   scale: 1.65 1.5;
-  background: rgb(255 255 255 / 0.12);
-  backdrop-filter: blur(1px) saturate(1.8);
-  box-shadow:
-    inset 0 1px 1px rgb(255 255 255 / 0.9),
-    inset 0 -1px 1px rgb(255 255 255 / 0.3),
-    inset 2px 0 3px rgb(255 255 255 / 0.35),
-    inset -2px 0 3px rgb(147 197 253 / 0.25),
-    0 5px 12px rgb(0 0 0 / 0.35);
+  background: transparent;
+}
+
+.glass-seek[data-held="true"] .glass-lens {
+  scale: 1.15;
 }
 
 .glass-seek-input {
@@ -430,61 +428,94 @@ textarea {
 }
 
 .glass-switch {
+  --track: #3f3f46;
   position: relative;
   height: 28px;
   width: 64px;
   flex-shrink: 0;
   border-radius: 9999px;
-  background: #3f3f46;
-  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
-  transition: background-color 180ms ease;
   touch-action: none;
 }
 
-.glass-switch::after {
+.glass-switch::before {
   content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--track);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
+  clip-path: var(--hole);
+  transition: background-color 180ms ease;
+}
+
+.glass-knob {
   position: absolute;
   top: 2px;
   left: 2px;
   width: 38px;
   height: 24px;
+  overflow: hidden;
   border-radius: inherit;
-  background: #f4f4f5;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  pointer-events: none;
   transition:
     translate 480ms cubic-bezier(0.34, 1.36, 0.42, 1),
     scale 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 320ms ease,
     box-shadow 320ms ease;
 }
 
-.glass-switch[data-held="true"]::after {
-  scale: calc(58 / 38) calc(38 / 24);
-  background: rgb(255 255 255 / 0.22);
+.glass-knob::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #f4f4f5;
+  transition: opacity 320ms ease;
+}
+
+.glass-switch[data-held="true"] .glass-knob::after {
+  opacity: 0;
+  transition-duration: 180ms;
+}
+
+.glass-seek[data-held="true"] .glass-seek-thumb,
+.glass-switch[data-held="true"] .glass-knob {
   box-shadow:
-    inset 0 1px 1px rgb(255 255 255 / 0.9),
-    inset 0 -1px 1px rgb(255 255 255 / 0.35),
-    0 3px 8px rgb(0 0 0 / 0.3);
+    0 0 0 0.75px rgb(0 0 0 / 0.5),
+    0 6px 18px rgb(0 0 0 / 0.3),
+    inset 0 0 1.15px 0.4px rgb(96 165 250 / 0.07),
+    inset 0 0 2.3px 1.15px rgb(190 242 100 / 0.04);
+}
+
+.glass-switch[data-held="true"] .glass-knob {
+  scale: calc(58 / 38) calc(38 / 24);
   transition:
     translate 480ms cubic-bezier(0.34, 1.36, 0.42, 1),
     scale 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    background-color 180ms ease,
     box-shadow 180ms ease;
 }
 
-.peer:checked + .glass-switch {
-  background: #dc2626;
+.glass-switch .glass-edge:not(.glass-split) {
+  fill: var(--track);
+  stroke: none;
+  transition: fill 180ms ease;
 }
 
-.peer:checked + .glass-switch::after {
+.glass-knob .glass-slab {
+  opacity: 1;
+}
+
+.peer:checked + .glass-switch {
+  --track: #dc2626;
+}
+
+.peer:checked + .glass-switch .glass-knob {
   translate: 22px;
 }
 
-.peer + .glass-switch[data-dragging="true"]::after {
+.peer + .glass-switch[data-dragging="true"] .glass-knob {
   translate: calc(var(--switch-progress) * 22px);
   transition:
     scale 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    background-color 180ms ease,
     box-shadow 180ms ease;
 }
 
@@ -596,7 +627,7 @@ textarea {
   .glass-control,
   .glass-gear,
   .glass-seek-thumb,
-  .glass-switch::after {
+  .glass-knob {
     scale: none !important;
   }
 
@@ -610,8 +641,10 @@ textarea {
   .glass-control,
   .glass-gear,
   .glass-seek-thumb,
-  .glass-switch,
-  .glass-switch::after {
+  .glass-switch::before,
+  .glass-knob,
+  .glass-knob::after,
+  .glass-edge {
     transition: none !important;
   }
 

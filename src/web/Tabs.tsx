@@ -1,12 +1,12 @@
 import type { LucideIcon } from "lucide-react";
 import {
-  useId,
   useLayoutEffect,
   useRef,
   useState,
   type PointerEvent,
   type RefObject,
 } from "react";
+import { GlassSlab, refract, useRefraction } from "./Glass.tsx";
 
 interface TabsProps<T extends string> {
   items: readonly T[];
@@ -36,8 +36,6 @@ export const Tabs = <T extends string>({
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const blob = useRef<HTMLSpanElement>(null);
-  const slab = useRef<SVGSVGElement>(null);
-  const fade = `glass${useId().replace(/\W/g, "")}`;
   const drag = useRef<{
     pointerId: number;
     startX: number;
@@ -155,85 +153,10 @@ export const Tabs = <T extends string>({
     };
   });
 
-  const clip = () => {
-    const indicator = blob.current;
-    if (!indicator || !nav.current) return;
-    const inner = indicator.getBoundingClientRect();
-    for (const layer of nav.current.querySelectorAll<HTMLElement>(
-      ".glass-lens",
-    )) {
-      const base = layer.parentElement!.getBoundingClientRect();
-      const zoom = base.width / layer.offsetWidth;
-      layer.style.transformOrigin = `${(inner.left + inner.width / 2 - base.left) / zoom}px ${(inner.top + inner.height / 2 - base.top) / zoom}px`;
-      const outer = layer.getBoundingClientRect();
-      const scale = outer.width / layer.offsetWidth;
-      layer.style.clipPath = `inset(${[
-        inner.top - outer.top,
-        outer.right - inner.right,
-        outer.bottom - inner.bottom,
-        inner.left - outer.left,
-      ]
-        .map((edge) => `${Math.max(0, edge / scale)}px`)
-        .join(" ")} round 9999px)`;
-    }
-    for (const label of [
-      nav.current,
-      ...nav.current.querySelectorAll<HTMLElement>(".glass-label"),
-    ]) {
-      const outer = label.getBoundingClientRect();
-      const scale = outer.width / label.offsetWidth;
-      const top = (inner.top - outer.top) / scale;
-      const bottom = (inner.bottom - outer.top) / scale;
-      const radius = (bottom - top) / 2;
-      const left = (inner.left - outer.left) / scale + radius;
-      const right = (inner.right - outer.left) / scale - radius;
-      label.style.setProperty(
-        "--hole",
-        `path(evenodd, "M-9999 -9999H9999V9999H-9999Z M${left} ${top}H${right}A${radius} ${radius} 0 0 1 ${right} ${bottom}H${left}A${radius} ${radius} 0 0 1 ${left} ${top}Z")`,
-      );
-    }
-    const track = nav.current.getBoundingClientRect();
-    const width = indicator.offsetWidth;
-    const height = indicator.offsetHeight;
-    const lift = inner.height / height;
-    const radius = height / 2;
-    const run = height * 0.13;
-    const edge = (depth: number, sign: number) => {
-      const y = sign > 0 ? depth : height - depth;
-      const x =
-        radius - Math.sqrt(Math.max(0, radius ** 2 - (radius - depth) ** 2));
-      const shift = sign * Math.max(0, Math.min(height * 0.055, depth));
-      return `M-1 ${y}H${x}C${x + run / 2} ${y} ${x + run / 2} ${y + shift} ${x + run} ${y + shift}H${width - x - run}C${width - x - run / 2} ${y + shift} ${width - x - run / 2} ${y} ${width - x} ${y}H${width + 1}V${height + 1}H-1Z`;
-    };
-    const edges =
-      edge((track.top - inner.top) / lift + 1, 1) +
-      edge((inner.bottom - track.bottom) / lift + 1, -1);
-    for (const path of slab.current?.querySelectorAll(".glass-edge") ?? [])
-      path.setAttribute("d", edges);
-  };
+  const clip = () =>
+    nav.current && blob.current && refract(nav.current, blob.current, 1);
 
-  useLayoutEffect(() => {
-    const indicator = blob.current;
-    if (!indicator) return;
-    let frame = 0;
-    const follow = () => {
-      clip();
-      frame =
-        active || indicator.getAnimations().length
-          ? requestAnimationFrame(follow)
-          : 0;
-    };
-    const start = () => {
-      cancelAnimationFrame(frame);
-      follow();
-    };
-    start();
-    indicator.addEventListener("transitionrun", start);
-    return () => {
-      cancelAnimationFrame(frame);
-      indicator.removeEventListener("transitionrun", start);
-    };
-  }, [active, highlight, size]);
+  useRefraction(nav, blob, active, 1, [highlight, size]);
 
   const position = (event: PointerEvent<HTMLElement>) => {
     const current = drag.current!;
@@ -335,27 +258,7 @@ export const Tabs = <T extends string>({
             translate: active ? undefined : `${highlight.left}px`,
           }}
         >
-          <svg ref={slab} aria-hidden="true" className="glass-slab">
-            <defs>
-              <linearGradient id={`${fade}-ends`}>
-                <stop offset="0" stopColor="white" />
-                <stop offset="0.25" stopColor="white" stopOpacity="0" />
-                <stop offset="0.75" stopColor="white" stopOpacity="0" />
-                <stop offset="1" stopColor="white" />
-              </linearGradient>
-              <mask id={fade} maskContentUnits="objectBoundingBox">
-                <rect width="1" height="1" fill={`url(#${fade}-ends)`} />
-              </mask>
-              <filter id={`${fade}-blur`}>
-                <feGaussianBlur stdDeviation="0.7" />
-              </filter>
-            </defs>
-            <path className="glass-edge" />
-            <g mask={`url(#${fade})`} filter={`url(#${fade}-blur)`}>
-              <path className="glass-edge glass-split" />
-              <path className="glass-edge glass-split" />
-            </g>
-          </svg>
+          <GlassSlab />
         </span>
       )}
       {items.map((i, index) => {
