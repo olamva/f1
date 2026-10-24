@@ -173,9 +173,10 @@ export const Tabs = <T extends string>({
         .map((edge) => `${Math.max(0, edge / scale)}px`)
         .join(" ")} round 9999px)`;
     }
-    for (const label of nav.current.querySelectorAll<HTMLElement>(
-      ".glass-label",
-    )) {
+    for (const label of [
+      nav.current,
+      ...nav.current.querySelectorAll<HTMLElement>(".glass-label"),
+    ]) {
       const outer = label.getBoundingClientRect();
       const scale = outer.width / label.offsetWidth;
       const top = (inner.top - outer.top) / scale;

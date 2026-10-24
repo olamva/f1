@@ -107,21 +107,36 @@ textarea {
 }
 
 .glass-tabs {
-  border: 1px solid rgb(255 255 255 / 0.14);
+  border: 1px solid transparent;
   border-radius: 9999px;
-  background: rgb(255 255 255 / 0.075);
-  box-shadow: inset 0 1px rgb(255 255 255 / 0.08);
   backdrop-filter: blur(16px) saturate(1.5);
   transition:
     scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
     box-shadow 200ms ease;
 }
 
+.glass-tabs::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgb(255 255 255 / 0.14);
+  border-radius: inherit;
+  background: rgb(255 255 255 / 0.075);
+  box-shadow: inset 0 1px rgb(255 255 255 / 0.08);
+  clip-path: var(--hole);
+  pointer-events: none;
+  transition: box-shadow 200ms ease;
+}
+
 .glass-tabs[data-held="true"],
 .glass-tabs:has(.glass-tab:active) {
   scale: 1.025;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
+}
+
+.glass-tabs[data-held="true"]::before,
+.glass-tabs:has(.glass-tab:active)::before {
   box-shadow:
-    0 8px 24px rgb(0 0 0 / 0.2),
     inset 0 1px rgb(255 255 255 / 0.3),
     inset 0 -1px rgb(255 255 255 / 0.1);
 }
@@ -138,7 +153,6 @@ textarea {
   bottom: 0.25rem;
   left: 0;
   border-radius: 9999px;
-  background-color: rgb(0 0 0 / 0.4);
   box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.35);
   pointer-events: none;
   scale: calc(var(--lift) * (1 + var(--stretch, 0)))
@@ -150,7 +164,6 @@ textarea {
     bottom 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     translate 280ms cubic-bezier(0.22, 1, 0.36, 1),
     width 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 200ms ease,
     box-shadow 200ms ease,
     opacity 150ms ease;
 }
@@ -164,7 +177,7 @@ textarea {
   background: linear-gradient(
     135deg,
     white,
-    rgb(255 255 255 / 0.15) 30% 70%,
+    rgb(255 255 255 / 0.08) 30% 70%,
     rgb(255 255 255 / 0.7)
   );
   mask:
@@ -178,26 +191,44 @@ textarea {
   opacity: 1;
 }
 
+.glass-highlight::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: rgb(255 255 255 / 0.075);
+  box-shadow: inset 0 0 0 9999px rgb(0 0 0 / 0.4);
+  transition:
+    inset 360ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 200ms ease;
+}
+
+.glass-tabs[data-glass="true"] .glass-highlight::after {
+  inset: 5px 0;
+  box-shadow:
+    inset 0 0 0 9999px transparent,
+    inset 0 1.5px rgb(255 255 255 / 0.55),
+    inset 0 -1.5px rgb(255 255 255 / 0.4);
+}
+
 .glass-highlight[data-visible="false"] {
   opacity: 0;
 }
 
 .glass-tabs[data-glass="true"] .glass-highlight {
   --lift: 1.2;
-  background-color: transparent;
   box-shadow:
     inset 2px 3px 5px -3px rgb(255 255 255 / 0.7),
     inset -2px -3px 5px -3px rgb(255 255 255 / 0.4),
     inset 5px 0 4px -4px rgb(252 165 165 / 0.6),
     inset -5px 0 4px -4px rgb(147 197 253 / 0.7),
-    inset 0 0 8px rgb(255 255 255 / 0.12),
+    0 0 0 0.5px rgb(0 0 0 / 0.5),
     0 8px 24px rgb(0 0 0 / 0.3);
   transition:
     --lift 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     top 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     bottom 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     width 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 200ms ease,
     box-shadow 200ms ease;
   will-change: translate, scale;
 }
@@ -236,6 +267,7 @@ textarea {
   clip-path: var(--hole);
 }
 
+.glass-tabs[data-visible="false"]::before,
 .glass-tabs[data-visible="false"] .glass-label {
   clip-path: none;
 }
@@ -568,8 +600,10 @@ textarea {
   }
 
   .glass-tabs,
+  .glass-tabs::before,
   .glass-highlight,
   .glass-highlight::before,
+  .glass-highlight::after,
   .glass-tab,
   .glass-lens,
   .glass-control,
