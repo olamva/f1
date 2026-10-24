@@ -158,8 +158,8 @@ textarea {
   bottom: 0.25rem;
   left: 0;
   border-radius: 9999px;
-  background-color: #dc2626;
-  box-shadow: 0 2px 8px rgb(220 38 38 / 0.25);
+  background-color: rgb(0 0 0 / 0.4);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.35);
   pointer-events: none;
   scale: calc(var(--lift) * (1 + var(--stretch, 0)))
     calc(var(--lift) * (1 - var(--stretch, 0) * 0.45));
@@ -181,9 +181,9 @@ textarea {
   inset: 0;
   border-radius: inherit;
   background: linear-gradient(
-    rgb(255 255 255 / 0.3),
-    rgb(255 255 255 / 0.04) 50%,
-    rgb(255 255 255 / 0.12)
+    rgb(255 255 255 / 0.16),
+    transparent 45% 70%,
+    rgb(255 255 255 / 0.06)
   );
   opacity: 0;
   transition: opacity 200ms ease;
@@ -195,15 +195,15 @@ textarea {
 
 .glass-tabs[data-glass="true"] .glass-highlight {
   --lift: 1.2;
-  background-color: rgb(239 68 68 / 0.38);
-  backdrop-filter: blur(2px) saturate(1.8);
+  background-color: rgb(255 255 255 / 0.02);
+  backdrop-filter: blur(0.5px) saturate(1.6) brightness(1.1);
   box-shadow:
-    0 8px 24px rgb(220 38 38 / 0.35),
-    inset 0 1px 1px rgb(255 255 255 / 0.7),
-    inset 0 -1px 1px rgb(255 255 255 / 0.2),
-    inset 3px 0 4px -2px rgb(254 202 202 / 0.6),
-    inset -3px 0 4px -2px rgb(96 165 250 / 0.5),
-    inset 0 0 14px rgb(252 165 165 / 0.35);
+    inset 0 1px 1px rgb(255 255 255 / 0.9),
+    inset 0 -1px 1px rgb(255 255 255 / 0.3),
+    inset 3px 0 4px -2px rgb(255 255 255 / 0.5),
+    inset -3px 0 4px -2px rgb(147 197 253 / 0.35),
+    inset 0 0 10px rgb(255 255 255 / 0.08),
+    0 8px 24px rgb(0 0 0 / 0.3);
   transition:
     --lift 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     top 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -249,7 +249,7 @@ textarea {
 }
 
 .glass-lens {
-  color: white;
+  color: #ef4444;
   transition: opacity 150ms ease;
 }
 
