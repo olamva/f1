@@ -210,14 +210,6 @@ export const Tabs = <T extends string>({
       edge((inner.bottom - track.bottom) / lift + 1, -1);
     for (const path of slab.current?.querySelectorAll(".glass-edge") ?? [])
       path.setAttribute("d", edges);
-    slab.current?.querySelectorAll(".glass-fringe").forEach((path, index) => {
-      const inset = 1.2 * (index + 1);
-      const arc = radius - inset;
-      path.setAttribute(
-        "d",
-        `M${radius} ${inset}H${width - radius}A${arc} ${arc} 0 0 1 ${width - radius} ${height - inset}H${radius}A${arc} ${arc} 0 0 1 ${radius} ${inset}Z`,
-      );
-    });
   };
 
   useLayoutEffect(() => {
@@ -354,14 +346,15 @@ export const Tabs = <T extends string>({
               <mask id={fade} maskContentUnits="objectBoundingBox">
                 <rect width="1" height="1" fill={`url(#${fade}-ends)`} />
               </mask>
+              <filter id={`${fade}-blur`}>
+                <feGaussianBlur stdDeviation="0.7" />
+              </filter>
             </defs>
             <path className="glass-edge" />
-            <g mask={`url(#${fade})`}>
+            <g mask={`url(#${fade})`} filter={`url(#${fade}-blur)`}>
               <path className="glass-edge glass-split" />
               <path className="glass-edge glass-split" />
             </g>
-            <path className="glass-fringe" />
-            <path className="glass-fringe" />
           </svg>
         </span>
       )}
