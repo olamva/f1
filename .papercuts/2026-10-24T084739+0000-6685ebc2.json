@@ -1,0 +1,14 @@
+{
+  "id": "6685ebc2",
+  "ts": "2026-10-24T08:47:39+00:00",
+  "text": "T3 preview_snapshot times out after 15s on every call; tab reports visible:false even after preview_open open=true",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b38ff655",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/preserve-weekend-schedule"
+}

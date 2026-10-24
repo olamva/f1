@@ -7,7 +7,7 @@ interface WeekendProps {
   featured?: boolean;
 }
 
-const sessions = (round: Round) =>
+export const sessions = (round: Round) =>
   Object.entries(round.sessions)
     .filter((e): e is [string, string] => e[1] !== null)
     .map(([key, at]) => ({ key, at: new Date(at) }))
@@ -21,7 +21,7 @@ const dates = (round: Round) => {
   }).formatRange(all[0].at, all.at(-1)!.at);
 };
 
-const time = (at: Date) =>
+export const time = (at: Date) =>
   at.toLocaleTimeString([], {
     hourCycle: "h23",
     hour: "2-digit",
