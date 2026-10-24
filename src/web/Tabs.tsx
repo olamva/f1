@@ -313,7 +313,10 @@ export const Tabs = <T extends string>({
             width: size ?? highlight.width,
             translate: active ? undefined : `${highlight.left}px`,
           }}
-        />
+        >
+          <span className="glass-band" />
+          <span className="glass-band" />
+        </span>
       )}
       {items.map((i, index) => {
         return (
