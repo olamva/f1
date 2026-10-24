@@ -35,6 +35,7 @@ export const Tabs = <T extends string>({
   const nav = useRef<HTMLElement>(null);
   const buttons = useRef<(HTMLButtonElement | null)[]>([]);
   const blob = useRef<HTMLSpanElement>(null);
+  const slab = useRef<SVGPathElement>(null);
   const drag = useRef<{
     pointerId: number;
     startX: number;
@@ -189,6 +190,24 @@ export const Tabs = <T extends string>({
         `path(evenodd, "M-9999 -9999H9999V9999H-9999Z M${left} ${top}H${right}A${radius} ${radius} 0 0 1 ${right} ${bottom}H${left}A${radius} ${radius} 0 0 1 ${left} ${top}Z")`,
       );
     }
+    const track = nav.current.getBoundingClientRect();
+    const width = indicator.offsetWidth;
+    const height = indicator.offsetHeight;
+    const lift = inner.height / height;
+    const radius = height / 2;
+    const run = height * 0.13;
+    const edge = (depth: number, sign: number) => {
+      const y = sign > 0 ? depth : height - depth;
+      const x =
+        radius - Math.sqrt(Math.max(0, radius ** 2 - (radius - depth) ** 2));
+      const shift = sign * Math.max(0, Math.min(height * 0.055, depth));
+      return `M-1 ${y}H${x}C${x + run / 2} ${y} ${x + run / 2} ${y + shift} ${x + run} ${y + shift}H${width - x - run}C${width - x - run / 2} ${y + shift} ${width - x - run / 2} ${y} ${width - x} ${y}H${width + 1}V${height + 1}H-1Z`;
+    };
+    slab.current?.setAttribute(
+      "d",
+      edge((track.top - inner.top) / lift + 1, 1) +
+        edge((inner.bottom - track.bottom) / lift + 1, -1),
+    );
   };
 
   useLayoutEffect(() => {
@@ -313,7 +332,11 @@ export const Tabs = <T extends string>({
             width: size ?? highlight.width,
             translate: active ? undefined : `${highlight.left}px`,
           }}
-        />
+        >
+          <svg aria-hidden="true" className="glass-slab">
+            <path ref={slab} />
+          </svg>
+        </span>
       )}
       {items.map((i, index) => {
         return (
