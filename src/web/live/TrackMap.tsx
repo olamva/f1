@@ -210,8 +210,17 @@ export const TrackMap = ({
   useEffect(() => void (shown.current = time), [time]);
   const drawn = useRef(project);
   useEffect(() => void (drawn.current = project), [project]);
+  const [onScreen, setOnScreen] = useState(true);
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) =>
+      setOnScreen(entry!.isIntersecting),
+    );
+    observer.observe(svg.current!);
+    return () => observer.disconnect();
+  }, []);
   const snap =
     speed > 1 ||
+    !onScreen ||
     Math.abs(time - shown.current) > 2000 ||
     drawn.current !== project;
   useLayoutEffect(() => void (snap && svg.current?.getBoundingClientRect()));

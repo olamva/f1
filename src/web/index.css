@@ -530,20 +530,36 @@ textarea {
 }
 
 .live-dot {
+  position: relative;
   display: inline-block;
   vertical-align: middle;
   width: 0.5rem;
   height: 0.5rem;
   margin-right: 0.5rem;
   border-radius: 50%;
-  background: #fca5a5;
-  box-shadow: 0 0 0 0 rgb(248 113 113 / 0.7);
+}
+
+.live-dot::before,
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.live-dot::before {
+  background: rgb(248 113 113 / 0.7);
   animation: live-pulse 2s ease-out infinite;
+}
+
+.live-dot::after {
+  background: #fca5a5;
 }
 
 @keyframes live-pulse {
   50% {
-    box-shadow: 0 0 0 0.4rem rgb(248 113 113 / 0);
+    scale: 2.6;
+    opacity: 0;
   }
 }
 
@@ -554,6 +570,16 @@ textarea {
 }
 
 .flag-banner {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.flag-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 -2rem;
+  z-index: -1;
   background-image: linear-gradient(
     45deg,
     rgb(0 0 0 / 0.18) 25%,
@@ -567,13 +593,13 @@ textarea {
   animation: flag-stripes 1s linear infinite;
 }
 
-.flag-banner.paused {
+.flag-banner.paused::before {
   animation-play-state: paused;
 }
 
 @keyframes flag-stripes {
   to {
-    background-position: 2rem 0;
+    translate: 2rem 0;
   }
 }
 
@@ -656,11 +682,11 @@ textarea {
     animation: none;
   }
 
-  .flag-banner {
+  .flag-banner::before {
     animation: none;
   }
 
-  .live-dot {
+  .live-dot::before {
     animation: none;
   }
 }
