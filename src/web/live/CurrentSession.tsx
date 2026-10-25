@@ -197,8 +197,8 @@ const Live = ({ session, positions, token, rounds }: LiveProps) => {
   const note = positions
     ? null
     : token === "expired"
-      ? "Your F1TV token is expired. Replace it in Settings."
-      : "Add an F1TV token in Settings to see the cars.";
+      ? "Your F1TV token is expired. Save a new token to see the cars."
+      : "Add an F1TV token to see the cars.";
   const behind = pos.back + (pos.pausedAt === null ? 0 : now - pos.pausedAt);
   const rows = laps.data ?? {};
   const race = Boolean(feed?.state.LapCount);

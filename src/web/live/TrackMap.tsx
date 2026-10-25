@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Crown } from "lucide-react";
+import { Crown, KeyRound, Settings } from "lucide-react";
+import { openPath } from "../path.ts";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline, Telemetry } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
@@ -424,9 +425,28 @@ export const TrackMap = ({
               </>
             )}
           </svg>
-          {(note || !outline) && (
+          {note && (
+            <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
+              <div className="pointer-events-auto flex max-w-xs flex-col items-center gap-3 rounded-xl bg-zinc-950/85 p-4 text-center ring-1 ring-yellow-300/40">
+                <KeyRound
+                  aria-hidden="true"
+                  className="size-6 text-yellow-300"
+                />
+                <p className="text-sm font-semibold text-yellow-300">{note}</p>
+                <button
+                  type="button"
+                  onClick={() => openPath("/settings")}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
+                >
+                  <Settings aria-hidden="true" className="size-4" />
+                  Open Settings
+                </button>
+              </div>
+            </div>
+          )}
+          {!outline && (
             <p className="absolute inset-x-0 bottom-3 text-center text-sm text-zinc-400">
-              {note ?? "The track outline shows after a few laps."}
+              The track outline shows after a few laps.
             </p>
           )}
         </>
