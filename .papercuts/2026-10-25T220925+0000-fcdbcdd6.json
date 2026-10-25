@@ -1,0 +1,14 @@
+{
+  "id": "fcdbcdd6",
+  "ts": "2026-10-25T22:09:25+00:00",
+  "text": "zsh treats $VAR:refs/... as a history modifier (:r), so git push $COMMIT:refs/heads/x pushes a mangled refspec; brace the variable",
+  "tags": [
+    "shell",
+    "zsh"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "462ddb51",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-490581db",
+  "branch": "t3/live-screen-cpu"
+}
