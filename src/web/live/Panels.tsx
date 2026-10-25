@@ -20,13 +20,15 @@ import {
   type Tone,
 } from "./view.ts";
 
+const clock = new Intl.DateTimeFormat([], {
+  hourCycle: "h23",
+  hour: "2-digit",
+  minute: "2-digit",
+  second: "2-digit",
+});
+
 const time = (utc: string) =>
-  new Date(utc.endsWith("Z") ? utc : `${utc}Z`).toLocaleTimeString([], {
-    hourCycle: "h23",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
+  clock.format(new Date(utc.endsWith("Z") ? utc : `${utc}Z`));
 
 const FLAG: Record<string, string> = {
   GREEN: "bg-emerald-600 text-white",
