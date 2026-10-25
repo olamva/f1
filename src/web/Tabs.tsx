@@ -18,6 +18,7 @@ interface TabsProps<T extends string> {
   labels?: Partial<Record<T, string>>;
   icons?: Partial<Record<T, LucideIcon>>;
   live?: T;
+  alert?: T;
   drive?: RefObject<((offset: number, held: boolean) => void) | null>;
 }
 
@@ -31,6 +32,7 @@ export const Tabs = <T extends string>({
   labels,
   icons,
   live,
+  alert,
   drive,
 }: TabsProps<T>) => {
   const nav = useRef<HTMLElement>(null);
@@ -176,6 +178,13 @@ export const Tabs = <T extends string>({
     return (
       <>
         {live === i && <span aria-hidden="true" className="live-dot" />}
+        {alert === i && (
+          <span
+            role="img"
+            aria-label="Needs attention"
+            className="mr-2 inline-block size-2 rounded-full bg-yellow-300"
+          />
+        )}
         {Icon && <Icon aria-hidden="true" className="size-5 sm:hidden" />}
         <span className={Icon ? "max-sm:sr-only" : undefined}>
           {labels?.[i] ?? i}

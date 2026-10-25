@@ -101,6 +101,7 @@ export const App = () => {
             icons={ICONS}
             labels={info.data?.live ? { Countdown: "Live" } : undefined}
             live={info.data?.live ? "Countdown" : undefined}
+            alert={info.data?.token ? "Settings" : undefined}
             drive={blob}
           />
         </div>

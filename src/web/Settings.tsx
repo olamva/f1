@@ -11,7 +11,7 @@ import {
   SquareTerminal,
 } from "lucide-react";
 import type { DriverInfo } from "../shared/season.ts";
-import type { TokenStatus } from "../shared/token.ts";
+import { tokenProblem, type TokenStatus } from "../shared/token.ts";
 import { DelayInput } from "./DelayInput.tsx";
 import { setFavourite, useFavourite } from "./favourite.ts";
 import { GlassSwitch } from "./GlassSwitch.tsx";
@@ -62,6 +62,19 @@ const TOKEN_STEPS = [
   ],
   [ClipboardPaste, "Paste the value in the token box and click Save."],
 ] as const;
+
+const TOKEN_WARNINGS = {
+  missing: "You have no F1TV token. The track map shows no cars.",
+  expired: "Your F1TV token is expired. Log in again and save a new token.",
+};
+
+const tokenWarning = (s: TokenStatus) => {
+  const problem = tokenProblem(s);
+  if (problem) return TOKEN_WARNINGS[problem];
+  if (s.sessionExpiresAt && s.sessionExpiresAt - Date.now() < 3 * 24 * 3600_000)
+    return "The F1TV login expires soon. Log in again and save a new token.";
+  return null;
+};
 
 async function post(value: string): Promise<TokenStatus> {
   const res = await fetch("/api/token", {
@@ -121,9 +134,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
     pushState().then(setPush, (e: Error) => setPushNote(e.message));
   }, []);
   const note = pushNote ?? (push && PUSH_NOTES[push]);
-  const soon =
-    status?.sessionExpiresAt &&
-    status.sessionExpiresAt - Date.now() < 3 * 24 * 3600_000;
+  const warning = status && tokenWarning(status);
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <section className="bg-surface space-y-2 rounded-xl p-4">
@@ -239,11 +250,11 @@ export const Settings = ({ drivers }: SettingsProps) => {
                 value={value}
                 onChange={(e) => setValue(e.target.value)}
                 placeholder={
-                  status?.sessionExpiresAt
-                    ? `Saved until ${new Date(status.sessionExpiresAt).toLocaleDateString("nb-NO")}`
-                    : status?.configured
-                      ? "Saved"
-                      : "Paste the login-session cookie value"
+                  !status || tokenProblem(status)
+                    ? "Paste the login-session cookie value"
+                    : status.sessionExpiresAt
+                      ? `Saved until ${new Date(status.sessionExpiresAt).toLocaleDateString("nb-NO")}`
+                      : "Saved"
                 }
                 className="min-w-0 flex-1 rounded-md border border-zinc-700 bg-zinc-800 px-3 py-1.5 text-sm placeholder:text-zinc-500"
               />
@@ -255,11 +266,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
                 Save
               </button>
             </form>
-            {soon && (
-              <p className="text-sm text-yellow-300">
-                The F1TV login expires soon. Log in again and save a new token.
-              </p>
-            )}
+            {warning && <p className="text-sm text-yellow-300">{warning}</p>}
             {message && <p className="text-sm text-zinc-400">{message}</p>}
             <GuideSheet title="Set the F1TV token" steps={TOKEN_STEPS}>
               <p className="text-sm text-zinc-400">

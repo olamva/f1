@@ -3,6 +3,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono, type Context } from "hono";
 import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import type { Delta, Snapshot } from "../shared/timing.ts";
+import { tokenProblem } from "../shared/token.ts";
 import {
   outlineFor,
   positions,
@@ -144,6 +145,7 @@ app.get("/api/live", (c) =>
     live: live.isLive(),
     recent: live.hasRecentTiming(),
     positions: feed(c) !== live.shared || !!live.shared.session.state.Position,
+    token: user(c) ? tokenProblem(token.status(key(c)!)) : null,
     start: feed(c).history.start ?? null,
     info: live.shared.session.state.SessionInfo ?? null,
   }),
