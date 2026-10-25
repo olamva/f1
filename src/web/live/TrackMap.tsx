@@ -1,10 +1,18 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import {
+  Fragment,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Crown } from "lucide-react";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline, Telemetry } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import { useCarMotion } from "./useCarMotion.ts";
 import { MapCard } from "./MapCard.tsx";
+import { CAR, MapPin, RING, tag, type Frame } from "./MapPin.tsx";
 import { SectorFlags } from "./SectorFlags.tsx";
 import { markers, nearest } from "./outline.ts";
 import type { Rejoin } from "./rejoin.ts";
@@ -150,6 +158,7 @@ export const TrackMap = ({
   flags,
 }: TrackMapProps) => {
   const svg = useRef<SVGSVGElement>(null);
+  const layer = useRef<HTMLDivElement>(null);
   const pointer = useRef("");
   const [hover, setHover] = useState<{
     number: string;
@@ -218,15 +227,32 @@ export const TrackMap = ({
     observer.observe(svg.current!);
     return () => observer.disconnect();
   }, []);
+  useLayoutEffect(() => {
+    const observer = new ResizeObserver(([entry]) => {
+      const { width, height } = entry!.contentRect;
+      const k = Math.min(width / box[2], height / box[3]);
+      layer.current!.style.transform = `translate(${(width - box[2] * k) / 2}px, ${(height - box[3] * k) / 2}px) scale(${k})`;
+    });
+    observer.observe(svg.current!);
+    return () => observer.disconnect();
+  }, [box]);
   const snap =
     speed > 1 ||
     !onScreen ||
     Math.abs(time - shown.current) > 2000 ||
     drawn.current !== project;
   useLayoutEffect(() => void (snap && svg.current?.getBoundingClientRect()));
-  const place = (x: number, y: number) => ({
-    transform: `translate(${x}px, ${y}px)`,
-    transition: snap ? "none" : "transform 1000ms linear",
+  const translate = (x: number, y: number, [fx, fy]: Frame) =>
+    `translate(${x + fx - box[0]}px, ${y + fy - box[1]}px)`;
+  const place = (x: number, y: number, frame: Frame, opacity = 1) => ({
+    frame,
+    style: {
+      width: frame[2],
+      height: frame[3],
+      transform: translate(x, y, frame),
+      transition: snap ? "none" : "transform 1000ms linear",
+      opacity,
+    },
   });
   const ghost = (positions: Positions): Positions => {
     const p = pit && positions[pit.anchor];
@@ -236,22 +262,21 @@ export const TrackMap = ({
     return { ...positions, pit: [outline.x[i]!, outline.y[i]!] };
   };
   const ring = positions && ghost(positions).pit;
-  useCarMotion(svg, project, {
+  useCarMotion(layer, project, {
     positions,
     positionTrail,
     time,
     speed,
     stream,
     ghost,
+    translate,
   });
   return (
     <MapFrame banner={banner}>
       {(full) => (
         <>
-          <svg
-            ref={svg}
-            viewBox={box.join(" ")}
-            className={full ? "min-h-0 w-full flex-1" : "aspect-square w-full"}
+          <div
+            className={`relative ${full ? "min-h-0 w-full flex-1" : "aspect-square w-full"}`}
             onPointerMove={(event) => {
               const at = `${event.clientX},${event.clientY}`;
               if (at === pointer.current) return;
@@ -265,7 +290,7 @@ export const TrackMap = ({
               setHover((h) =>
                 !number
                   ? null
-                  : target!.tagName === "g" || h?.number !== number
+                  : target!.tagName !== "circle" || h?.number !== number
                     ? { number, x: p.x, y: p.y }
                     : h,
               );
@@ -275,151 +300,181 @@ export const TrackMap = ({
               setHover(null);
             }}
           >
-            <polyline
-              points={lane}
-              fill="none"
-              stroke="#3f3f46"
-              strokeWidth={6}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-            <polyline
-              points={path}
-              fill="none"
-              stroke="#3f3f46"
-              strokeWidth={18}
-              strokeLinejoin="round"
-              strokeLinecap="round"
-            />
-            {marks && <SectorFlags marshal={marks.marshal} flags={flags} />}
-            {marks && <Markers {...marks} />}
-            <g key={stream}>
-              {cars.map(({ r, x, y, inPit, focus }) => (
-                <g
-                  key={r.number}
-                  data-number={r.number}
-                  role="button"
-                  tabIndex={0}
-                  aria-label={`Select ${r.name}`}
-                  aria-pressed={selected.has(r.number)}
-                  aria-describedby={
-                    hovered === r.number ? "track-map-card" : undefined
-                  }
-                  onFocus={() =>
-                    setHover((h) =>
-                      h?.number === r.number ? h : { number: r.number, x, y },
-                    )
-                  }
-                  onBlur={() => setHover(null)}
-                  onClick={() => onToggle(r.number)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      onToggle(r.number);
-                    }
-                  }}
-                  className="cursor-pointer"
-                  style={place(x, y)}
-                  opacity={focus || hovered === r.number ? 1 : 0.35}
-                >
-                  {!inPit && (
-                    <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
-                  )}
-                  <circle
-                    r={14}
-                    fill={r.color}
-                    stroke="#18181b"
-                    strokeWidth={4}
-                  />
-                </g>
-              ))}
-              {project && pit && ring && (
-                <g
-                  data-number="pit"
-                  aria-hidden="true"
-                  className="pointer-events-none"
-                  style={place(...project(...ring))}
-                >
-                  <circle r={18} fill="none" stroke="#18181b" strokeWidth={8} />
-                  <circle
-                    r={18}
-                    fill="none"
-                    stroke={pit.color}
-                    strokeWidth={4}
-                  />
-                </g>
-              )}
-              {cars.map(({ r, x, y, inPit, focus }) => {
-                if (inPit) return null;
-                const crown = r.position === 1 && (race || r.bestLap);
-                const laps =
-                  !crown && race && r.lapsBehind ? `+${r.lapsBehind}` : "";
-                const extra = crown ? 34 : laps ? 12 * laps.length + 12 : 0;
-                return (
-                  <g
+            <svg
+              ref={svg}
+              viewBox={box.join(" ")}
+              className="absolute inset-0 size-full"
+            >
+              <polyline
+                points={lane}
+                fill="none"
+                stroke="#3f3f46"
+                strokeWidth={6}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              <polyline
+                points={path}
+                fill="none"
+                stroke="#3f3f46"
+                strokeWidth={18}
+                strokeLinejoin="round"
+                strokeLinecap="round"
+              />
+              {marks && <SectorFlags marshal={marks.marshal} flags={flags} />}
+              {marks && <Markers {...marks} />}
+            </svg>
+            <div
+              ref={layer}
+              className="pointer-events-none absolute top-0 left-0 origin-top-left"
+              style={{ width: box[2], height: box[3] }}
+            >
+              <Fragment key={stream}>
+                {cars.map(({ r, x, y, inPit, focus }) => (
+                  <MapPin
                     key={r.number}
                     data-number={r.number}
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Select ${r.name}`}
+                    aria-pressed={selected.has(r.number)}
+                    aria-describedby={
+                      hovered === r.number ? "track-map-card" : undefined
+                    }
+                    onFocus={() =>
+                      setHover((h) =>
+                        h?.number === r.number ? h : { number: r.number, x, y },
+                      )
+                    }
+                    onBlur={() => setHover(null)}
                     onClick={() => onToggle(r.number)}
-                    className="cursor-pointer"
-                    style={place(x, y)}
-                    opacity={focus || hovered === r.number ? 1 : 0.35}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onToggle(r.number);
+                      }
+                    }}
+                    className="absolute top-0 left-0 cursor-pointer"
+                    {...place(
+                      x,
+                      y,
+                      CAR,
+                      focus || hovered === r.number ? 1 : 0.35,
+                    )}
                   >
-                    <rect
-                      x={-94 - extra}
-                      y={-56}
-                      width={70 + extra}
-                      height={32}
-                      rx={3}
-                      fill="#27272a"
-                      fillOpacity={0.9}
+                    {!inPit && (
+                      <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
+                    )}
+                    <circle
+                      r={14}
+                      fill={r.color}
+                      stroke="#18181b"
+                      strokeWidth={4}
                     />
-                    <path
-                      d={`M-24 -24H${-94 - extra}`}
-                      stroke={r.color}
-                      strokeWidth={3}
-                    />
-                    <text
-                      x={-59 - extra}
-                      y={-40}
-                      dominantBaseline="middle"
-                      textAnchor="middle"
-                      className="fill-zinc-100 text-[22px] font-semibold"
-                    >
-                      {r.tla}
-                    </text>
-                    {crown ? (
-                      <Crown
-                        x={-58}
-                        y={-51}
-                        width={22}
-                        height={22}
-                        className="stroke-yellow-300"
-                        strokeWidth={2.5}
+                  </MapPin>
+                ))}
+                {project && pit && ring && (
+                  <div
+                    data-number="pit"
+                    aria-hidden="true"
+                    className="absolute top-0 left-0"
+                    style={place(...project(...ring), RING).style}
+                  >
+                    <svg viewBox={RING.join(" ")} className="block size-full">
+                      <circle
+                        r={18}
+                        fill="none"
+                        stroke="#18181b"
+                        strokeWidth={8}
                       />
-                    ) : laps ? (
+                      <circle
+                        r={18}
+                        fill="none"
+                        stroke={pit.color}
+                        strokeWidth={4}
+                      />
+                    </svg>
+                  </div>
+                )}
+                {cars.map(({ r, x, y, inPit, focus }) => {
+                  if (inPit) return null;
+                  const crown = r.position === 1 && (race || r.bestLap);
+                  const laps =
+                    !crown && race && r.lapsBehind ? `+${r.lapsBehind}` : "";
+                  const extra = crown ? 34 : laps ? 12 * laps.length + 12 : 0;
+                  return (
+                    <MapPin
+                      key={r.number}
+                      data-number={r.number}
+                      onClick={() => onToggle(r.number)}
+                      className="absolute top-0 left-0 cursor-pointer"
+                      {...place(
+                        x,
+                        y,
+                        tag(extra),
+                        focus || hovered === r.number ? 1 : 0.35,
+                      )}
+                    >
+                      <rect
+                        x={-94 - extra}
+                        y={-56}
+                        width={70 + extra}
+                        height={32}
+                        rx={3}
+                        fill="#27272a"
+                        fillOpacity={0.9}
+                      />
+                      <path
+                        d={`M-24 -24H${-94 - extra}`}
+                        stroke={r.color}
+                        strokeWidth={3}
+                      />
                       <text
-                        x={-36}
+                        x={-59 - extra}
                         y={-40}
                         dominantBaseline="middle"
-                        textAnchor="end"
-                        className="fill-zinc-300 text-[21px] font-bold"
+                        textAnchor="middle"
+                        className="fill-zinc-100 text-[22px] font-semibold"
                       >
-                        {laps}
+                        {r.tla}
                       </text>
-                    ) : null}
-                  </g>
-                );
-              })}
-            </g>
+                      {crown ? (
+                        <Crown
+                          x={-58}
+                          y={-51}
+                          width={22}
+                          height={22}
+                          className="stroke-yellow-300"
+                          strokeWidth={2.5}
+                        />
+                      ) : laps ? (
+                        <text
+                          x={-36}
+                          y={-40}
+                          dominantBaseline="middle"
+                          textAnchor="end"
+                          className="fill-zinc-300 text-[21px] font-bold"
+                        >
+                          {laps}
+                        </text>
+                      ) : null}
+                    </MapPin>
+                  );
+                })}
+              </Fragment>
+            </div>
             {hover && card && (
-              <>
+              <svg
+                viewBox={box.join(" ")}
+                className="pointer-events-none absolute inset-0 size-full"
+              >
                 <circle
                   data-number={card.number}
                   cx={hover.x}
                   cy={hover.y}
                   r={6}
                   fill="transparent"
-                  className="cursor-pointer"
+                  className="pointer-events-auto cursor-pointer"
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => onToggle(card.number)}
                 />
@@ -430,9 +485,9 @@ export const TrackMap = ({
                   row={card}
                   telemetry={telemetry?.[card.number]}
                 />
-              </>
+              </svg>
             )}
-          </svg>
+          </div>
           {(note || !outline) && (
             <p className="absolute inset-x-0 bottom-3 text-center text-sm text-zinc-400">
               {note ?? "The track outline shows after a few laps."}
