@@ -22,6 +22,7 @@ import { KINDS } from "./spoilers.ts";
 import { Stats } from "./stats/Stats.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { useTokenHidden } from "./tokenHidden.ts";
 import { UpdateToast } from "./UpdateToast.tsx";
 import f1Logo from "./f1-logo.svg";
 
@@ -56,6 +57,7 @@ export const App = () => {
   const logo = useRef<HTMLButtonElement>(null);
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
+  const tokenHidden = useTokenHidden();
   useEffect(() => {
     const on = () => {
       setTab(fromPath());
@@ -101,7 +103,7 @@ export const App = () => {
             icons={ICONS}
             labels={info.data?.live ? { Countdown: "Live" } : undefined}
             live={info.data?.live ? "Countdown" : undefined}
-            alert={info.data?.token ? "Settings" : undefined}
+            alert={info.data?.token && !tokenHidden ? "Settings" : undefined}
             drive={blob}
           />
         </div>

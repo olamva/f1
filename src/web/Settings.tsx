@@ -18,6 +18,7 @@ import { GlassSwitch } from "./GlassSwitch.tsx";
 import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
 import { setSpoilerMode } from "./spoilers.ts";
+import { setTokenHidden } from "./tokenHidden.ts";
 
 const needsInstall = matchMedia("(pointer: coarse)").matches;
 
@@ -120,6 +121,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
     post(v).then(
       (s) => {
         setStatus(s);
+        setTokenHidden(false);
         setValue("");
         setMessage("Saved. Reload the app to see the cars.");
       },

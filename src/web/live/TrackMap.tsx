@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { Crown, KeyRound, Settings } from "lucide-react";
+import { Crown, EyeOff, KeyRound, Settings } from "lucide-react";
 import { openPath } from "../path.ts";
+import { setTokenHidden } from "../tokenHidden.ts";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline, Telemetry } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
@@ -433,14 +434,24 @@ export const TrackMap = ({
                   className="size-6 text-yellow-300"
                 />
                 <p className="text-sm font-semibold text-yellow-300">{note}</p>
-                <button
-                  type="button"
-                  onClick={() => openPath("/settings")}
-                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
-                >
-                  <Settings aria-hidden="true" className="size-4" />
-                  Open Settings
-                </button>
+                <div className="flex flex-wrap justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => openPath("/settings")}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
+                  >
+                    <Settings aria-hidden="true" className="size-4" />
+                    Open Settings
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setTokenHidden(true)}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 px-4 py-1.5 text-sm font-semibold hover:bg-zinc-700"
+                  >
+                    <EyeOff aria-hidden="true" className="size-4" />
+                    Hide map
+                  </button>
+                </div>
               </div>
             </div>
           )}
