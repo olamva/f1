@@ -1,10 +1,12 @@
 import { ChevronLeft, Eye, Settings, SkipBack } from "lucide-react";
 import {
+  memo,
   useEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
+  type ReactNode,
   type RefObject,
 } from "react";
 import type { Round, Season } from "../../shared/season.ts";
@@ -23,6 +25,7 @@ import { navigate, pathPart, setPathPart, standalone } from "../path.ts";
 import { useAwake, useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
 import { useLiveSpoiler } from "../Spoiler.tsx";
+import { useActive } from "../Swipe.tsx";
 import { Board } from "./Board.tsx";
 import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
@@ -157,6 +160,16 @@ const DelaySettings = ({ race, latest }: DelaySettingsProps) => {
   );
 };
 
+interface FrozenProps {
+  frozen: boolean;
+  children: ReactNode;
+}
+
+const Frozen = memo(
+  ({ children }: FrozenProps) => children,
+  (_, next) => next.frozen,
+);
+
 const liveStart = (feed: Feed | null) =>
   Math.max(feed?.since ?? 0, feed?.start ?? 0);
 
@@ -183,6 +196,7 @@ const Live = ({ session, positions, token, rounds }: LiveProps) => {
   const [loading, setLoading] = useState(pos.pausedAt !== null);
   const now = useTick(1000);
   const visible = useVisible();
+  const active = useActive();
   useAwake();
   const url =
     visible && (pos.pausedAt === null || loading)
@@ -221,44 +235,46 @@ const Live = ({ session, positions, token, rounds }: LiveProps) => {
       : move(pos.back + Date.now() - pos.pausedAt);
   const goLive = <GoLive behind={behind} onClick={() => move(0)} />;
   return (
-    <div className="space-y-4">
-      {feed && !waiting ? (
-        <>
-          <ReplayBar
-            race={race}
-            starts={starts}
-            start={start}
-            end={now - live}
-            at={now - live - behind}
-            periods={periods.data}
-            playing={pos.pausedAt === null}
-            onToggle={toggle}
-            onSeek={seek}
-          >
-            {goLive}
-            <DelaySettings race={race} latest={latest} />
-          </ReplayBar>
-          <Board
-            feed={feed}
-            laps={rows}
-            outline={outline.data ?? null}
-            periods={periods.data}
-            rounds={rounds}
-            positionsNote={note}
-            paused={pos.pausedAt !== null}
-            utc={now - live - behind}
-            onLap={(n) => seek(lapTime(starts, n))}
-          />
-        </>
-      ) : waiting ? (
-        <>
-          <div className="flex justify-end">{goLive}</div>
-          <DelayWait due={due} delay={live + pos.back} />
-        </>
-      ) : (
-        <Loading label="Connecting to live timing…" />
-      )}
-    </div>
+    <Frozen frozen={!active}>
+      <div className="space-y-4">
+        {feed && !waiting ? (
+          <>
+            <ReplayBar
+              race={race}
+              starts={starts}
+              start={start}
+              end={now - live}
+              at={now - live - behind}
+              periods={periods.data}
+              playing={pos.pausedAt === null}
+              onToggle={toggle}
+              onSeek={seek}
+            >
+              {goLive}
+              <DelaySettings race={race} latest={latest} />
+            </ReplayBar>
+            <Board
+              feed={feed}
+              laps={rows}
+              outline={outline.data ?? null}
+              periods={periods.data}
+              rounds={rounds}
+              positionsNote={note}
+              paused={pos.pausedAt !== null}
+              utc={now - live - behind}
+              onLap={(n) => seek(lapTime(starts, n))}
+            />
+          </>
+        ) : waiting ? (
+          <>
+            <div className="flex justify-end">{goLive}</div>
+            <DelayWait due={due} delay={live + pos.back} />
+          </>
+        ) : (
+          <Loading label="Connecting to live timing…" />
+        )}
+      </div>
+    </Frozen>
   );
 };
 
