@@ -103,7 +103,7 @@ export const GlassSwitch = ({
         }}
       >
         <span ref={knob} className="glass-knob">
-          <GlassSlab clip />
+          <GlassSlab />
         </span>
       </span>
       {children}
