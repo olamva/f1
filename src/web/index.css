@@ -195,7 +195,6 @@ textarea {
 
 .glass-edge {
   fill: rgb(255 255 255 / 0.075);
-  fill-rule: evenodd;
   stroke: rgb(255 255 255 / 0.28);
 }
 
@@ -384,6 +383,10 @@ textarea {
 .glass-seek[data-held="true"] .glass-seek-thumb {
   scale: 1.65 1.5;
   background: transparent;
+}
+
+.glass-seek .glass-lens {
+  transform-origin: calc(14px + (100% - 28px) * var(--progress)) 50%;
 }
 
 .glass-seek[data-held="true"] .glass-lens {

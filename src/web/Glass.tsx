@@ -7,9 +7,6 @@ export const refract = (
 ) => {
   const inner = indicator.getBoundingClientRect();
   for (const layer of track.querySelectorAll<HTMLElement>(".glass-lens")) {
-    const base = layer.parentElement!.getBoundingClientRect();
-    const zoom = base.width / layer.offsetWidth;
-    layer.style.transformOrigin = `${(inner.left + inner.width / 2 - base.left) / zoom}px ${(inner.top + inner.height / 2 - base.top) / zoom}px`;
     const outer = layer.getBoundingClientRect();
     const scale = outer.width / layer.offsetWidth;
     layer.style.clipPath = `inset(${[
@@ -42,30 +39,71 @@ export const refract = (
   const height = indicator.offsetHeight;
   const lift = inner.height / height;
   const spread = inner.width / width;
-  const radius = height / 2;
+  const radius = Math.min(width, height) / 2;
+  const bend = height * 0.055;
   const run = height * 0.13;
-  const edge = (depth: number, sign: number) => {
-    const y = sign > 0 ? depth : height - depth;
-    const x =
-      radius - Math.sqrt(Math.max(0, radius ** 2 - (radius - depth) ** 2));
-    const shift = sign * Math.max(0, Math.min(height * 0.055, depth));
-    return `M-1 ${y}H${x}C${x + run / 2} ${y} ${x + run / 2} ${y + shift} ${x + run} ${y + shift}H${width - x - run}C${width - x - run / 2} ${y + shift} ${width - x - run / 2} ${y} ${width - x} ${y}H${width + 1}V${height + 1}H-1Z`;
-  };
-  const edges =
-    edge((bar.top - inner.top) / lift + inset, 1) +
-    edge((inner.bottom - bar.bottom) / lift + inset, -1);
+  const clamp = (value: number, min: number, max: number) =>
+    Math.max(min, Math.min(max, value));
+  const rx = bar.height / 2 / spread - inset;
+  const ry = bar.height / 2 / lift - inset;
+  const middle = (bar.top + bar.height / 2 - inner.top) / lift;
+  const start = (bar.left + bar.height / 2 - inner.left) / spread;
+  const end = (bar.right - bar.height / 2 - inner.left) / spread;
+  const outline = [1, -1].flatMap((side) => {
+    const [from, to] = side > 0 ? [start, end] : [end, start];
+    const a = clamp(from, -2, width + 2);
+    const b = clamp(to, -2, width + 2);
+    const steps = Math.max(1, Math.ceil(Math.abs(b - a)));
+    return [
+      ...Array.from({ length: steps }, (_, i) => [
+        a + ((b - a) * i) / steps,
+        middle - side * ry,
+        0,
+        -side,
+      ]),
+      ...Array.from({ length: 33 }, (_, i) => {
+        const angle = (Math.PI * i) / 32 - Math.PI / 2;
+        const nx = side * Math.cos(angle);
+        const ny = side * Math.sin(angle);
+        return [clamp(to + rx * nx, -2, width + 2), middle + ry * ny, nx, ny];
+      }),
+    ];
+  });
+  const count = outline.length;
+  const gap = outline.map(
+    ([x, y]) =>
+      8 *
+      Math.max(
+        0,
+        radius -
+          Math.hypot(
+            x - clamp(x, radius, width - radius),
+            y - clamp(y, radius, height - radius),
+          ),
+      ),
+  );
+  const step = outline.map(([x, y], i) =>
+    Math.hypot(x - outline.at(i - 1)![0], y - outline.at(i - 1)![1]),
+  );
+  for (let i = 1; i < 2 * count; i++)
+    gap[i % count] = Math.min(
+      gap[i % count],
+      gap[(i - 1) % count] + step[i % count],
+    );
+  for (let i = 2 * count - 1; i > 0; i--)
+    gap[(i - 1) % count] = Math.min(
+      gap[(i - 1) % count],
+      gap[i % count] + step[i % count],
+    );
+  const edges = `M${outline
+    .map(([x, y, nx, ny], i) => {
+      const t = Math.min(1, gap[i] / run);
+      const shift = bend * t * t * (3 - 2 * t);
+      return `${(x - nx * shift).toFixed(2)} ${(y - ny * shift).toFixed(2)}`;
+    })
+    .join("L")}Z`;
   for (const path of indicator.querySelectorAll(".glass-edge"))
     path.setAttribute("d", edges);
-  const end = indicator.querySelector(".glass-bar");
-  for (const [name, value] of Object.entries({
-    x: (bar.left - inner.left) / spread,
-    y: (bar.top - inner.top) / lift,
-    width: bar.width / spread,
-    height: bar.height / lift,
-    rx: bar.height / 2 / spread,
-    ry: bar.height / 2 / lift,
-  }))
-    end?.setAttribute(name, String(value));
 };
 
 export const useRefraction = (
@@ -99,11 +137,7 @@ export const useRefraction = (
     };
   }, [active, ...deps]);
 
-interface GlassSlabProps {
-  clip?: boolean;
-}
-
-export const GlassSlab = ({ clip }: GlassSlabProps) => {
+export const GlassSlab = () => {
   const id = `glass${useId().replace(/\W/g, "")}`;
   return (
     <svg aria-hidden="true" className="glass-slab">
@@ -120,18 +154,11 @@ export const GlassSlab = ({ clip }: GlassSlabProps) => {
         <filter id={`${id}-blur`}>
           <feGaussianBlur stdDeviation="0.7" />
         </filter>
-        {clip && (
-          <clipPath id={`${id}-bar`}>
-            <rect className="glass-bar" />
-          </clipPath>
-        )}
       </defs>
-      <g clipPath={clip ? `url(#${id}-bar)` : undefined}>
-        <path className="glass-edge" />
-        <g mask={`url(#${id})`} filter={`url(#${id}-blur)`}>
-          <path className="glass-edge glass-split" />
-          <path className="glass-edge glass-split" />
-        </g>
+      <path className="glass-edge" />
+      <g mask={`url(#${id})`} filter={`url(#${id}-blur)`}>
+        <path className="glass-edge glass-split" />
+        <path className="glass-edge glass-split" />
       </g>
     </svg>
   );
