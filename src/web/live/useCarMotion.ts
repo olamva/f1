@@ -25,6 +25,7 @@ interface Motion {
 export const useCarMotion = (
   layer: RefObject<HTMLDivElement | null>,
   project: ((x: number, y: number) => [number, number]) | null,
+  visible: boolean,
   { positions, positionTrail, time, speed, stream, ghost, translate }: Motion,
 ) => {
   const motion = useRef({
@@ -88,7 +89,7 @@ export const useCarMotion = (
           height,
         ]);
       }
-      frame = requestAnimationFrame(draw);
+      if (visible) frame = requestAnimationFrame(draw);
     };
     draw();
     return () => cancelAnimationFrame(frame);

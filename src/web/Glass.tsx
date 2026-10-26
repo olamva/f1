@@ -6,10 +6,22 @@ export const refract = (
   inset: number,
 ) => {
   const inner = indicator.getBoundingClientRect();
-  for (const layer of track.querySelectorAll<HTMLElement>(".glass-lens")) {
-    const outer = layer.getBoundingClientRect();
-    const scale = outer.width / layer.offsetWidth;
-    layer.style.clipPath = `inset(${[
+  const bar = track.getBoundingClientRect();
+  const width = indicator.offsetWidth;
+  const height = indicator.offsetHeight;
+  const measure = (el: HTMLElement) => {
+    const outer = el.getBoundingClientRect();
+    return { el, outer, scale: outer.width / el.offsetWidth };
+  };
+  const lenses = [...track.querySelectorAll<HTMLElement>(".glass-lens")].map(
+    measure,
+  );
+  const labels = [
+    track,
+    ...track.querySelectorAll<HTMLElement>(".glass-label"),
+  ].map(measure);
+  for (const { el, outer, scale } of lenses)
+    el.style.clipPath = `inset(${[
       inner.top - outer.top,
       outer.right - inner.right,
       outer.bottom - inner.bottom,
@@ -17,26 +29,17 @@ export const refract = (
     ]
       .map((edge) => `${Math.max(0, edge / scale)}px`)
       .join(" ")} round 9999px)`;
-  }
-  for (const label of [
-    track,
-    ...track.querySelectorAll<HTMLElement>(".glass-label"),
-  ]) {
-    const outer = label.getBoundingClientRect();
-    const scale = outer.width / label.offsetWidth;
+  for (const { el, outer, scale } of labels) {
     const top = (inner.top - outer.top) / scale;
     const bottom = (inner.bottom - outer.top) / scale;
     const radius = (bottom - top) / 2;
     const left = (inner.left - outer.left) / scale + radius;
     const right = (inner.right - outer.left) / scale - radius;
-    label.style.setProperty(
+    el.style.setProperty(
       "--hole",
       `path(evenodd, "M-9999 -9999H9999V9999H-9999Z M${left} ${top}H${right}A${radius} ${radius} 0 0 1 ${right} ${bottom}H${left}A${radius} ${radius} 0 0 1 ${left} ${top}Z")`,
     );
   }
-  const bar = track.getBoundingClientRect();
-  const width = indicator.offsetWidth;
-  const height = indicator.offsetHeight;
   const lift = inner.height / height;
   const spread = inner.width / width;
   const radius = Math.min(width, height) / 2;

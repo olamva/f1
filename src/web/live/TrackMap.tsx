@@ -262,7 +262,7 @@ export const TrackMap = ({
     return { ...positions, pit: [outline.x[i]!, outline.y[i]!] };
   };
   const ring = positions && ghost(positions).pit;
-  useCarMotion(layer, project, {
+  useCarMotion(layer, project, onScreen, {
     positions,
     positionTrail,
     time,
