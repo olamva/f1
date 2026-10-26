@@ -25,6 +25,10 @@ const CHECKPOINT_MS = 30_000;
 
 const text = async (path: string): Promise<string> => {
   const res = await archive(path);
+  if (res.status === 401)
+    throw new Error(
+      "The F1 archive needs a valid F1TV token. Save a new token in Settings.",
+    );
   if (!res.ok) throw new Error(`archive ${res.status} ${path}`);
   return res.text();
 };

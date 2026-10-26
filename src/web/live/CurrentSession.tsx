@@ -14,6 +14,7 @@ import type {
   Period,
   SessionRef,
 } from "../../shared/timing.ts";
+import type { TokenProblem } from "../../shared/token.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { setDelay, useDelay } from "../delay.ts";
 import { DelayInput } from "../DelayInput.tsx";
@@ -35,6 +36,7 @@ export type LiveInfo = {
   live: boolean;
   recent: boolean;
   positions: boolean;
+  token: TokenProblem | null;
   start: number | null;
   info: Record<string, any> | null;
 };
@@ -161,10 +163,11 @@ const liveStart = (feed: Feed | null) =>
 interface LiveProps {
   session: string;
   positions: boolean;
+  token: TokenProblem | null;
   rounds: Round[];
 }
 
-const Live = ({ session, positions, rounds }: LiveProps) => {
+const Live = ({ session, positions, token, rounds }: LiveProps) => {
   const live = useDelay() * 1000;
   const [pos, setPos] = useState<Rewind>(() => {
     const saved = JSON.parse(localStorage.getItem("rewind") ?? "null");
@@ -193,7 +196,9 @@ const Live = ({ session, positions, rounds }: LiveProps) => {
   const periods = useJson<Period[]>("/api/live/periods", 15_000);
   const note = positions
     ? null
-    : "Add an F1TV token in Settings to see the cars.";
+    : token === "expired"
+      ? "Your F1TV token is expired. Save a new token to see the cars."
+      : "Add an F1TV token to see the cars.";
   const behind = pos.back + (pos.pausedAt === null ? 0 : now - pos.pausedAt);
   const rows = laps.data ?? {};
   const race = Boolean(feed?.state.LapCount);
@@ -395,6 +400,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
         key={key}
         session={key}
         positions={info.data.positions}
+        token={info.data.token}
         rounds={season.data.rounds}
       />
     );
