@@ -272,7 +272,7 @@ export const TrackMap = ({
     translate,
   });
   return (
-    <MapFrame banner={banner}>
+    <MapFrame banner={banner} note={note}>
       {(full) => (
         <>
           <div
@@ -488,9 +488,9 @@ export const TrackMap = ({
               </svg>
             )}
           </div>
-          {(note || !outline) && (
+          {!outline && (
             <p className="absolute inset-x-0 bottom-3 text-center text-sm text-zinc-400">
-              {note ?? "The track outline shows after a few laps."}
+              The track outline shows after a few laps.
             </p>
           )}
         </>

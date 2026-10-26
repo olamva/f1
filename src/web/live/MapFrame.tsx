@@ -1,11 +1,14 @@
 import { useEffect, useRef, useState } from "react";
 import { Maximize, Minimize } from "lucide-react";
+import { TokenCallout } from "./TokenCallout.tsx";
 
 export const MapFrame = ({
   banner,
+  note,
   children,
 }: {
   banner?: React.ReactNode;
+  note?: string | null;
   children: (full: boolean) => React.ReactNode;
 }) => {
   const frame = useRef<HTMLDivElement>(null);
@@ -41,6 +44,7 @@ export const MapFrame = ({
           {full ? <Minimize size={18} /> : <Maximize size={18} />}
         </button>
         {children(full)}
+        {note && <TokenCallout note={note} />}
       </div>
     </div>
   );
