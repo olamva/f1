@@ -75,12 +75,7 @@ Google sign-in uses the callback `https://<host>/.auth/login/google/callback`. T
 
 The server uses `F1_ORIGIN` as the base URL for F1 archives and live timing. The default is `https://livetiming.formula1.com`. That host refuses Oracle IP addresses, so `F1_ORIGIN` points to the Cloudflare relay in `relay/`.
 
-Terraform in `infra/` manages the Azure resources:
-
-1. Create `infra/terraform.tfvars` with `test -f infra/terraform.tfvars || cp infra/terraform.tfvars.example infra/terraform.tfvars`.
-2. Fill the placeholders in that ignored file. Each worktree needs its own values. Keep existing values when the file exists.
-3. Run `az login --scope https://storage.azure.com/.default` before `terraform -chdir=infra init` if storage authentication requires login.
-4. Run `terraform -chdir=infra init`, then `terraform -chdir=infra apply`.
+Two Azure accounts in the resource group `f1` make the transcripts. The Azure OpenAI account `f1-speech-b401e2` is in Norway East. The Azure Speech account `f1-voice-se-b401e2` is in Sweden Central. No tool manages them. The VM keeps their keys in `/etc/f1/env`.
 
 ## Notifications
 

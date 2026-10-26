@@ -1,7 +1,6 @@
 # Parallel work
 
 Treat a task as done only when its changes are in a pull request and merged into `main`.
-For a change to `infra/`, also apply it with Terraform. Follow the Terraform section.
 Do not wait for deployment after the merge. Settle the thread and clean up immediately.
 If a required step is blocked, report the current status and the blocker. Do not report the task as done.
 
@@ -18,7 +17,7 @@ Coordinate changes to shared state with concurrent agents. Worktrees do not isol
 - the main checkout at `~/Developer/f1` and its `.git` directory, including the stash
 - the dev server ports `8787` and `5173`
 - the Jolpica rate limit, which all local servers share
-- the Terraform state, Azure resources, and GitHub settings and variables
+- the Azure transcript accounts, and GitHub settings and variables
 
 Run `PORT=0 VITE_PORT=0 pnpm dev` in each worktree. The command then selects unused ports.
 Point preview and Playwright checks at the Vite URL that the command prints.
@@ -64,7 +63,7 @@ Request renewed approval if later changes materially alter the reviewed appearan
 
 ## Deployment and cleanup
 
-Keep deployment on `main` through the existing workflow. The workflow does not run Terraform.
+Keep deployment on `main` through the existing workflow.
 Do not watch the deployment run. Start cleanup as soon as the PR state is `MERGED`.
 Let GitHub delete the merged remote branch. Preserve thread history.
 Push visual review images only to a `screenshots/pr-<pr-number>` branch. Cleanup does not delete other branch names.
@@ -78,17 +77,3 @@ Keep the active T3 worktree and thread. Remove the worktree only after T3 stops.
 Run `pnpm worktree:cleanup <path> <pr-number> --apply` from another checkout to remove an idle worktree.
 Include the cleanup status in the final response.
 Never force worktree removal. Preserve uncommitted files, ignored files that are not build output, and commits that are absent from `origin/main`.
-
-## Terraform
-
-Apply each merged change to `infra/` before you report the task as done. Do not ask for approval.
-Apply after the cleanup detaches the task worktree. Do not apply from the main checkout.
-Run `git fetch origin main` and `git checkout --detach origin/main` in the task worktree.
-Run `terraform -chdir=infra init -input=false`.
-Run `terraform -chdir=infra plan -input=false -var-file="$HOME/Developer/f1/infra/terraform.tfvars" -out=tfplan`.
-Read the plan. Stop and report the plan if it destroys or replaces a resource that the task does not change.
-Run `terraform -chdir=infra apply -input=false tfplan`. Then run `rm infra/tfplan`.
-If the apply fails, run the plan and the apply again one time. If it fails again, report the error as a blocker.
-Terraform locks the state during an apply. If another agent holds the lock, wait and try again.
-Do not run `terraform destroy`, `terraform apply -destroy`, or `terraform force-unlock`.
-Include the apply result in the final response only when the task changes `infra/`. Otherwise, do not mention Terraform.
