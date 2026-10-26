@@ -162,7 +162,7 @@ const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
       <p className="text-sm text-zinc-400">
         {blocker
           ? `${a} cannot secure the title at this event. ${code(blocker.id)} can still win the title with no points here.`
-          : states.has("rival-out")
+          : states.has("rival-out") && limits.length > 0
             ? `If ${a} wins, ${a} also needs ${list(limits.map((l) => `${code(l.id)} to finish P${l.from} or lower`))}.`
             : !states.has("clinched") &&
               `${a} cannot secure the title at this event.`}
