@@ -1,3 +1,4 @@
+import { ink } from "../ink.ts";
 import type { SessionBest, SessionBests } from "./view.ts";
 
 const BestValue = ({
@@ -9,7 +10,7 @@ const BestValue = ({
 }) =>
   best ? (
     <span className={`flex flex-col leading-4 font-semibold ${align}`}>
-      <span style={{ color: best.color }}>{best.tla}</span>
+      <span style={{ color: ink(best.color) }}>{best.tla}</span>
       <span className="text-purple">{best.value}</span>
     </span>
   ) : (

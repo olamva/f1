@@ -91,7 +91,7 @@ const Races = ({ year, season, round, onRound }: RacesProps) => {
           aria-label="Race"
           value={race.round}
           onChange={(event) => choose(Number(event.target.value))}
-          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-white lg:hidden"
+          className="w-full rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-50 lg:hidden"
         >
           {races.map((entry) => (
             <option key={entry.round} value={entry.round}>
@@ -107,7 +107,7 @@ const Races = ({ year, season, round, onRound }: RacesProps) => {
               type="button"
               onClick={() => choose(entry.round)}
               aria-pressed={race.round === entry.round}
-              className={`flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-zinc-800 ${race.round === entry.round ? "bg-red-700/25 text-white" : "text-zinc-400"}`}
+              className={`flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-left text-sm hover:bg-zinc-800 ${race.round === entry.round ? "bg-red-700/25 text-zinc-50" : "text-zinc-400"}`}
             >
               <span className="tabular mr-2 text-xs text-zinc-500">
                 {String(entry.round).padStart(2, "0")}
@@ -200,7 +200,7 @@ export const Results = ({ season }: ResultsProps) => {
           aria-label="Season"
           value={year}
           onChange={(event) => show(event.target.value, part)}
-          className="bg-surface rounded-lg border border-zinc-700 px-3 py-2 text-sm text-white"
+          className="bg-surface rounded-lg border border-zinc-700 px-3 py-2 text-sm text-zinc-50"
         >
           {years.map((value) => (
             <option key={value}>{value}</option>

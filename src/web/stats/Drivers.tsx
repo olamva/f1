@@ -76,7 +76,7 @@ export const Drivers = ({ season, who, table }: DriversProps) => {
                 <span key={label}>
                   {label}
                   <span
-                    className={`font-f1 block font-bold text-white ${big ? "text-2xl sm:text-3xl" : "text-base"}`}
+                    className={`font-f1 block font-bold text-zinc-50 ${big ? "text-2xl sm:text-3xl" : "text-base"}`}
                   >
                     {value}
                   </span>

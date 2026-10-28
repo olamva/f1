@@ -15,7 +15,7 @@ export const TokenCallout = ({ note }: TokenCalloutProps) => (
         <button
           type="button"
           onClick={() => openPath("/settings")}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white"
         >
           <Settings aria-hidden="true" className="size-4" />
           Open Settings

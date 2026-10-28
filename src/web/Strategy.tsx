@@ -42,7 +42,7 @@ const Line = ({ stints, at }: LineProps) => {
           className={`absolute top-0 grid size-5 -translate-x-1/2 place-items-center rounded-full bg-current text-[10px] font-bold ${tyreColor(last.compound)}`}
           style={{ left: at(last.to) }}
         >
-          <span className="text-zinc-950">{last.to - last.from + 1}</span>
+          <span className="text-black">{last.to - last.from + 1}</span>
         </span>
       )}
     </div>

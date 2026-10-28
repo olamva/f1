@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { Standing } from "../../shared/clinch.ts";
 import { DivergingBars } from "../charts/Bars.tsx";
 import { LineChart, type Series } from "../charts/LineChart.tsx";
+import { ink } from "../ink.ts";
 import { Panel } from "../live/Panels.tsx";
 import type { Who } from "./derive.ts";
 
@@ -50,7 +51,7 @@ const Chips = ({ ids, who, on, toggle }: ChipsProps) => (
       >
         <span
           className="size-2 rounded-full"
-          style={{ background: who.get(id)?.color }}
+          style={{ background: ink(who.get(id)?.color) }}
         />
         {who.get(id)?.code ?? id}
       </button>

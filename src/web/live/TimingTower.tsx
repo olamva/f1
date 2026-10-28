@@ -1,6 +1,7 @@
 import { ArrowDown, ArrowUp, ChevronsUp, Timer, Zap } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { FAVOURITE_ROW, useFavourite } from "../favourite.ts";
+import { ink } from "../ink.ts";
 import { Tabs } from "../Tabs.tsx";
 import { TeamLogo } from "../TeamLogo.tsx";
 import type { Rejoin } from "./rejoin.ts";
@@ -44,7 +45,7 @@ interface Swap {
 
 const LIFT = {
   zIndex: 2,
-  backgroundColor: "#27272a",
+  backgroundColor: "var(--color-zinc-800)",
   boxShadow: "0 4px 12px rgb(0 0 0 / 0.5)",
 };
 
@@ -167,7 +168,7 @@ const Sectors = ({ sectors, qualifying }: SectorsProps) => (
         className={`flex w-5 min-w-5 flex-col gap-0.5 sm:w-auto ${qualifying ? "sm:min-w-17" : ""}`}
       >
         <span
-          className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-white" : "text-black"}`}
+          className={`${qualifying ? "h-3.5 text-center text-[10px] leading-3.5 font-semibold" : "h-2"} ${BAR[s.mark]} ${s.mark === "none" ? "text-zinc-50" : "text-black"}`}
         >
           {qualifying && <span className="hidden sm:inline">{s.value}</span>}
         </span>
@@ -363,7 +364,7 @@ export const TimingTower = ({
               </span>
               {best ? (
                 <span className="flex gap-1 font-semibold sm:gap-[1ch]">
-                  <span style={{ color: best.color }}>{best.tla}</span>
+                  <span style={{ color: ink(best.color) }}>{best.tla}</span>
                   <span className="text-purple">{best.value}</span>
                 </span>
               ) : (

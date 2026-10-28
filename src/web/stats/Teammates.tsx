@@ -1,3 +1,4 @@
+import { ink } from "../ink.ts";
 import type { Duel, Who } from "./derive.ts";
 
 interface TeammatesProps {
@@ -31,7 +32,10 @@ const Split = ({ label, pair, color }: SplitProps) => {
       <div className="flex h-3 gap-0.5" title={label}>
         <div
           className="rounded-l"
-          style={{ width: `${(pair[0] / total) * 100}%`, background: color }}
+          style={{
+            width: `${(pair[0] / total) * 100}%`,
+            background: ink(color),
+          }}
         />
         <div
           className="rounded-r bg-zinc-600"

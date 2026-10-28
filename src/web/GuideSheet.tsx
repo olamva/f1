@@ -22,7 +22,7 @@ export const GuideSheet = ({ title, steps, children }: GuideSheetProps) => {
         ref={dialog}
         closedby="any"
         onClick={(e) => e.target === e.currentTarget && e.currentTarget.close()}
-        className="bg-surface motion-safe:animate-toast-in fixed inset-x-0 top-auto bottom-0 mx-auto w-full max-w-lg rounded-t-3xl border-t border-white/10 text-zinc-100 backdrop:bg-black/60"
+        className="bg-surface motion-safe:animate-toast-in fixed inset-x-0 top-auto bottom-0 mx-auto w-full max-w-lg rounded-t-3xl border-t border-zinc-800 text-zinc-100 backdrop:bg-black/60"
       >
         <div className="space-y-4 p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]">
           <div className="flex items-center justify-between">

@@ -11,10 +11,15 @@ const SLUGS: Record<string, string> = {
   red_bull: "redbullracing",
 };
 
-export const logoSrc = (team: string) =>
-  IMAGES[
-    `./teams/${SLUGS[team] ?? team.toLowerCase().replace(/[^a-z0-9]/g, "")}.webp`
-  ];
+const WHITE = ["astonmartin", "audi", "cadillac", "mercedes"];
+
+const file = (team: string) =>
+  SLUGS[team] ?? team.toLowerCase().replace(/[^a-z0-9]/g, "");
+
+export const logoSrc = (team: string) => IMAGES[`./teams/${file(team)}.webp`];
+
+export const logoTone = (team: string) =>
+  WHITE.includes(file(team)) ? "light:invert" : "";
 
 interface TeamLogoProps {
   team: string;
@@ -28,7 +33,7 @@ export const TeamLogo = ({ team, className }: TeamLogoProps) => {
       src={src}
       alt=""
       aria-hidden
-      className={`object-contain ${className}`}
+      className={`object-contain ${logoTone(team)} ${className}`}
     />
   ) : (
     <span aria-hidden className={className} />

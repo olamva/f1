@@ -1,5 +1,6 @@
 import type { Telemetry } from "../../shared/timing.ts";
-import { logoSrc } from "../TeamLogo.tsx";
+import { ink } from "../ink.ts";
+import { logoSrc, logoTone } from "../TeamLogo.tsx";
 import { numberSrc, slug } from "../stats/TeamNumber.tsx";
 import type { Row } from "./view.ts";
 
@@ -24,7 +25,14 @@ const Pedal = ({ x, y, label, value, className }: PedalProps) => (
     <text x={x} y={y + 8} className="fill-zinc-400 text-[12px] font-semibold">
       {label}
     </text>
-    <rect x={x + 30} y={y} width={66} height={8} rx={2} fill="#3f3f46" />
+    <rect
+      x={x + 30}
+      y={y}
+      width={66}
+      height={8}
+      rx={2}
+      className="fill-zinc-700"
+    />
     <rect
       x={x + 30}
       y={y}
@@ -81,6 +89,7 @@ export const MapCard = ({ x, y, box, row, telemetry }: MapCardProps) => {
           height={170}
           opacity={0.15}
           clipPath="url(#card-clip)"
+          className={logoTone(row.team)}
         />
       )}
       {src ? (
@@ -97,7 +106,7 @@ export const MapCard = ({ x, y, box, row, telemetry }: MapCardProps) => {
         <text
           x={x + 20}
           y={top + 45}
-          fill={row.color}
+          fill={ink(row.color)}
           className="font-f1 text-[36px] font-black italic"
         >
           {row.number}
@@ -120,7 +129,7 @@ export const MapCard = ({ x, y, box, row, telemetry }: MapCardProps) => {
             y1={top + 132}
             x2={x + 220}
             y2={top + 132}
-            stroke="#3f3f46"
+            className="stroke-zinc-700"
           />
           <text
             x={x + 20}

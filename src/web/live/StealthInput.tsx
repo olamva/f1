@@ -40,7 +40,7 @@ export const StealthInput = ({
         setDraft(null);
       }}
       style={{ width: `${(draft || value).length}ch` }}
-      className="-mx-1 box-content cursor-text rounded-sm px-1 text-right outline-none placeholder:text-zinc-500 hover:bg-white/10 focus:bg-white/10"
+      className="-mx-1 box-content cursor-text rounded-sm px-1 text-right outline-none placeholder:text-zinc-500 hover:bg-zinc-50/10 focus:bg-zinc-50/10"
     />
   );
 };
