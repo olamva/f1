@@ -104,7 +104,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
     () => localStorage.getItem("spoilers") !== "0",
   );
   const [autoupdate, setAutoupdate] = useState(
-    () => localStorage.getItem("autoupdate") === "1",
+    () => localStorage.getItem("autoupdate") !== "0",
   );
   const [message, setMessage] = useState<string | null>(null);
   const [push, setPush] = useState<PushState | null>(null);
