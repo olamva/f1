@@ -49,7 +49,7 @@ export const Drivers = ({ season, who, table }: DriversProps) => {
             <span className="relative flex items-center gap-2 text-xs font-semibold tracking-widest text-zinc-400">
               {driver.code}
               {big && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-[10px] text-yellow-300 uppercase">
+                <span className="light:bg-white light:shadow-sm inline-flex items-center gap-1 rounded-full bg-black/30 px-2 py-0.5 text-[10px] text-yellow-300 uppercase">
                   <Star aria-hidden="true" className="size-3 fill-current" />
                   Favourite
                 </span>
