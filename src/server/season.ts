@@ -41,7 +41,7 @@ const quali = (r: any): QualiResult => ({
   q3: r.Q3 ?? null,
 });
 
-const when = (s: any): string | null =>
+export const when = (s: any): string | null =>
   s ? `${s.date}T${s.time ?? "00:00:00Z"}` : null;
 
 const alpha = "https://api.jolpi.ca/f1/alpha";
@@ -109,6 +109,9 @@ const schedule = (r: any): Round => ({
     race: when(r),
   },
 });
+
+export const seasonYear = async (): Promise<number> =>
+  Number((await get("current.json?limit=100")).RaceTable.season);
 
 export async function season(): Promise<Season> {
   const [calendar, results, sprints, qualifying, ds, cs] = await Promise.all([

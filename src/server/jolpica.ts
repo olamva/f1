@@ -44,16 +44,20 @@ export function json(path: string, freshMs = FRESH_MS): Promise<any> {
   const hit = cache.get(path);
   if (hit && Date.now() - hit.at < freshMs) return hit.body;
   const request = throttled(path);
-  const body = hit ? request.catch(() => hit.body) : request;
-  const entry = { at: Date.now(), body };
+  const entry = { at: Date.now(), body: hit?.body ?? request };
   cache.set(path, entry);
-  request.catch(() => {
-    if (cache.get(path) === entry) {
-      if (hit) cache.set(path, hit);
-      else cache.delete(path);
-    }
-  });
-  return body;
+  request.then(
+    () => {
+      if (cache.get(path) === entry) entry.body = request;
+    },
+    () => {
+      if (cache.get(path) === entry) {
+        if (hit) cache.set(path, hit);
+        else cache.delete(path);
+      }
+    },
+  );
+  return entry.body;
 }
 
 export const get = (path: string, freshMs = FRESH_MS): Promise<any> =>

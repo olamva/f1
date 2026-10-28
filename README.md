@@ -21,6 +21,8 @@ pnpm test
 
 `pnpm dev` turns off Google sign-in. Set `PORT` and `VITE_PORT` to run more than one dev server, such as `PORT=0 VITE_PORT=0 pnpm dev`. The value 0 selects an unused port. Set `NO_LIVE=1` to turn off live timing, so that the app shows replays during a live session.
 Set `LIVE_REPLAY` to a file in `recordings/` to replay a recorded session as a live session. See the [live replay skill](.claude/skills/live-replay/SKILL.md).
+The F1 archive returns HTTP 401 without an F1TV token, so replays and the session list need one. Save a token in Settings.
+Put `DATA_DIR=<absolute path>` in `.env.local` in the main checkout to keep the token. Use an ignored directory, such as `.env.data`. `pnpm dev` reads that file in each worktree. A `.env.local` in the worktree overrides it.
 
 Stop `pnpm dev` with Ctrl+C. The command stops both servers and the Node watcher.
 The command checks both ports before startup.
@@ -31,6 +33,7 @@ Give the command network permission if the sandbox blocks local ports.
 
 Jolpica requests share one queue per server, including sprint qualifying requests.
 The server retries HTTP 429 twice and follows `Retry-After` for waits of at most one minute.
+When a cached response is old, the server sends it and refreshes it in the background.
 The server preserves cached responses after a failed refresh. Longer cooldowns fail without sending more requests.
 Start preview servers one at a time. Multiple servers share the upstream IP limit, but keep separate caches.
 See the [Jolpica rate limits](https://github.com/jolpica/jolpica-f1/blob/main/docs/rate_limits.md).
@@ -43,14 +46,14 @@ Import the `Setup Worktree` action from `t3.json` in T3 project settings once.
 Start each task in a new thread and worktree. The action updates the branch and installs dependencies.
 Run `CI=true pnpm install --frozen-lockfile` with network permission if an install requires confirmation without a terminal.
 Keep installation and checks in the same permission context. Keep dependencies separate for each worktree.
-After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` from the task worktree.
+After merge, run `pnpm worktree:cleanup . <pr-number> --branch-only --apply` from the task worktree. It also deletes the remote `screenshots/pr-<pr-number>` branch.
 Keep the worktree while its T3 thread is active. Remove it from another checkout after T3 stops.
 
 ## Deploy
 
 Push to `main`. CI refreshes the bundled calendar, builds the amd64 image and pushes `ghcr.io/olamva/f1:latest`. On the VM, `podman-auto-update.timer` pulls a new image every five minutes and restarts the app.
 
-`infra/oracle/launch.sh` launches the VM with `infra/oracle/cloud-init.yaml`. It retries until Oracle has capacity. `F1_SSH=ubuntu@<VM IP> infra/oracle/configure.sh` installs the quadlet `infra/oracle/f1.container` and the Caddy site, and restarts both. Caddy serves the app at `f1.ola-vassbotn.no`. The container uses the host network on port 8080, because the host firewall rejects traffic from the podman bridge. The firewall also blocks port 8080 from outside.
+`infra/oracle/launch.sh` launches the VM with `infra/oracle/cloud-init.yaml`. It retries until Oracle has capacity. `F1_SSH=ubuntu@<VM IP> infra/oracle/configure.sh` installs the quadlet `infra/oracle/f1.container` and the Caddy site, and restarts both. Caddy serves the app at `f1.ola-vassbotn.no`. Caddy compresses all responses except the `/api/*/stream` event streams. Caddy 2.6 holds compressed events in a buffer, so the browser gets no events. Caddy serves only HTTP/1.1 and HTTP/2. The firewall drops UDP port 443, so HTTP/3 requests from iOS fail with "Load failed". The container uses the host network on port 8080, because the host firewall rejects traffic from the podman bridge. The firewall also blocks port 8080 from outside.
 
 The unit has `MemoryMax=700M`, and the VM has a 1 GB swap file. Run `sudo systemctl status f1` and `sudo journalctl -u f1 -f` on the VM for the memory, the state and the logs.
 
@@ -72,12 +75,7 @@ Google sign-in uses the callback `https://<host>/.auth/login/google/callback`. T
 
 The server uses `F1_ORIGIN` as the base URL for F1 archives and live timing. The default is `https://livetiming.formula1.com`. That host refuses Oracle IP addresses, so `F1_ORIGIN` points to the Cloudflare relay in `relay/`.
 
-Terraform in `infra/` manages the Azure resources:
-
-1. Create `infra/terraform.tfvars` with `test -f infra/terraform.tfvars || cp infra/terraform.tfvars.example infra/terraform.tfvars`.
-2. Fill the placeholders in that ignored file. Each worktree needs its own values. Keep existing values when the file exists.
-3. Run `az login --scope https://storage.azure.com/.default` before `terraform -chdir=infra init` if storage authentication requires login.
-4. Run `terraform -chdir=infra init`, then `terraform -chdir=infra apply`.
+Two Azure accounts in the resource group `f1` make the transcripts. The Azure OpenAI account `f1-speech-b401e2` is in Norway East. The Azure Speech account `f1-voice-se-b401e2` is in Sweden Central. No tool manages them. The VM keeps their keys in `/etc/f1/env`.
 
 ## Notifications
 

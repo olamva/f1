@@ -107,10 +107,8 @@ textarea {
 }
 
 .glass-tabs {
-  border: 1px solid rgb(255 255 255 / 0.14);
+  border: 1px solid transparent;
   border-radius: 9999px;
-  background: rgb(255 255 255 / 0.075);
-  box-shadow: inset 0 1px rgb(255 255 255 / 0.08);
   backdrop-filter: blur(16px) saturate(1.5);
   transition:
     scale 320ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -120,30 +118,27 @@ textarea {
 .glass-tabs::before {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -1px;
+  border: 1px solid rgb(255 255 255 / 0.14);
   border-radius: inherit;
+  background: rgb(255 255 255 / 0.075);
+  box-shadow: inset 0 1px rgb(255 255 255 / 0.08);
+  clip-path: var(--hole);
   pointer-events: none;
-  background: radial-gradient(
-    110px circle at var(--glass-x, 50%) var(--glass-y, 50%),
-    rgb(255 255 255 / 0.22),
-    transparent
-  );
-  opacity: 0;
-  transition: opacity 220ms ease;
+  transition: box-shadow 200ms ease;
 }
 
 .glass-tabs[data-held="true"],
 .glass-tabs:has(.glass-tab:active) {
   scale: 1.025;
-  box-shadow:
-    0 8px 24px rgb(0 0 0 / 0.2),
-    inset 0 1px rgb(255 255 255 / 0.3),
-    inset 0 -1px rgb(255 255 255 / 0.1);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 0.2);
 }
 
 .glass-tabs[data-held="true"]::before,
 .glass-tabs:has(.glass-tab:active)::before {
-  opacity: 1;
+  box-shadow:
+    inset 0 1px rgb(255 255 255 / 0.3),
+    inset 0 -1px rgb(255 255 255 / 0.1);
 }
 
 @property --lift {
@@ -157,9 +152,9 @@ textarea {
   top: 0.25rem;
   bottom: 0.25rem;
   left: 0;
+  overflow: hidden;
   border-radius: 9999px;
-  background-color: #dc2626;
-  box-shadow: 0 2px 8px rgb(220 38 38 / 0.25);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.35);
   pointer-events: none;
   scale: calc(var(--lift) * (1 + var(--stretch, 0)))
     calc(var(--lift) * (1 - var(--stretch, 0) * 0.45));
@@ -170,23 +165,52 @@ textarea {
     bottom 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     translate 280ms cubic-bezier(0.22, 1, 0.36, 1),
     width 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 200ms ease,
     box-shadow 200ms ease,
     opacity 150ms ease;
 }
 
-.glass-highlight::before {
+.glass-highlight::after {
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: inherit;
-  background: linear-gradient(
-    rgb(255 255 255 / 0.3),
-    rgb(255 255 255 / 0.04) 50%,
-    rgb(255 255 255 / 0.12)
-  );
+  background: rgb(255 255 255 / 0.075);
+  box-shadow: inset 0 0 0 9999px rgb(0 0 0 / 0.4);
+  transition: opacity 200ms ease;
+}
+
+.glass-tabs[data-glass="true"] .glass-highlight::after {
+  opacity: 0;
+}
+
+.glass-slab {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke-width: 1.6px;
   opacity: 0;
   transition: opacity 200ms ease;
+}
+
+.glass-edge {
+  fill: rgb(255 255 255 / 0.075);
+  stroke: rgb(255 255 255 / 0.28);
+}
+
+.glass-split {
+  fill: none;
+  stroke: rgb(248 113 113 / 0.15);
+  transform: translate(-0.4px, 0.4px);
+}
+
+.glass-split + .glass-split {
+  stroke: rgb(96 165 250 / 0.2);
+  transform: translate(0.4px, -0.4px);
+}
+
+.glass-tabs[data-glass="true"] .glass-slab {
+  opacity: 1;
 }
 
 .glass-highlight[data-visible="false"] {
@@ -195,27 +219,18 @@ textarea {
 
 .glass-tabs[data-glass="true"] .glass-highlight {
   --lift: 1.2;
-  background-color: rgb(239 68 68 / 0.38);
-  backdrop-filter: blur(2px) saturate(1.8);
   box-shadow:
-    0 8px 24px rgb(220 38 38 / 0.35),
-    inset 0 1px 1px rgb(255 255 255 / 0.7),
-    inset 0 -1px 1px rgb(255 255 255 / 0.2),
-    inset 3px 0 4px -2px rgb(254 202 202 / 0.6),
-    inset -3px 0 4px -2px rgb(96 165 250 / 0.5),
-    inset 0 0 14px rgb(252 165 165 / 0.35);
+    inset 0 0 1.5px 0.5px rgb(96 165 250 / 0.07),
+    inset 0 0 3px 1.5px rgb(190 242 100 / 0.04),
+    0 0 0 1px rgb(0 0 0 / 0.5),
+    0 8px 24px rgb(0 0 0 / 0.3);
   transition:
     --lift 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     top 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     bottom 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
     width 280ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 200ms ease,
     box-shadow 200ms ease;
   will-change: translate, scale;
-}
-
-.glass-tabs[data-glass="true"] .glass-highlight::before {
-  opacity: 1;
 }
 
 .glass-tab[aria-pressed="true"] {
@@ -248,9 +263,24 @@ textarea {
   transition: color 180ms ease;
 }
 
+.glass-label {
+  clip-path: var(--hole);
+}
+
+.glass-tabs[data-visible="false"]::before,
+.glass-tabs[data-visible="false"] .glass-label {
+  clip-path: none;
+}
+
 .glass-lens {
-  color: white;
-  transition: opacity 150ms ease;
+  color: #ef4444;
+  transition:
+    opacity 150ms ease,
+    scale 280ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.glass-tabs[data-glass="true"] .glass-lens {
+  scale: 1.15;
 }
 
 @media (hover: hover) {
@@ -340,8 +370,9 @@ textarea {
   border-radius: 9999px;
   background: #f4f4f5;
   box-shadow:
-    inset 0 1px 1px white,
-    0 2px 6px rgb(0 0 0 / 0.3);
+    0 2px 6px rgb(0 0 0 / 0.3),
+    0 0 transparent,
+    inset 0 1px 1px white;
   pointer-events: none;
   transition:
     scale 360ms cubic-bezier(0.34, 1.56, 0.64, 1),
@@ -351,14 +382,15 @@ textarea {
 
 .glass-seek[data-held="true"] .glass-seek-thumb {
   scale: 1.65 1.5;
-  background: rgb(255 255 255 / 0.12);
-  backdrop-filter: blur(1px) saturate(1.8);
-  box-shadow:
-    inset 0 1px 1px rgb(255 255 255 / 0.9),
-    inset 0 -1px 1px rgb(255 255 255 / 0.3),
-    inset 2px 0 3px rgb(255 255 255 / 0.35),
-    inset -2px 0 3px rgb(147 197 253 / 0.25),
-    0 5px 12px rgb(0 0 0 / 0.35);
+  background: transparent;
+}
+
+.glass-seek .glass-lens {
+  transform-origin: calc(14px + (100% - 28px) * var(--progress)) 50%;
+}
+
+.glass-seek[data-held="true"] .glass-lens {
+  scale: 1.15;
 }
 
 .glass-seek-input {
@@ -399,61 +431,94 @@ textarea {
 }
 
 .glass-switch {
+  --track: #3f3f46;
   position: relative;
   height: 28px;
   width: 64px;
   flex-shrink: 0;
   border-radius: 9999px;
-  background: #3f3f46;
-  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
-  transition: background-color 180ms ease;
   touch-action: none;
 }
 
-.glass-switch::after {
+.glass-switch::before {
   content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--track);
+  box-shadow: inset 0 1px 2px rgb(0 0 0 / 0.2);
+  clip-path: var(--hole);
+  transition: background-color 180ms ease;
+}
+
+.glass-knob {
   position: absolute;
   top: 2px;
   left: 2px;
   width: 38px;
   height: 24px;
+  overflow: hidden;
   border-radius: inherit;
-  background: #f4f4f5;
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.3);
+  pointer-events: none;
   transition:
     translate 480ms cubic-bezier(0.34, 1.36, 0.42, 1),
     scale 420ms cubic-bezier(0.22, 1, 0.36, 1),
-    background-color 320ms ease,
     box-shadow 320ms ease;
 }
 
-.glass-switch[data-held="true"]::after {
-  scale: calc(58 / 38) calc(38 / 24);
-  background: rgb(255 255 255 / 0.22);
+.glass-knob::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #f4f4f5;
+  transition: opacity 320ms ease;
+}
+
+.glass-switch[data-held="true"] .glass-knob::after {
+  opacity: 0;
+  transition-duration: 180ms;
+}
+
+.glass-seek[data-held="true"] .glass-seek-thumb,
+.glass-switch[data-held="true"] .glass-knob {
   box-shadow:
-    inset 0 1px 1px rgb(255 255 255 / 0.9),
-    inset 0 -1px 1px rgb(255 255 255 / 0.35),
-    0 3px 8px rgb(0 0 0 / 0.3);
+    0 0 0 0.75px rgb(0 0 0 / 0.5),
+    0 6px 18px rgb(0 0 0 / 0.3),
+    inset 0 0 1.15px 0.4px rgb(96 165 250 / 0.07),
+    inset 0 0 2.3px 1.15px rgb(190 242 100 / 0.04);
+}
+
+.glass-switch[data-held="true"] .glass-knob {
+  scale: calc(58 / 38) calc(38 / 24);
   transition:
     translate 480ms cubic-bezier(0.34, 1.36, 0.42, 1),
     scale 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    background-color 180ms ease,
     box-shadow 180ms ease;
 }
 
-.peer:checked + .glass-switch {
-  background: #dc2626;
+.glass-switch .glass-edge:not(.glass-split) {
+  fill: var(--track);
+  stroke: none;
+  transition: fill 180ms ease;
 }
 
-.peer:checked + .glass-switch::after {
+.glass-knob .glass-slab {
+  opacity: 1;
+}
+
+.peer:checked + .glass-switch {
+  --track: #dc2626;
+}
+
+.peer:checked + .glass-switch .glass-knob {
   translate: 22px;
 }
 
-.peer + .glass-switch[data-dragging="true"]::after {
+.peer + .glass-switch[data-dragging="true"] .glass-knob {
   translate: calc(var(--switch-progress) * 22px);
   transition:
     scale 280ms cubic-bezier(0.34, 1.56, 0.64, 1),
-    background-color 180ms ease,
     box-shadow 180ms ease;
 }
 
@@ -468,20 +533,36 @@ textarea {
 }
 
 .live-dot {
+  position: relative;
   display: inline-block;
   vertical-align: middle;
   width: 0.5rem;
   height: 0.5rem;
   margin-right: 0.5rem;
   border-radius: 50%;
-  background: #fca5a5;
-  box-shadow: 0 0 0 0 rgb(248 113 113 / 0.7);
+}
+
+.live-dot::before,
+.live-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+
+.live-dot::before {
+  background: rgb(248 113 113 / 0.7);
   animation: live-pulse 2s ease-out infinite;
+}
+
+.live-dot::after {
+  background: #fca5a5;
 }
 
 @keyframes live-pulse {
   50% {
-    box-shadow: 0 0 0 0.4rem rgb(248 113 113 / 0);
+    scale: 2.6;
+    opacity: 0;
   }
 }
 
@@ -492,6 +573,16 @@ textarea {
 }
 
 .flag-banner {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.flag-banner::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 0 -2rem;
+  z-index: -1;
   background-image: linear-gradient(
     45deg,
     rgb(0 0 0 / 0.18) 25%,
@@ -505,13 +596,13 @@ textarea {
   animation: flag-stripes 1s linear infinite;
 }
 
-.flag-banner.paused {
+.flag-banner.paused::before {
   animation-play-state: paused;
 }
 
 @keyframes flag-stripes {
   to {
-    background-position: 2rem 0;
+    translate: 2rem 0;
   }
 }
 
@@ -565,20 +656,24 @@ textarea {
   .glass-control,
   .glass-gear,
   .glass-seek-thumb,
-  .glass-switch::after {
+  .glass-knob {
     scale: none !important;
   }
 
   .glass-tabs,
   .glass-tabs::before,
   .glass-highlight,
-  .glass-highlight::before,
+  .glass-highlight::after,
+  .glass-slab,
   .glass-tab,
+  .glass-lens,
   .glass-control,
   .glass-gear,
   .glass-seek-thumb,
-  .glass-switch,
-  .glass-switch::after {
+  .glass-switch::before,
+  .glass-knob,
+  .glass-knob::after,
+  .glass-edge {
     transition: none !important;
   }
 
@@ -590,11 +685,11 @@ textarea {
     animation: none;
   }
 
-  .flag-banner {
+  .flag-banner::before {
     animation: none;
   }
 
-  .live-dot {
+  .live-dot::before {
     animation: none;
   }
 }

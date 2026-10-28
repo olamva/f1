@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { Maximize, Minimize, RotateCw } from "lucide-react";
+import { Maximize, Minimize } from "lucide-react";
+import { TokenCallout } from "./TokenCallout.tsx";
 
 export const MapFrame = ({
   banner,
-  onRotate,
+  note,
   children,
 }: {
   banner?: React.ReactNode;
-  onRotate: () => void;
+  note?: string | null;
   children: (full: boolean) => React.ReactNode;
 }) => {
   const frame = useRef<HTMLDivElement>(null);
@@ -28,14 +29,6 @@ export const MapFrame = ({
         {full && banner}
         <button
           type="button"
-          aria-label="Rotate the map"
-          onClick={onRotate}
-          className="glass-gear absolute right-14 bottom-3 z-10 cursor-pointer p-2"
-        >
-          <RotateCw size={18} />
-        </button>
-        <button
-          type="button"
           aria-label={full ? "Exit full screen" : "Show the map in full screen"}
           onClick={() => {
             if (document.fullscreenElement) return document.exitFullscreen();
@@ -51,6 +44,7 @@ export const MapFrame = ({
           {full ? <Minimize size={18} /> : <Maximize size={18} />}
         </button>
         {children(full)}
+        {note && <TokenCallout note={note} />}
       </div>
     </div>
   );

@@ -99,6 +99,14 @@ if (git(cwd, "ls-remote", "--heads", "origin", `refs/heads/${pr.headRefName}`))
 const local = git(cwd, "branch", "--list", branch);
 if (local && git(cwd, "rev-parse", `refs/heads/${branch}`) !== head)
   throw new Error("Preserve the changed local branch.");
+const screenshots = `screenshots/pr-${number}`;
+const hasScreenshots = !!git(
+  cwd,
+  "ls-remote",
+  "--heads",
+  "origin",
+  `refs/heads/${screenshots}`,
+);
 
 if (!branchOnly) {
   const kept = git(
@@ -138,6 +146,7 @@ if (!branchOnly) {
 }
 
 if (apply) {
+  if (hasScreenshots) git(cwd, "push", "origin", "--delete", screenshots);
   if (local) {
     git(target, "switch", "--detach", head);
     git(target, "branch", "-d", branch);
@@ -151,5 +160,6 @@ console.log(
     pullRequest: pr.url,
     removed: apply && !branchOnly,
     branchRemoved: apply && !!local,
+    screenshotsRemoved: apply && hasScreenshots,
   }),
 );

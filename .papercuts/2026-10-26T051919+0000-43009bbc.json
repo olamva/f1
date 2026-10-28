@@ -1,0 +1,15 @@
+{
+  "id": "43009bbc",
+  "ts": "2026-10-26T05:19:19+00:00",
+  "text": "Playwright WebKit page.screenshot hangs on 'waiting for fonts to load' for the app pages",
+  "tags": [
+    "playwright",
+    "tools",
+    "webkit"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c86933b4",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-865e5fd8",
+  "branch": "t3/improve-slowest-components"
+}

@@ -3,6 +3,7 @@ package_update: true
 packages:
   - podman
   - caddy
+  - rsync
   - iptables-persistent
 swap:
   filename: /swapfile
@@ -26,6 +27,9 @@ write_files:
       [Service]
       ExecStartPost=/usr/bin/podman image prune -f
 runcmd:
+  - snap remove --purge oracle-cloud-agent
+  - apt-get purge -y snapd
+  - systemctl disable --now ModemManager udisks2 iscsid.socket iscsid fwupd-refresh.timer
   - install -d -o f1 -g f1 -m 0700 /srv/f1
   - install -d -m 0700 /etc/f1
   - iptables -I INPUT -p tcp -m multiport --dports 80,443 -m state --state NEW -j ACCEPT

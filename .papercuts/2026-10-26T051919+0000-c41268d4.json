@@ -1,0 +1,15 @@
+{
+  "id": "c41268d4",
+  "ts": "2026-10-26T05:19:19+00:00",
+  "text": "Playwright WebKit content process crashes silently on pushManager.getSubscription(), so any test that mounts Settings after SW registration hangs",
+  "tags": [
+    "playwright",
+    "tools",
+    "webkit"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c86933b4",
+  "where": "src/web/push.ts",
+  "branch": "t3/improve-slowest-components"
+}

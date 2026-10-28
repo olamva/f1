@@ -1,0 +1,14 @@
+{
+  "id": "51e8f85e",
+  "ts": "2026-10-20T13:24:43+00:00",
+  "text": "Local server gets archive 401 for 2026/Index.json from livetiming.formula1.com without F1_ORIGIN relay, so the Calendar cannot load locally",
+  "tags": [
+    "dev",
+    "docs"
+  ],
+  "who": "agent",
+  "model": "opus-5-5",
+  "session": "647f9eb6",
+  "where": "src/server/origin.ts",
+  "branch": "t3/faster-calendar"
+}

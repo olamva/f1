@@ -1,0 +1,13 @@
+{
+  "id": "dca9e369",
+  "ts": "2026-10-19T22:52:13+00:00",
+  "text": "zsh aborts glob args like --include=*.tf when no file matches, so grep needs quoting or find",
+  "tags": [
+    "tools"
+  ],
+  "who": "agent",
+  "model": "haiku-5-5",
+  "session": "647f9eb6",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-df1cc0ad",
+  "branch": "t3/investigate-vm-page-latency"
+}

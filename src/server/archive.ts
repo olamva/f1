@@ -1,7 +1,12 @@
 import { createInterface } from "node:readline";
 import { Readable } from "node:stream";
 import { merge } from "../shared/merge.ts";
-import type { LapPositions, Qualifying, Stints } from "../shared/season.ts";
+import type {
+  LapPositions,
+  Practice,
+  Qualifying,
+  Stints,
+} from "../shared/season.ts";
 import type { Outline, SessionRef } from "../shared/timing.ts";
 import circuits from "./circuits.json" with { type: "json" };
 import { get } from "./jolpica.ts";
@@ -20,6 +25,10 @@ const CHECKPOINT_MS = 30_000;
 
 const text = async (path: string): Promise<string> => {
   const res = await archive(path);
+  if (res.status === 401)
+    throw new Error(
+      "The F1 archive needs a valid F1TV token. Save a new token in Settings.",
+    );
   if (!res.ok) throw new Error(`archive ${res.status} ${path}`);
   return res.text();
 };
@@ -62,6 +71,21 @@ const SESSIONS = {
     label: "Sprint qualifying",
     name: /^Sprint (?:Qualifying|Shootout)$/,
     event: (r: any) => r?.SprintQualifying ?? r?.SprintShootout,
+  },
+  fp1: {
+    label: "Practice 1",
+    name: /^FP1$/,
+    event: (r: any) => r?.FirstPractice,
+  },
+  fp2: {
+    label: "Practice 2",
+    name: /^FP2$/,
+    event: (r: any) => r?.SecondPractice,
+  },
+  fp3: {
+    label: "Practice 3",
+    name: /^FP3$/,
+    event: (r: any) => r?.ThirdPractice,
   },
 };
 
@@ -148,12 +172,46 @@ export async function qualifying(
     .sort((a, b) => a.position - b.position);
 }
 
+export async function practice(
+  year: number,
+  round: number,
+  kind: "fp1" | "fp2" | "fp3",
+): Promise<Practice> {
+  const path = await sessionPath(year, round, kind);
+  const [timing, drivers] = await Promise.all([
+    json(`${path}TimingData.json`),
+    json(`${path}DriverList.json`),
+  ]);
+  return Object.entries(timing.Lines ?? {})
+    .map(([number, line]: [string, any]) => ({
+      number,
+      position: Number(line.Position),
+      name: drivers[number]
+        ? `${drivers[number].FirstName} ${drivers[number].LastName}`
+        : `#${number}`,
+      team: drivers[number]?.TeamName ?? "",
+      time: line.BestLapTime?.Value || null,
+      gap: line.TimeDiffToFastest ?? "",
+      laps: line.NumberOfLaps ?? 0,
+    }))
+    .sort((a, b) => a.position - b.position);
+}
+
 export type Replay = {
   path: string;
   events: Event[];
   duration: number;
   checkpoints: { t: number; index: number; state: State }[];
   session: Session;
+};
+
+const ROTATION: Record<number, number> = {
+  2: 274,
+  4: 308,
+  46: 358,
+  65: 9,
+  144: 308,
+  153: 270,
 };
 
 const circuit = (key: number, date: string): Outline | null => {
@@ -165,7 +223,7 @@ const circuit = (key: number, date: string): Outline | null => {
         x: c.x,
         y: c.y,
         time: [],
-        rotation: 0,
+        rotation: ROTATION[key] ?? 0,
         corners: c.corners,
         sectors: c.sectors,
         detection: c.detection,
@@ -200,7 +258,7 @@ export async function outlineFor(
         x: c.x,
         y: c.y,
         time: c.trackPositionTime ?? [],
-        rotation: c.rotation ?? 0,
+        rotation: ROTATION[key] ?? c.rotation ?? 0,
         corners: (c.corners ?? []).map((k: any) => ({
           number: k.number,
           ...k.trackPosition,

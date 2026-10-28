@@ -19,16 +19,19 @@ const allowed = (address: string): boolean =>
     .includes(address.toLowerCase());
 
 const oidc: MiddlewareHandler = (c, next) => {
+  if (!process.env.OIDC_AUTH_SECRET) return next();
   const site = `https://${c.req.header("host")}`;
-  return process.env.OIDC_AUTH_SECRET
-    ? initOidcAuthMiddleware({
-        OIDC_ISSUER: "https://accounts.google.com",
-        OIDC_SCOPES: "openid email",
-        OIDC_REDIRECT_URI: site + CALLBACK,
-        OIDC_AUTH_EXTERNAL_URL: site,
-        OIDC_AUTH_EXPIRES: String(EXPIRES),
-      })(c, next)
-    : next();
+  c.set("oidcClientAuth", (_as, client, body) => {
+    body.set("client_id", client.client_id);
+    body.set("client_secret", process.env.OIDC_CLIENT_SECRET!);
+  });
+  return initOidcAuthMiddleware({
+    OIDC_ISSUER: "https://accounts.google.com",
+    OIDC_SCOPES: "openid email",
+    OIDC_REDIRECT_URI: site + CALLBACK,
+    OIDC_AUTH_EXTERNAL_URL: site,
+    OIDC_AUTH_EXPIRES: String(EXPIRES),
+  })(c, next);
 };
 
 const session: MiddlewareHandler = async (c, next) => {

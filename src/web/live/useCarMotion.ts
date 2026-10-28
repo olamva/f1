@@ -15,12 +15,18 @@ interface Motion {
   ghost: (
     positions: Record<string, [number, number]>,
   ) => Record<string, [number, number]>;
+  translate: (
+    x: number,
+    y: number,
+    frame: [number, number, number, number],
+  ) => string;
 }
 
 export const useCarMotion = (
-  svg: RefObject<SVGSVGElement | null>,
+  layer: RefObject<HTMLDivElement | null>,
   project: ((x: number, y: number) => [number, number]) | null,
-  { positions, positionTrail, time, speed, stream, ghost }: Motion,
+  visible: boolean,
+  { positions, positionTrail, time, speed, stream, ghost, translate }: Motion,
 ) => {
   const motion = useRef({
     stream,
@@ -64,8 +70,8 @@ export const useCarMotion = (
         m.trail.findLastIndex(([t]) => t <= clock - SMOOTHING / 2),
       );
       const taps = TAPS.map((k) => ghost(positionsAt(m.trail, clock + k)));
-      for (const car of svg.current!.querySelectorAll<SVGGElement>(
-        "g[data-number]",
+      for (const car of layer.current!.querySelectorAll<HTMLElement>(
+        "[data-number]",
       )) {
         const points = taps.flatMap((at) => {
           const p = at[car.dataset.number!];
@@ -74,10 +80,16 @@ export const useCarMotion = (
         if (!points.length) continue;
         const mean = (i: 0 | 1) =>
           points.reduce((sum, p) => sum + p[i], 0) / points.length;
-        const [x, y] = project(mean(0), mean(1));
-        car.style.transform = `translate(${x}px, ${y}px)`;
+        const { x, y, width, height } =
+          car.querySelector("svg")!.viewBox.baseVal;
+        car.style.transform = translate(...project(mean(0), mean(1)), [
+          x,
+          y,
+          width,
+          height,
+        ]);
       }
-      frame = requestAnimationFrame(draw);
+      if (visible) frame = requestAnimationFrame(draw);
     };
     draw();
     return () => cancelAnimationFrame(frame);

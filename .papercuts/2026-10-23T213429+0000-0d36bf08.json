@@ -1,0 +1,13 @@
+{
+  "id": "0d36bf08",
+  "ts": "2026-10-23T21:34:29+00:00",
+  "text": "livetiming.formula1.com/static/2026/Index.json returns 401 without the app token; no plain way to list season circuit keys",
+  "tags": [
+    "data"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "c7d49131",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-270f1b4b",
+  "branch": "t3/rotate-season-track-maps"
+}

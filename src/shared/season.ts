@@ -75,6 +75,18 @@ export type Qualifying = {
   times: (string | null)[];
 }[];
 
+export type Practice = {
+  number: string;
+  position: number;
+  name: string;
+  team: string;
+  time: string | null;
+  gap: string;
+  laps: number;
+}[];
+
+export const SESSION_MS = 60 * 60_000;
+
 export type RaceArchive = {
   year: number;
   races: {

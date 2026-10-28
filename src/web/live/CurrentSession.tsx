@@ -1,11 +1,12 @@
 import { ChevronLeft, Eye, Settings, SkipBack } from "lucide-react";
 import {
+  memo,
   useEffect,
   useMemo,
   useRef,
   useState,
   type CSSProperties,
-  type RefObject,
+  type ReactNode,
 } from "react";
 import type { Round, Season } from "../../shared/season.ts";
 import type {
@@ -14,6 +15,7 @@ import type {
   Period,
   SessionRef,
 } from "../../shared/timing.ts";
+import type { TokenProblem } from "../../shared/token.ts";
 import { useJson, type Loaded } from "../api.ts";
 import { setDelay, useDelay } from "../delay.ts";
 import { DelayInput } from "../DelayInput.tsx";
@@ -22,12 +24,13 @@ import { navigate, pathPart, setPathPart, standalone } from "../path.ts";
 import { useAwake, useVisible } from "../visible.ts";
 import { Loading } from "../Loading.tsx";
 import { useLiveSpoiler } from "../Spoiler.tsx";
+import { useActive } from "../Swipe.tsx";
 import { Board } from "./Board.tsx";
 import { CalendarList } from "./CalendarList.tsx";
 import { Countdown, current } from "./Countdown.tsx";
 import { clip } from "./Panels.tsx";
 import { ReplayBar } from "./ReplayBar.tsx";
-import { clockSync, lapSync, type Latest } from "./sync.ts";
+import { clockSync, lapSync, splitSync } from "./sync.ts";
 import { useFeed, type Feed } from "./useFeed.ts";
 import { lapStarts, lapTime } from "./view.ts";
 
@@ -35,6 +38,7 @@ export type LiveInfo = {
   live: boolean;
   recent: boolean;
   positions: boolean;
+  token: TokenProblem | null;
   start: number | null;
   info: Record<string, any> | null;
 };
@@ -109,51 +113,55 @@ const GoLive = ({ behind, onClick }: GoLiveProps) => (
 
 interface DelaySettingsProps {
   race: boolean;
-  latest: RefObject<Latest>;
+  ready: boolean;
+  onSync: () => void;
 }
 
-const DelaySettings = ({ race, latest }: DelaySettingsProps) => {
-  const delay = useDelay();
-  const find = () =>
-    race
-      ? lapSync(latest.current.lapAt, Date.now())
-      : clockSync(latest.current.clock, Date.now(), delay);
-  return (
-    <>
-      <button
-        popoverTarget="tv-delay"
-        aria-label="TV delay"
-        title="TV delay"
-        className="glass-control grid size-9 cursor-pointer place-items-center [anchor-name:--tv-delay]"
-      >
-        <Settings aria-hidden="true" className="size-4" />
-      </button>
-      <div
-        id="tv-delay"
-        popover="auto"
-        className="tv-delay bg-surface w-72 space-y-3 rounded-xl border border-white/10 p-4 text-sm text-zinc-100 shadow-lg"
-      >
-        <h2 className="font-f1 font-bold">TV delay</h2>
-        <DelayInput />
-        <div className="space-y-1">
-          <button
-            type="button"
-            disabled={find() === null}
-            onClick={() => setDelay(find() ?? delay)}
-            className="glass-control w-full cursor-pointer px-3 py-1.5 font-semibold disabled:cursor-default disabled:opacity-50"
-          >
-            Sync
-          </button>
-          <p className="text-xs text-zinc-400">
-            {race
-              ? "Tap when the TV lap counter changes."
-              : "Tap when the TV clock shows a full minute."}
-          </p>
-        </div>
+const DelaySettings = ({ race, ready, onSync }: DelaySettingsProps) => (
+  <>
+    <button
+      popoverTarget="tv-delay"
+      aria-label="TV delay"
+      title="TV delay"
+      className="glass-control grid size-9 cursor-pointer place-items-center [anchor-name:--tv-delay]"
+    >
+      <Settings aria-hidden="true" className="size-4" />
+    </button>
+    <div
+      id="tv-delay"
+      popover="auto"
+      className="tv-delay bg-surface w-72 space-y-3 rounded-xl border border-white/10 p-4 text-sm text-zinc-100 shadow-lg"
+    >
+      <h2 className="font-f1 font-bold">TV delay</h2>
+      <DelayInput />
+      <div className="space-y-1">
+        <button
+          type="button"
+          disabled={!ready}
+          onClick={onSync}
+          className="glass-control w-full cursor-pointer px-3 py-1.5 font-semibold disabled:cursor-default disabled:opacity-50"
+        >
+          Sync
+        </button>
+        <p className="text-xs text-zinc-400">
+          {race
+            ? "Tap when the TV lap counter changes."
+            : "Tap when the TV clock shows a full minute."}
+        </p>
       </div>
-    </>
-  );
-};
+    </div>
+  </>
+);
+
+interface FrozenProps {
+  frozen: boolean;
+  children: ReactNode;
+}
+
+const Frozen = memo(
+  ({ children }: FrozenProps) => children,
+  (_, next) => next.frozen,
+);
 
 const liveStart = (feed: Feed | null) =>
   Math.max(feed?.since ?? 0, feed?.start ?? 0);
@@ -161,10 +169,11 @@ const liveStart = (feed: Feed | null) =>
 interface LiveProps {
   session: string;
   positions: boolean;
+  token: TokenProblem | null;
   rounds: Round[];
 }
 
-const Live = ({ session, positions, rounds }: LiveProps) => {
+const Live = ({ session, positions, token, rounds }: LiveProps) => {
   const live = useDelay() * 1000;
   const [pos, setPos] = useState<Rewind>(() => {
     const saved = JSON.parse(localStorage.getItem("rewind") ?? "null");
@@ -180,6 +189,7 @@ const Live = ({ session, positions, rounds }: LiveProps) => {
   const [loading, setLoading] = useState(pos.pausedAt !== null);
   const now = useTick(1000);
   const visible = useVisible();
+  const active = useActive();
   useAwake();
   const url =
     visible && (pos.pausedAt === null || loading)
@@ -193,7 +203,9 @@ const Live = ({ session, positions, rounds }: LiveProps) => {
   const periods = useJson<Period[]>("/api/live/periods", 15_000);
   const note = positions
     ? null
-    : "Add an F1TV token in Settings to see the cars.";
+    : token === "expired"
+      ? "Your F1TV token is expired. Save a new token to see the cars."
+      : "Add an F1TV token to see the cars.";
   const behind = pos.back + (pos.pausedAt === null ? 0 : now - pos.pausedAt);
   const rows = laps.data ?? {};
   const race = Boolean(feed?.state.LapCount);
@@ -214,46 +226,64 @@ const Live = ({ session, positions, rounds }: LiveProps) => {
     pos.pausedAt === null
       ? move(pos.back, Date.now())
       : move(pos.back + Date.now() - pos.pausedAt);
+  const total = (live + behind) / 1000;
+  const find = () =>
+    race
+      ? lapSync([...starts.slice(1), latest.current.lapAt], Date.now(), total)
+      : clockSync(latest.current.clock, Date.now(), total);
+  const sync = () => {
+    const s = find();
+    if (s === null) return;
+    const [delay, back] = splitSync(s, live / 1000, behind > 0);
+    setDelay(delay);
+    move(back * 1000);
+  };
   const goLive = <GoLive behind={behind} onClick={() => move(0)} />;
   return (
-    <div className="space-y-4">
-      {feed && !waiting ? (
-        <>
-          <ReplayBar
-            race={race}
-            starts={starts}
-            start={start}
-            end={now - live}
-            at={now - live - behind}
-            periods={periods.data}
-            playing={pos.pausedAt === null}
-            onToggle={toggle}
-            onSeek={seek}
-          >
-            {goLive}
-            <DelaySettings race={race} latest={latest} />
-          </ReplayBar>
-          <Board
-            feed={feed}
-            laps={rows}
-            outline={outline.data ?? null}
-            periods={periods.data}
-            rounds={rounds}
-            positionsNote={note}
-            paused={pos.pausedAt !== null}
-            utc={now - live - behind}
-            onLap={(n) => seek(lapTime(starts, n))}
-          />
-        </>
-      ) : waiting ? (
-        <>
-          <div className="flex justify-end">{goLive}</div>
-          <DelayWait due={due} delay={live + pos.back} />
-        </>
-      ) : (
-        <Loading label="Connecting to live timing…" />
-      )}
-    </div>
+    <Frozen frozen={!active}>
+      <div className="space-y-4">
+        {feed && !waiting ? (
+          <>
+            <ReplayBar
+              race={race}
+              starts={starts}
+              start={start}
+              end={now - live}
+              at={now - live - behind}
+              periods={periods.data}
+              playing={pos.pausedAt === null}
+              onToggle={toggle}
+              onSeek={seek}
+            >
+              {goLive}
+              <DelaySettings
+                race={race}
+                ready={find() !== null}
+                onSync={sync}
+              />
+            </ReplayBar>
+            <Board
+              feed={feed}
+              laps={rows}
+              outline={outline.data ?? null}
+              periods={periods.data}
+              rounds={rounds}
+              positionsNote={note}
+              paused={pos.pausedAt !== null}
+              utc={now - live - behind}
+              onLap={(n) => seek(lapTime(starts, n))}
+            />
+          </>
+        ) : waiting ? (
+          <>
+            <div className="flex justify-end">{goLive}</div>
+            <DelayWait due={due} delay={live + pos.back} />
+          </>
+        ) : (
+          <Loading label="Connecting to live timing…" />
+        )}
+      </div>
+    </Frozen>
   );
 };
 
@@ -395,6 +425,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
         key={key}
         session={key}
         positions={info.data.positions}
+        token={info.data.token}
         rounds={season.data.rounds}
       />
     );
@@ -452,7 +483,7 @@ export const Calendar = ({ season }: CalendarProps) => {
   return (
     <CalendarList
       sessions={sessions.data}
-      rounds={season.data.rounds}
+      season={season.data}
       onStart={open}
     />
   );

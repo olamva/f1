@@ -74,7 +74,7 @@ export function status(key: string): TokenStatus {
   };
 }
 
-async function renew(key: string) {
+export async function renew(key: string) {
   const token = tokens.get(key);
   const s = status(key);
   if (!token || !s.expiresAt || s.expiresAt - Date.now() > RENEW_BEFORE_MS)

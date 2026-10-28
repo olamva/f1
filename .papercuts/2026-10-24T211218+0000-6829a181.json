@@ -1,0 +1,14 @@
+{
+  "id": "6829a181",
+  "ts": "2026-10-24T21:12:18+00:00",
+  "text": "T3 preview_snapshot times out after 15000ms on every call while preview_evaluate works; tab reports visible:false even after preview_open open:true",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "7feaaf18",
+  "where": "mcp__t3-code__preview_snapshot",
+  "branch": "t3/mobile-qualifying-best-times"
+}

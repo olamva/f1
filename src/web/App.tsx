@@ -22,6 +22,7 @@ import { KINDS } from "./spoilers.ts";
 import { Stats } from "./stats/Stats.tsx";
 import { Swipe } from "./Swipe.tsx";
 import { Tabs } from "./Tabs.tsx";
+import { useTokenHidden } from "./tokenHidden.ts";
 import { UpdateToast } from "./UpdateToast.tsx";
 import f1Logo from "./f1-logo.svg";
 
@@ -56,6 +57,7 @@ export const App = () => {
   const logo = useRef<HTMLButtonElement>(null);
   const season = useJson<Season>("/api/season", 10 * 60_000);
   const info = useJson<LiveInfo>("/api/live", 30_000);
+  const tokenHidden = useTokenHidden();
   useEffect(() => {
     const on = () => {
       setTab(fromPath());
@@ -90,7 +92,7 @@ export const App = () => {
             PITWALL
           </span>
         </button>
-        <div className="fixed inset-x-[21px] bottom-[21px] z-20 flex justify-center sm:pointer-events-none sm:inset-x-4 sm:top-[calc(env(safe-area-inset-top)+1.5rem)] sm:bottom-auto sm:justify-end sm:in-has-[main:not([inert])_.board]:absolute xl:justify-center max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:bg-zinc-900/80 max-sm:[&>nav]:backdrop-blur-xl sm:[&>nav]:pointer-events-auto max-sm:[&>nav>button]:flex-1">
+        <div className="fixed inset-x-[21px] bottom-[21px] z-20 flex justify-center sm:pointer-events-none sm:inset-x-4 sm:top-[calc(env(safe-area-inset-top)+1.5rem)] sm:bottom-auto sm:justify-end sm:in-has-[main:not([inert])_.board]:absolute xl:justify-center max-sm:[&>nav]:h-[62px] max-sm:[&>nav]:w-full max-sm:[&>nav]:backdrop-blur-xl sm:[&>nav]:pointer-events-auto max-sm:[&>nav>button]:flex-1">
           <Tabs
             items={TABS}
             value={tab}
@@ -101,6 +103,7 @@ export const App = () => {
             icons={ICONS}
             labels={info.data?.live ? { Countdown: "Live" } : undefined}
             live={info.data?.live ? "Countdown" : undefined}
+            alert={info.data?.token && !tokenHidden ? "Settings" : undefined}
             drive={blob}
           />
         </div>

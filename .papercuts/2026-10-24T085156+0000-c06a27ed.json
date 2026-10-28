@@ -1,0 +1,14 @@
+{
+  "id": "c06a27ed",
+  "ts": "2026-10-24T08:51:56+00:00",
+  "text": "zsh treats $c:refs in a git refspec as the :r history modifier and mangles the ref; use ${c}:refs",
+  "tags": [
+    "git",
+    "shell"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "b38ff655",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-436a09b3",
+  "branch": "t3/preserve-weekend-schedule"
+}

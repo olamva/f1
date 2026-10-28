@@ -3,9 +3,11 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono, type Context } from "hono";
 import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import type { Delta, Snapshot } from "../shared/timing.ts";
+import { tokenProblem } from "../shared/token.ts";
 import {
   outlineFor,
   positions,
+  practice,
   qualifying,
   seasonSessions,
   replay,
@@ -22,10 +24,10 @@ import {
   standings,
 } from "./history.ts";
 import { audio, transcript } from "./radio.ts";
-import { pace, type PaceKind } from "./pace.ts";
+import { pace } from "./pace.ts";
 import * as push from "./push.ts";
 import * as reminders from "./reminders.ts";
-import { season } from "./season.ts";
+import { season, seasonYear } from "./season.ts";
 import { expand } from "./timing.ts";
 import * as token from "./token.ts";
 
@@ -53,10 +55,11 @@ const send = (s: SSEStreamingApi, event: string, data: unknown) =>
   s.writeSSE({ event, data: JSON.stringify(data) });
 
 app.get("/api/season", async (c) => c.json(await season()));
-const topics = { pace, stints, qualifying, positions };
+const topics = { pace, stints, qualifying, positions, practice };
 app.get(
-  "/api/:topic{pace|stints|qualifying|positions}/:year/:round/:kind",
+  "/api/:topic{pace|stints|qualifying|positions|practice}/:year/:round/:kind",
   async (c) => {
+    const topic = c.req.param("topic") as keyof typeof topics;
     const year = Number(c.req.param("year"));
     const round = Number(c.req.param("round"));
     const kind = c.req.param("kind");
@@ -67,11 +70,10 @@ app.get(
       !Number.isInteger(round) ||
       round < 1 ||
       round > 30 ||
-      (kind !== "race" && kind !== "sprint")
+      !(topic === "practice" ? /^fp[123]$/ : /^(race|sprint)$/).test(kind)
     )
       return c.notFound();
-    const topic = c.req.param("topic") as keyof typeof topics;
-    return c.json(await topics[topic](year, round, kind as PaceKind));
+    return c.json(await topics[topic](year, round, kind as never));
   },
 );
 app.get("/api/:kind{results|standings}/:year", async (c) => {
@@ -143,6 +145,7 @@ app.get("/api/live", (c) =>
     live: live.isLive(),
     recent: live.hasRecentTiming(),
     positions: feed(c) !== live.shared || !!live.shared.session.state.Position,
+    token: user(c) ? tokenProblem(token.status(key(c)!)) : null,
     start: feed(c).history.start ?? null,
     info: live.shared.session.state.SessionInfo ?? null,
   }),
@@ -215,10 +218,9 @@ app.get("/api/radio/transcript", async (c) => {
     : c.json({ error: "Sign in with Google to transcribe radio." }, 401);
 });
 
-app.get("/api/replay/sessions", async (c) => {
-  const s = await season();
-  return c.json(await seasonSessions(s.year));
-});
+app.get("/api/replay/sessions", async (c) =>
+  c.json(await seasonSessions(await seasonYear())),
+);
 
 const withReplay = async (path: string | undefined): Promise<Replay> =>
   replay(path ?? "");

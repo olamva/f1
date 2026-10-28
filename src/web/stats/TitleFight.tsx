@@ -162,7 +162,7 @@ const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
       <p className="text-sm text-zinc-400">
         {blocker
           ? `${a} cannot secure the title at this event. ${code(blocker.id)} can still win the title with no points here.`
-          : states.has("rival-out")
+          : states.has("rival-out") && limits.length > 0
             ? `If ${a} wins, ${a} also needs ${list(limits.map((l) => `${code(l.id)} to finish P${l.from} or lower`))}.`
             : !states.has("clinched") &&
               `${a} cannot secure the title at this event.`}
@@ -173,11 +173,14 @@ const Matrix = ({ table, events, focus, rival, who }: MatrixProps) => {
 
 const Needs = ({ table, events, focus, rival, who }: MatrixProps) => {
   const needs = useMemo(
-    () => constructorNeeds(table, events, focus, rival),
+    () =>
+      constructorNeeds(table, events, focus, rival).filter(
+        (n, i, all) => n.need !== null && n.need !== all[i - 1]?.need,
+      ),
     [table, events, focus, rival],
   );
   const [a, b] = [who.get(focus)?.name ?? focus, who.get(rival)?.name ?? rival];
-  if (needs.every((n) => n.need === null))
+  if (!needs.length)
     return (
       <p className="text-sm text-zinc-400">
         {a} cannot secure the title at {events[0]!.name}.
@@ -191,26 +194,21 @@ const Needs = ({ table, events, focus, rival, who }: MatrixProps) => {
         maximum.
       </p>
       <table className="tabular text-sm">
+        <thead className="text-left text-xs text-zinc-500">
+          <tr>
+            <th className="py-1 pr-6">{b} score</th>
+            <th className="py-1">{a} need</th>
+          </tr>
+        </thead>
         <tbody>
-          <tr>
-            <th className="pr-3 text-left text-zinc-400">{b} score</th>
-            {needs.map((n) => (
-              <td key={n.rival} className="px-1.5 text-center">
-                {n.rival}
+          {needs.map((n) => (
+            <tr key={n.rival} className="border-t border-zinc-800">
+              <td className="py-1 pr-6">
+                {n.rival ? `${n.rival} or less` : 0}
               </td>
-            ))}
-          </tr>
-          <tr>
-            <th className="pr-3 text-left text-zinc-400">{a} need</th>
-            {needs.map((n) => (
-              <td
-                key={n.rival}
-                className={`px-1.5 text-center font-semibold ${n.need === null ? "text-zinc-600" : "text-emerald-400"}`}
-              >
-                {n.need ?? "—"}
-              </td>
-            ))}
-          </tr>
+              <td className="py-1 font-semibold text-emerald-400">{n.need}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </div>

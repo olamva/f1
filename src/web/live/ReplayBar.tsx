@@ -8,6 +8,7 @@ import {
 } from "react";
 import { Flag, Pause, Play } from "lucide-react";
 import type { Period } from "../../shared/timing.ts";
+import { useRefraction } from "../Glass.tsx";
 import { Tabs } from "../Tabs.tsx";
 import { StealthInput } from "./StealthInput.tsx";
 import { clockSeconds, lapPosition, lapTime } from "./view.ts";
@@ -60,6 +61,8 @@ export const ReplayBar = ({
   const [flags, setFlags] = useState(false);
   const down = useRef(0);
   const bar = useRef<HTMLDivElement>(null);
+  const seek = useRef<HTMLDivElement>(null);
+  const thumb = useRef<HTMLSpanElement>(null);
   const laps = unit === "laps" && starts.length > 1;
   const value = drag ?? at;
   const lap = Math.max(
@@ -74,6 +77,7 @@ export const ReplayBar = ({
     0,
     Math.min(1, (position - min) / Math.max(1, max - min)),
   );
+  useRefraction(seek, thumb, held, 0, [progress]);
   const place = (t: number) =>
     Math.max(
       0,
@@ -161,6 +165,7 @@ export const ReplayBar = ({
       </button>
       <div className="order-first flex min-w-0 flex-1 basis-full items-center gap-3 sm:order-1 sm:basis-60">
         <div
+          ref={seek}
           className="glass-seek relative min-w-0 flex-1"
           data-held={held}
           data-disabled={max <= min}
@@ -177,8 +182,11 @@ export const ReplayBar = ({
               }}
             />
           ))}
-          <span aria-hidden="true" className="glass-seek-track" />
-          <span aria-hidden="true" className="glass-seek-thumb" />
+          <span aria-hidden="true" className="glass-seek-track glass-label" />
+          <span aria-hidden="true" className="glass-lens absolute inset-0">
+            <span className="glass-seek-track" />
+          </span>
+          <span ref={thumb} aria-hidden="true" className="glass-seek-thumb" />
           <input
             type="range"
             aria-label={laps ? "Seek to lap" : "Seek to time"}

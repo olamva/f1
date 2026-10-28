@@ -6,6 +6,7 @@ import {
   type PointerEvent,
   type RefObject,
 } from "react";
+import { GlassSlab, refract, useRefraction } from "./Glass.tsx";
 
 interface TabsProps<T extends string> {
   items: readonly T[];
@@ -17,6 +18,7 @@ interface TabsProps<T extends string> {
   labels?: Partial<Record<T, string>>;
   icons?: Partial<Record<T, LucideIcon>>;
   live?: T;
+  alert?: T;
   drive?: RefObject<((offset: number, held: boolean) => void) | null>;
 }
 
@@ -30,6 +32,7 @@ export const Tabs = <T extends string>({
   labels,
   icons,
   live,
+  alert,
   drive,
 }: TabsProps<T>) => {
   const nav = useRef<HTMLElement>(null);
@@ -152,48 +155,10 @@ export const Tabs = <T extends string>({
     };
   });
 
-  const clip = () => {
-    const indicator = blob.current;
-    if (!indicator || !nav.current) return;
-    const inner = indicator.getBoundingClientRect();
-    for (const layer of nav.current.querySelectorAll<HTMLElement>(
-      ".glass-lens",
-    )) {
-      const outer = layer.getBoundingClientRect();
-      const scale = outer.width / layer.offsetWidth;
-      layer.style.clipPath = `inset(${[
-        inner.top - outer.top,
-        outer.right - inner.right,
-        outer.bottom - inner.bottom,
-        inner.left - outer.left,
-      ]
-        .map((edge) => `${Math.max(0, edge / scale)}px`)
-        .join(" ")} round 9999px)`;
-    }
-  };
+  const clip = () =>
+    nav.current && blob.current && refract(nav.current, blob.current, 1);
 
-  useLayoutEffect(() => {
-    const indicator = blob.current;
-    if (!indicator) return;
-    let frame = 0;
-    const follow = () => {
-      clip();
-      frame =
-        active || indicator.getAnimations().length
-          ? requestAnimationFrame(follow)
-          : 0;
-    };
-    const start = () => {
-      cancelAnimationFrame(frame);
-      follow();
-    };
-    start();
-    indicator.addEventListener("transitionrun", start);
-    return () => {
-      cancelAnimationFrame(frame);
-      indicator.removeEventListener("transitionrun", start);
-    };
-  }, [active, highlight, size]);
+  useRefraction(nav, blob, active, 1, [highlight, size]);
 
   const position = (event: PointerEvent<HTMLElement>) => {
     const current = drag.current!;
@@ -208,25 +173,18 @@ export const Tabs = <T extends string>({
     );
   };
 
-  const shine = (event: PointerEvent<HTMLElement>) => {
-    const track = nav.current!;
-    const bounds = track.getBoundingClientRect();
-    const scale = bounds.width / track.offsetWidth;
-    track.style.setProperty(
-      "--glass-x",
-      `${(event.clientX - bounds.left) / scale}px`,
-    );
-    track.style.setProperty(
-      "--glass-y",
-      `${(event.clientY - bounds.top) / scale}px`,
-    );
-  };
-
   const content = (i: T) => {
     const Icon: LucideIcon | undefined = icons?.[i];
     return (
       <>
         {live === i && <span aria-hidden="true" className="live-dot" />}
+        {alert === i && (
+          <span
+            role="img"
+            aria-label="Needs attention"
+            className="mr-2 inline-block size-2 rounded-full bg-yellow-300"
+          />
+        )}
         {Icon && <Icon aria-hidden="true" className="size-5 sm:hidden" />}
         <span className={Icon ? "max-sm:sr-only" : undefined}>
           {labels?.[i] ?? i}
@@ -255,7 +213,6 @@ export const Tabs = <T extends string>({
     <nav
       ref={nav}
       onPointerMove={(event) => {
-        shine(event);
         if (drag.current?.pointerId !== event.pointerId) return;
         if (
           !suppressClick.current &&
@@ -309,7 +266,9 @@ export const Tabs = <T extends string>({
             width: size ?? highlight.width,
             translate: active ? undefined : `${highlight.left}px`,
           }}
-        />
+        >
+          <GlassSlab />
+        </span>
       )}
       {items.map((i, index) => {
         return (
@@ -320,7 +279,6 @@ export const Tabs = <T extends string>({
             }}
             onPointerDown={(event) => {
               if (!event.isPrimary || event.button !== 0) return;
-              shine(event);
               suppressClick.current = false;
               const button = event.currentTarget;
               drag.current = {
@@ -349,7 +307,9 @@ export const Tabs = <T extends string>({
             aria-pressed={value === i}
             className={`glass-tab relative z-10 flex shrink-0 items-center justify-center capitalize ${stretch ? "max-sm:flex-1" : ""} ${small ? "px-3.5 py-1.5 text-sm" : "px-2 py-2 text-sm font-semibold sm:px-4 sm:text-base"}`}
           >
-            {content(i)}
+            <span className="glass-label flex items-center justify-center">
+              {content(i)}
+            </span>
             <span
               aria-hidden="true"
               className="glass-lens pointer-events-none absolute inset-0 flex items-center justify-center"

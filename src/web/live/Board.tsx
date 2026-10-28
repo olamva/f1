@@ -8,6 +8,7 @@ import {
   type Period,
 } from "../../shared/timing.ts";
 import { Flag } from "../Flag.tsx";
+import { useTokenHidden } from "../tokenHidden.ts";
 import { Championship } from "./Championship.tsx";
 import { cutGaps, knockout } from "./knockout.ts";
 import { LapCharts } from "./LapCharts.tsx";
@@ -121,6 +122,7 @@ export const Board = ({
   onLap,
 }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
+  const hideMap = useTokenHidden() && !!positionsNote;
   const top = useRef<HTMLDivElement>(null);
   const state = feed.state as Record<string, any>;
   const rows = useMemo(() => cutGaps(towerRows(state), state), [state]);
@@ -186,25 +188,26 @@ export const Board = ({
           />
         </div>
         <div className={`flex flex-col gap-4 ${layout.side}`}>
-          <TrackMap
-            outline={outline}
-            positions={state.Position}
-            telemetry={state.CarData}
-            rows={rows}
-            bests={bests}
-            race={race}
-            selected={selected}
-            pit={pit}
-            onToggle={toggle}
-            note={positionsNote}
-            positionTrail={feed.positionTrail}
-            time={feed.t}
-            speed={speed}
-            stream={feed.src}
-            banner={banner}
-            circuit={state.SessionInfo?.Meeting?.Circuit?.Key}
-            flags={sectorFlags(state)}
-          />
+          {!hideMap && (
+            <TrackMap
+              outline={outline}
+              positions={state.Position}
+              telemetry={state.CarData}
+              rows={rows}
+              bests={bests}
+              race={race}
+              selected={selected}
+              pit={pit}
+              onToggle={toggle}
+              note={positionsNote}
+              positionTrail={feed.positionTrail}
+              time={feed.t}
+              speed={speed}
+              stream={feed.src}
+              banner={banner}
+              flags={sectorFlags(state)}
+            />
+          )}
           <RaceControl
             messages={messages(state)}
             rows={rows}

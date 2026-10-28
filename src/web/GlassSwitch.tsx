@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties, type ReactNode } from "react";
+import { GlassSlab, useRefraction } from "./Glass.tsx";
 
 interface GlassSwitchProps {
   checked: boolean;
@@ -24,6 +25,9 @@ export const GlassSwitch = ({
   } | null>(null);
   const suppressClick = useRef(false);
   const release = useRef(0);
+  const track = useRef<HTMLSpanElement>(null);
+  const knob = useRef<HTMLSpanElement>(null);
+  useRefraction(track, knob, held, 0, [checked]);
   const position = (clientX: number) =>
     Math.max(
       0,
@@ -57,6 +61,7 @@ export const GlassSwitch = ({
         onChange={(event) => onChange(event.target.checked)}
       />
       <span
+        ref={track}
         className="glass-switch"
         data-held={held}
         data-dragging={progress !== null}
@@ -96,7 +101,11 @@ export const GlassSwitch = ({
         onPointerCancel={() => {
           if (drag.current) end(0);
         }}
-      />
+      >
+        <span ref={knob} className="glass-knob">
+          <GlassSlab />
+        </span>
+      </span>
       {children}
     </label>
   );

@@ -1,0 +1,14 @@
+{
+  "id": "ea69bf21",
+  "ts": "2026-10-24T21:17:04+00:00",
+  "text": "zsh treats $c:refs in a git push refspec as the :r history modifier and mangles the SHA; use ${c}:refs",
+  "tags": [
+    "shell",
+    "zsh"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "7feaaf18",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-2b8d7c1e",
+  "branch": "t3/mobile-qualifying-best-times"
+}
