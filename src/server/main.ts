@@ -3,6 +3,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { Hono, type Context } from "hono";
 import { streamSSE, type SSEStreamingApi } from "hono/streaming";
 import type { Delta, Snapshot } from "../shared/timing.ts";
+import { validSettings } from "../shared/settings.ts";
 import { tokenProblem } from "../shared/token.ts";
 import {
   outlineFor,
@@ -16,6 +17,7 @@ import {
   type Replay,
 } from "./archive.ts";
 import { requireGoogle, sessions, user } from "./auth.ts";
+import { DATA_DIR } from "./data.ts";
 import * as live from "./live.ts";
 import {
   circuitFacts,
@@ -28,6 +30,7 @@ import { pace } from "./pace.ts";
 import * as push from "./push.ts";
 import * as reminders from "./reminders.ts";
 import { season, seasonYear } from "./season.ts";
+import * as settings from "./settings.ts";
 import { expand } from "./timing.ts";
 import * as token from "./token.ts";
 
@@ -44,6 +47,9 @@ app.get(
 app.route("/", sessions);
 app.use("/api/token", requireGoogle);
 app.use("/api/push", requireGoogle);
+app.use("/api/settings", requireGoogle, async (c, next) =>
+  DATA_DIR ? next() : c.json({ error: "Settings sync is off." }, 404),
+);
 
 const key = (c: Context) => {
   const u = user(c);
@@ -137,6 +143,14 @@ app.delete("/api/push", async (c) => {
   if (typeof endpoint !== "string")
     return c.json({ error: "Invalid subscription." }, 400);
   await push.unsubscribe(user(c)!, endpoint);
+  return c.body(null, 204);
+});
+
+app.get("/api/settings", async (c) => c.json(await settings.read(user(c)!)));
+app.patch("/api/settings", async (c) => {
+  const body = await c.req.json();
+  if (!validSettings(body)) return c.json({ error: "Invalid settings." }, 400);
+  await settings.update(user(c)!, body);
   return c.body(null, 204);
 });
 

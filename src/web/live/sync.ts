@@ -1,4 +1,4 @@
-import { MAX_DELAY_S } from "../delay.ts";
+import { MAX_DELAY_S } from "../../shared/settings.ts";
 export type ClockState = {
   Remaining?: string;
   Extrapolating?: boolean;
