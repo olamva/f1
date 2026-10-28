@@ -133,7 +133,7 @@ const weekday = (s: SessionRef, weekday: "long" | "short") =>
 
 const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
   <article
-    className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface from-glow light:shadow-lg bg-gradient-to-r p-5" : "bg-surface p-4"}`}
+    className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
   >
     {results && (
       <button

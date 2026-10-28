@@ -391,7 +391,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   };
   if (on)
     return spoiler.hidden ? (
-      <div className="to-surface from-glow light:shadow-lg space-y-3 rounded-xl bg-gradient-to-r p-4">
+      <div className="to-surface featured space-y-3 rounded-xl bg-gradient-to-r from-red-700/40 p-4">
         <div>
           <h1 className="font-f1 text-lg font-bold">
             <Flag country={info.data.info?.Meeting?.Country?.Name} />
@@ -431,7 +431,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
     );
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (
-    <div className="to-surface from-glow light:shadow-lg rounded-xl bg-gradient-to-r p-4">
+    <div className="to-surface featured rounded-xl bg-gradient-to-r from-red-700/40 p-4">
       <h1 className="font-f1 text-lg font-bold">
         <Flag country={scheduled.round.country} />
         {scheduled.round.name} · {scheduled.label}
