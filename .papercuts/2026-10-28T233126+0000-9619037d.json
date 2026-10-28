@@ -1,0 +1,14 @@
+{
+  "id": "9619037d",
+  "ts": "2026-10-28T23:31:26+00:00",
+  "text": "preview_snapshot times out after 15s on a hidden agent tab (open=false default from preview_open visible:false)",
+  "tags": [
+    "preview",
+    "tools"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "65aae80b",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-bfe253ef",
+  "branch": "t3/fix-favorite-chip-light-mode"
+}
