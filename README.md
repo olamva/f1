@@ -6,6 +6,7 @@ Everyone can use live timing, replays, results, and stats without sign-in.
 Google sign-in is necessary only for new radio transcripts, session reminders, and F1TV tokens. Transcripts use Azure Speech, so only signed-in users can start them. Everyone can read saved transcripts. `ALLOWED_EMAILS` lists the accounts that can sign in.
 Each user saves an own F1TV token in Settings. The server opens a separate live connection for each token. Only that user gets the car positions.
 The server keeps the tokens in `$DATA_DIR/tokens.json` with mode 0600, under a hash of the email address.
+Signed-in users get the same TV delay and favourite driver on all devices. The server keeps them in `$DATA_DIR/settings`, under a hash of the email address. The app reads them at start, every 15 seconds and when it becomes visible.
 
 - React + Vite + Tailwind in `src/web`, Hono server in `src/server`, shared logic in `src/shared`.
 - Live timing comes from `livetiming.formula1.com`. Results and standings come from Jolpica-F1.
@@ -57,7 +58,7 @@ Push to `main`. CI refreshes the bundled calendar, builds the amd64 image and pu
 
 The unit has `MemoryMax=700M`, and the VM has a 1 GB swap file. Run `sudo systemctl status f1` and `sudo journalctl -u f1 -f` on the VM for the memory, the state and the logs.
 
-The quadlet sets `DATA_DIR=/srv/f1`. The server keeps the F1TV tokens, the push subscriptions, the transcripts and the pace cache in that directory. Without `DATA_DIR`, the server keeps the tokens in memory and turns off notifications.
+The quadlet sets `DATA_DIR=/srv/f1`. The server keeps the F1TV tokens, the push subscriptions, the user settings, the transcripts and the pace cache in that directory. Without `DATA_DIR`, the server keeps the tokens in memory and turns off notifications and settings sync.
 
 Keep the other settings in `/etc/f1/env` on the VM, with mode 0600:
 

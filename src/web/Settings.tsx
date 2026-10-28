@@ -208,8 +208,8 @@ export const Settings = ({ drivers }: SettingsProps) => {
           <h2 className="font-f1 text-lg font-bold">Account</h2>
           <p className="text-sm text-zinc-400">
             {denied === 401
-              ? "Sign in with Google to transcribe new radio messages, get session reminders, and add your own F1TV token."
-              : "Your Google account has no access to new transcripts, reminders, and F1TV tokens."}
+              ? "Sign in with Google to use your TV delay and favourite driver on all devices, transcribe new radio messages, get session reminders, and add your own F1TV token."
+              : "Your Google account has no access to settings sync, new transcripts, reminders, and F1TV tokens."}
           </p>
           {denied === 401 && (
             <a
