@@ -738,21 +738,27 @@ textarea {
 
   @variant light {
     background: radial-gradient(
-      ellipse calc(var(--spotlight) * 1.1) calc(var(--spotlight) * 0.55) at 50%
-        0%,
-      #e10600,
-      rgb(225 6 0 / 0.35) 35%,
-      transparent 70%
+      ellipse calc(var(--spotlight) * 1.5) var(--spotlight) at 50% 0%,
+      #ff2a1f,
+      #e10600 50%,
+      #9f0500
     );
     animation:
-      spotlight 3s cubic-bezier(0.22, 1, 0.36, 1) both,
-      spotlight-pulse 2.5s ease-in-out 3s infinite alternate;
+      spotlight-on 3s cubic-bezier(0.22, 1, 0.36, 1) both,
+      spotlight-pulse 3s ease-in-out 3s infinite alternate;
+  }
+}
+
+@keyframes spotlight-on {
+  from {
+    --spotlight: 0%;
+    filter: brightness(0.4);
   }
 }
 
 @keyframes spotlight-pulse {
   to {
-    opacity: 0.4;
+    filter: brightness(0.9);
   }
 }
 
@@ -760,6 +766,33 @@ textarea {
   @variant light {
     background: linear-gradient(to right, #e10600, #b91c1c 55%, #7f1d1d);
     box-shadow: 0 12px 28px -12px rgb(225 6 0 / 0.6);
+  }
+}
+
+:root[data-tab="Countdown"]:has(.spotlight) header nav {
+  @variant light {
+    &::before {
+      border-color: rgb(255 255 255 / 0.3);
+      background: rgb(255 255 255 / 0.12);
+    }
+
+    .glass-lens {
+      color: #fff;
+    }
+  }
+}
+
+:root[data-tab="Countdown"]:has(.spotlight) header > button img {
+  @variant light {
+    filter: brightness(0) invert(1);
+  }
+}
+
+.featured,
+section:has(> .spotlight),
+:root[data-tab="Countdown"]:has(.spotlight) header nav,
+:root[data-tab="Countdown"]:has(.spotlight) header > button {
+  @variant light {
     color: #fff;
     --color-zinc-50: #fff;
     --color-zinc-300: rgb(255 255 255 / 0.85);
@@ -776,6 +809,12 @@ textarea {
 .swipe > [inert] .spotlight {
   animation: none;
   opacity: 0;
+
+  @variant light {
+    --spotlight: 0%;
+    opacity: 1;
+    filter: brightness(0.4);
+  }
 }
 
 @keyframes spotlight {
