@@ -31,7 +31,7 @@ export const UpdateToast = () => {
     update();
   };
   useEffect(() => {
-    if (needRefresh && localStorage.getItem("autoupdate") === "1") start();
+    if (needRefresh && localStorage.getItem("autoupdate") !== "0") start();
   }, [needRefresh]);
   if (!needRefresh) return null;
   return (
