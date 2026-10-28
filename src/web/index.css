@@ -50,6 +50,7 @@
   --font-f1-wide: "Formula1Wide", var(--font-sans);
   --color-surface: light-dark(#fff, #18181b);
   --color-purple: light-dark(#9333ea, #a855f7);
+  --color-glow: light-dark(#fff, rgb(185 28 28 / 0.4));
   --color-zinc-50: light-dark(oklch(14.1% 0.005 285.823), oklch(98.5% 0 none));
   --color-zinc-100: light-dark(
     oklch(21% 0.006 285.885),
@@ -731,7 +732,7 @@ textarea {
 .spotlight {
   background: radial-gradient(
     ellipse calc(var(--spotlight) * 1.5) var(--spotlight) at 50% 0%,
-    light-dark(rgb(239 68 68 / 0.2), rgb(185 28 28 / 0.4)),
+    var(--color-glow),
     transparent
   );
   animation: spotlight 3s cubic-bezier(0.22, 1, 0.36, 1) both;
