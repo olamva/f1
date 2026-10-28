@@ -103,7 +103,7 @@ const SessionButton = ({ session, onStart, featured }: SessionButtonProps) =>
     <button
       onClick={() => onStart(session)}
       aria-label={`Start replay: ${session.meeting} · ${session.name}`}
-      className={`pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 hover:bg-red-600 ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
+      className={`pointer-events-auto flex cursor-pointer items-center gap-1.5 rounded-md bg-zinc-800 hover:bg-red-600 hover:text-white ${featured ? "px-3.5 py-2 font-medium" : "px-2.5 py-1"}`}
     >
       <Play aria-hidden="true" className="size-3.5 shrink-0" />
       {session.name}
@@ -133,13 +133,13 @@ const weekday = (s: SessionRef, weekday: "long" | "short") =>
 
 const Weekend = ({ sessions, onStart, results, featured }: WeekendProps) => (
   <article
-    className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
+    className={`relative h-full space-y-3 rounded-xl ${featured ? "to-surface featured bg-gradient-to-r from-red-700/40 p-5" : "bg-surface p-4"}`}
   >
     {results && (
       <button
         onClick={() => openPath(results)}
         aria-label={`Results: ${sessions[0].meeting}`}
-        className="absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-white/5"
+        className="absolute inset-0 m-0 cursor-pointer rounded-xl hover:bg-zinc-50/5"
       />
     )}
     <header className="flex items-baseline justify-between gap-2">

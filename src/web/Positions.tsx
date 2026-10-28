@@ -2,6 +2,7 @@ import { useState, type PointerEvent } from "react";
 import type { LapPositions, RaceArchive } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
 import { FAVOURITE_ROW } from "./favourite.ts";
+import { ink } from "./ink.ts";
 import { TeamLogo } from "./TeamLogo.tsx";
 
 interface PositionsProps {
@@ -56,7 +57,7 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
                 x1={lap}
                 x2={lap}
                 y2={rows.length}
-                stroke="#27272a"
+                className="stroke-zinc-800"
                 vectorEffect="non-scaling-stroke"
               />
             ))}
@@ -78,7 +79,7 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
                     <polyline
                       points={points}
                       fill="none"
-                      stroke={teamColor(row.team)}
+                      stroke={ink(teamColor(row.team))}
                       strokeWidth={focus === row.number ? 3 : 2}
                       strokeOpacity={focus && focus !== row.number ? 0.15 : 1}
                       strokeDasharray={
@@ -109,7 +110,7 @@ export const Positions = ({ rows, laps, favourite }: PositionsProps) => {
               <button
                 type="button"
                 aria-pressed={pinned === row.number}
-                className={`flex h-6 w-full cursor-pointer items-center rounded pl-1 ${row.driver === favourite ? FAVOURITE_ROW : ""} ${focus && focus !== row.number ? "opacity-40" : ""} ${focus === row.number ? "font-bold text-white" : ""}`}
+                className={`flex h-6 w-full cursor-pointer items-center rounded pl-1 ${row.driver === favourite ? FAVOURITE_ROW : ""} ${focus && focus !== row.number ? "opacity-40" : ""} ${focus === row.number ? "font-bold text-zinc-50" : ""}`}
                 {...highlight(row.number)}
               >
                 <span className="w-6 text-left text-zinc-500">

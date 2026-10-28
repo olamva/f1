@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { ink } from "../ink.ts";
 import { tyreColor } from "../Tyre.tsx";
 
 export type Mark = { compound: string; pit?: "in" | "out" };
@@ -60,7 +61,7 @@ export const Legend = ({ series }: LegendProps) => (
             y1="3"
             x2="18"
             y2="3"
-            stroke={s.color}
+            stroke={ink(s.color)}
             strokeWidth="2"
             strokeDasharray={s.dashed ? "4 3" : undefined}
           />
@@ -129,7 +130,7 @@ export const LineChart = ({
                 x2={W - M.right}
                 y1={sy(v)}
                 y2={sy(v)}
-                stroke="#27272a"
+                className="stroke-zinc-800"
               />
               <text
                 x={M.left - 8}
@@ -188,7 +189,7 @@ export const LineChart = ({
               key={s.id}
               points={s.points.map(([x, y]) => `${sx(x)},${sy(y)}`).join(" ")}
               fill="none"
-              stroke={s.color}
+              stroke={ink(s.color)}
               strokeWidth={2}
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -205,9 +206,8 @@ export const LineChart = ({
                   <polygon
                     key={`${s.id}-${x}`}
                     points={`${cx},${cy - 6} ${cx + 6},${cy} ${cx},${cy + 6} ${cx - 6},${cy}`}
-                    stroke="#18181b"
                     strokeWidth={1}
-                    className={`fill-current ${tyreColor(mark.compound)}`}
+                    className={`stroke-surface fill-current ${tyreColor(mark.compound)}`}
                   />
                 ) : (
                   <circle
@@ -215,8 +215,7 @@ export const LineChart = ({
                     cx={cx}
                     cy={cy}
                     r={3.5}
-                    stroke="#18181b"
-                    className={`fill-current ${tyreColor(mark.compound)}`}
+                    className={`stroke-surface fill-current ${tyreColor(mark.compound)}`}
                   />
                 )
               ) : null;
@@ -243,7 +242,7 @@ export const LineChart = ({
                 x2={sx(hover.x)}
                 y1={M.top}
                 y2={height - M.bottom}
-                stroke="#52525b"
+                className="stroke-zinc-600"
               />
               {at.map(({ s, p }) => (
                 <circle
@@ -251,8 +250,8 @@ export const LineChart = ({
                   cx={sx(p![0])}
                   cy={sy(p![1])}
                   r={4}
-                  fill={s.color}
-                  stroke="#18181b"
+                  fill={ink(s.color)}
+                  className="stroke-surface"
                   strokeWidth={2}
                 />
               ))}
@@ -282,7 +281,7 @@ export const LineChart = ({
                 <div key={s.id} className="flex items-center gap-2">
                   <span
                     className="size-2 rounded-full"
-                    style={{ background: s.color }}
+                    style={{ background: ink(s.color) }}
                   />
                   <span className="text-zinc-300">{s.label}</span>
                   <span className="tabular ml-auto pl-3 font-mono text-zinc-100">

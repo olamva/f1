@@ -130,7 +130,7 @@ const DelaySettings = ({ race, ready, onSync }: DelaySettingsProps) => (
     <div
       id="tv-delay"
       popover="auto"
-      className="tv-delay bg-surface w-72 space-y-3 rounded-xl border border-white/10 p-4 text-sm text-zinc-100 shadow-lg"
+      className="tv-delay bg-surface w-72 space-y-3 rounded-xl border border-zinc-800 p-4 text-sm text-zinc-100 shadow-lg"
     >
       <h2 className="font-f1 font-bold">TV delay</h2>
       <DelayInput />
@@ -391,7 +391,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
   };
   if (on)
     return spoiler.hidden ? (
-      <div className="to-surface space-y-3 rounded-xl bg-gradient-to-r from-red-700/40 p-4">
+      <div className="to-surface featured space-y-3 rounded-xl bg-gradient-to-r from-red-700/40 p-4">
         <div>
           <h1 className="font-f1 text-lg font-bold">
             <Flag country={info.data.info?.Meeting?.Country?.Name} />
@@ -404,7 +404,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
         <div className="flex flex-wrap items-center gap-3">
           <button
             onClick={() => go(0)}
-            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white"
           >
             <Eye aria-hidden="true" className="size-4" />
             Continue to live timing
@@ -431,7 +431,7 @@ export const LiveSession = ({ season, info }: LiveSessionProps) => {
     );
   const scheduled = current(season.data.rounds, Date.now());
   return scheduled ? (
-    <div className="to-surface rounded-xl bg-gradient-to-r from-red-700/40 p-4">
+    <div className="to-surface featured rounded-xl bg-gradient-to-r from-red-700/40 p-4">
       <h1 className="font-f1 text-lg font-bold">
         <Flag country={scheduled.round.country} />
         {scheduled.round.name} · {scheduled.label}

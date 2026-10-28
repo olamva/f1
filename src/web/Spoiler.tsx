@@ -76,7 +76,7 @@ export const Spoiler = ({
       <div className="flex flex-wrap justify-center gap-3">
         <button
           onClick={() => setSeen(shown, "shown")}
-          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 font-semibold"
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 font-semibold text-white"
         >
           <Eye aria-hidden="true" className="size-4" />
           Reveal

@@ -7,11 +7,13 @@ import {
   useState,
 } from "react";
 import { Crown } from "lucide-react";
+import { ink } from "../ink.ts";
 import { MapFrame } from "./MapFrame.tsx";
 import type { Outline, Telemetry } from "../../shared/timing.ts";
 import type { PositionTrail } from "./useFeed.ts";
 import { useCarMotion } from "./useCarMotion.ts";
 import { MapCard } from "./MapCard.tsx";
+import { Markers } from "./Markers.tsx";
 import { CAR, MapPin, RING, tag, type Frame } from "./MapPin.tsx";
 import { SectorFlags } from "./SectorFlags.tsx";
 import { markers, nearest } from "./outline.ts";
@@ -73,71 +75,6 @@ const projector = (outline: Outline) => {
   };
   return { project, box };
 };
-
-const Markers = ({
-  finish,
-  splits,
-  detection,
-  labels,
-  corners,
-}: ReturnType<typeof markers>) => (
-  <>
-    {detection && (
-      <line
-        x1={detection[0] - detection[2]}
-        y1={detection[1] - detection[3]}
-        x2={detection[0] + detection[2]}
-        y2={detection[1] + detection[3]}
-        stroke="#a1a1aa"
-        strokeWidth={4}
-        strokeDasharray="4 4"
-      />
-    )}
-    {splits.map(([x, y, dx, dy], i) => (
-      <line
-        key={i}
-        x1={x - dx}
-        y1={y - dy}
-        x2={x + dx}
-        y2={y + dy}
-        stroke="#a1a1aa"
-        strokeWidth={4}
-      />
-    ))}
-    {labels.map(([x, y], i) => (
-      <text
-        key={i}
-        x={x}
-        y={y}
-        dominantBaseline="middle"
-        textAnchor="middle"
-        className="fill-zinc-400 text-[20px] font-semibold"
-      >
-        Sector {i + 1}
-      </text>
-    ))}
-    {corners.map(({ number, at: [x, y] }) => (
-      <text
-        key={number}
-        x={x}
-        y={y}
-        dominantBaseline="middle"
-        textAnchor="middle"
-        className="fill-zinc-300 text-[18px] font-semibold"
-      >
-        {number}
-      </text>
-    ))}
-    <line
-      x1={finish[0] - finish[2]}
-      y1={finish[1] - finish[3]}
-      x2={finish[0] + finish[2]}
-      y2={finish[1] + finish[3]}
-      stroke="#f4f4f5"
-      strokeWidth={6}
-    />
-  </>
-);
 
 export const TrackMap = ({
   outline,
@@ -308,7 +245,7 @@ export const TrackMap = ({
               <polyline
                 points={lane}
                 fill="none"
-                stroke="#3f3f46"
+                className="stroke-zinc-700"
                 strokeWidth={6}
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -316,7 +253,7 @@ export const TrackMap = ({
               <polyline
                 points={path}
                 fill="none"
-                stroke="#3f3f46"
+                className="stroke-zinc-700"
                 strokeWidth={18}
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -363,12 +300,16 @@ export const TrackMap = ({
                     )}
                   >
                     {!inPit && (
-                      <path d="M0 0L-24 -24" stroke={r.color} strokeWidth={3} />
+                      <path
+                        d="M0 0L-24 -24"
+                        stroke={ink(r.color)}
+                        strokeWidth={3}
+                      />
                     )}
                     <circle
                       r={14}
-                      fill={r.color}
-                      stroke="#18181b"
+                      fill={ink(r.color)}
+                      className="stroke-surface"
                       strokeWidth={4}
                     />
                   </MapPin>
@@ -384,7 +325,7 @@ export const TrackMap = ({
                       <circle
                         r={18}
                         fill="none"
-                        stroke="#18181b"
+                        className="stroke-surface"
                         strokeWidth={8}
                       />
                       <circle
@@ -421,12 +362,12 @@ export const TrackMap = ({
                         width={70 + extra}
                         height={32}
                         rx={3}
-                        fill="#27272a"
+                        className="fill-zinc-800"
                         fillOpacity={0.9}
                       />
                       <path
                         d={`M-24 -24H${-94 - extra}`}
-                        stroke={r.color}
+                        stroke={ink(r.color)}
                         strokeWidth={3}
                       />
                       <text

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { ink } from "../ink.ts";
 import { summary } from "./summary.ts";
 
 export type Box = {
@@ -38,7 +39,7 @@ export const BoxPlot = ({ boxes, format }: BoxPlotProps) => {
               y={y - row / 2}
               width={W}
               height={row}
-              fill={hover === s.id ? "#27272a" : "transparent"}
+              className={hover === s.id ? "fill-zinc-800" : "fill-transparent"}
             />
             <text
               x={L - 8}
@@ -53,7 +54,7 @@ export const BoxPlot = ({ boxes, format }: BoxPlotProps) => {
               x2={sx(s.max)}
               y1={y}
               y2={y}
-              stroke="#71717a"
+              className="stroke-zinc-500"
             />
             <rect
               x={sx(s.q1)}
@@ -61,7 +62,7 @@ export const BoxPlot = ({ boxes, format }: BoxPlotProps) => {
               width={Math.max(2, sx(s.q3) - sx(s.q1))}
               height={14}
               rx={4}
-              fill={s.color}
+              fill={ink(s.color)}
               opacity={0.85}
             />
             <line
@@ -69,7 +70,7 @@ export const BoxPlot = ({ boxes, format }: BoxPlotProps) => {
               x2={sx(s.median)}
               y1={y - 9}
               y2={y + 9}
-              stroke="#fafafa"
+              className="stroke-zinc-50"
               strokeWidth={2}
             />
             <text
@@ -104,7 +105,13 @@ export const DivergingBars = ({ bars, format }: DivergingBarsProps) => {
   const row = 24;
   return (
     <svg viewBox={`0 0 ${W} ${bars.length * row + 4}`} className="w-full">
-      <line x1={mid} x2={mid} y1={0} y2={bars.length * row} stroke="#3f3f46" />
+      <line
+        x1={mid}
+        x2={mid}
+        y1={0}
+        y2={bars.length * row}
+        className="stroke-zinc-700"
+      />
       {bars.map((b, i) => {
         const y = i * row + 12;
         const w = (Math.abs(b.value) / max) * half;
@@ -126,7 +133,7 @@ export const DivergingBars = ({ bars, format }: DivergingBarsProps) => {
               width={Math.max(w, 1)}
               height={16}
               rx={4}
-              fill={b.color}
+              fill={ink(b.color)}
             />
             <text
               x={b.value >= 0 ? mid + w + 6 : mid - w - 6}

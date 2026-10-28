@@ -9,6 +9,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useJson } from "../api.ts";
+import { ink } from "../ink.ts";
 import { slug, TeamNumber } from "../stats/TeamNumber.tsx";
 import {
   compass,
@@ -250,7 +251,9 @@ const Transcript = ({ url, color }: { url: string; color: string }) => {
         <p
           key={i}
           className={t.speaker === "driver" ? "text-right" : ""}
-          style={{ color: t.speaker === "driver" ? color : "white" }}
+          style={{
+            color: t.speaker === "driver" ? ink(color) : "var(--color-zinc-50)",
+          }}
         >
           {t.text}
         </p>
@@ -326,7 +329,7 @@ const Bars = ({
           key={i}
           ref={(el) => void (el && (bars.current[i] = el))}
           className="h-full w-1.5 origin-bottom rounded-sm transition-transform duration-75"
-          style={{ background: color, transform: "scaleY(0.1)" }}
+          style={{ background: ink(color), transform: "scaleY(0.1)" }}
         />
       ))}
     </span>
@@ -406,18 +409,18 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
             <div className="min-w-0 flex-1 px-3 py-2 leading-none">
               <p
                 className="font-f1 truncate text-xl font-black uppercase"
-                style={{ color }}
+                style={{ color: ink(color) }}
               >
                 {driver?.last ?? current.number}
               </p>
-              <p className="font-f1 text-xl font-black text-white">RADIO</p>
+              <p className="font-f1 text-xl font-black text-zinc-50">RADIO</p>
             </div>
             <Bars audio={audio} playing={playing} color={color} />
             <button
               onClick={() => toggle(current)}
               aria-label={playing ? "Pause radio" : "Play radio"}
               title={playing ? "Pause radio" : "Play radio"}
-              className="grid w-14 shrink-0 cursor-pointer place-items-center text-white after:absolute after:inset-0"
+              className="grid w-14 shrink-0 cursor-pointer place-items-center text-zinc-50 after:absolute after:inset-0"
             >
               {playing ? (
                 <Pause aria-hidden="true" className="size-6 fill-current" />
@@ -431,7 +434,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
               className="h-full"
               style={{
                 width: `${at.d ? (at.t / at.d) * 100 : 0}%`,
-                background: color,
+                background: ink(color),
               }}
             />
           </div>
@@ -458,7 +461,7 @@ export const TeamRadio = ({ radios, rows, selected }: TeamRadioProps) => {
                   <TeamNumber
                     id={slug(d?.last)}
                     number={r.number}
-                    color={d?.color ?? "white"}
+                    color={ink(d?.color) ?? "var(--color-zinc-50)"}
                     className="flex h-4 items-center"
                   />
                 </span>

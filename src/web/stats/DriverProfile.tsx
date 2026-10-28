@@ -7,6 +7,7 @@ import type {
 import { teamColor } from "../../shared/teams.ts";
 import { useJson } from "../api.ts";
 import { Flag } from "../Flag.tsx";
+import { ink } from "../ink.ts";
 import { Loading } from "../Loading.tsx";
 import { METALS } from "../Podium.tsx";
 import { TeamNumber } from "./TeamNumber.tsx";
@@ -24,7 +25,7 @@ interface PlaceProps {
 const Place = ({ result, sprint }: PlaceProps) => (
   <span
     className={`font-f1 font-bold ${sprint ? "text-[10px]" : "text-sm"} ${result?.points ? "" : "text-zinc-500"}`}
-    style={{ color: METALS[(result?.position ?? 0) - 1] }}
+    style={{ color: ink(METALS[(result?.position ?? 0) - 1]) }}
   >
     {sprint && <span className="mr-0.5 text-zinc-500">S</span>}
     {result ? (result.position ?? SHORT[result.status] ?? "DNF") : "–"}
@@ -101,7 +102,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
       <button
         type="button"
         onClick={onBack}
-        className="flex cursor-pointer items-center gap-1.5 text-sm text-zinc-400 hover:text-white"
+        className="flex cursor-pointer items-center gap-1.5 text-sm text-zinc-400 hover:text-zinc-50"
       >
         <ArrowLeft aria-hidden className="size-4" />
         All drivers
@@ -148,7 +149,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                   href={data.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="mt-1 inline-block text-sm text-zinc-300 underline decoration-zinc-500 underline-offset-4 hover:text-white hover:decoration-white"
+                  className="mt-1 inline-block text-sm text-zinc-300 underline decoration-zinc-500 underline-offset-4 hover:text-zinc-50 hover:decoration-zinc-50"
                 >
                   Biography ↗
                 </a>
@@ -205,7 +206,7 @@ export const DriverProfile = ({ id, season, onBack }: DriverProfileProps) => {
                       <span className="flex items-center gap-2">
                         <span
                           className="h-4 w-1 shrink-0 rounded-sm"
-                          style={{ background: teamColor(season.team) }}
+                          style={{ background: ink(teamColor(season.team)) }}
                         />
                         {season.teamName}
                       </span>

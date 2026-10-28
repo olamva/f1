@@ -36,7 +36,7 @@ export const SectorFlags = ({ marshal, flags }: SectorFlagsProps) => {
               height={30}
               rx={7}
               fill="#facc15"
-              stroke="#18181b"
+              className="stroke-surface"
               strokeWidth={3}
             />
             {(double ? [-17, 1] : [-8]).map((dx) => (
@@ -46,7 +46,7 @@ export const SectorFlags = ({ marshal, flags }: SectorFlagsProps) => {
                 y={-8}
                 width={16}
                 height={16}
-                className="stroke-zinc-900"
+                className="stroke-black"
                 strokeWidth={2.5}
               />
             ))}

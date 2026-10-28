@@ -18,6 +18,7 @@ import { GlassSwitch } from "./GlassSwitch.tsx";
 import { GuideSheet } from "./GuideSheet.tsx";
 import { disablePush, enablePush, pushState, type PushState } from "./push.ts";
 import { setSpoilerMode } from "./spoilers.ts";
+import { Tabs } from "./Tabs.tsx";
 import { setTokenHidden } from "./tokenHidden.ts";
 
 const needsInstall = matchMedia("(pointer: coarse)").matches;
@@ -28,6 +29,8 @@ const PUSH_NOTES: Partial<Record<PushState, string>> = {
     : "This browser does not support notifications.",
   off: "Notifications are not set up on this server.",
 };
+
+const THEMES = ["system", "light", "dark"] as const;
 
 const LOGIN = "https://account.formula1.com/#/en/login";
 const SIGN_IN = "/.auth/login/google?post_login_redirect_uri=/settings";
@@ -106,6 +109,9 @@ export const Settings = ({ drivers }: SettingsProps) => {
   const [autoupdate, setAutoupdate] = useState(
     () => localStorage.getItem("autoupdate") !== "0",
   );
+  const [theme, setTheme] = useState(
+    () => document.documentElement.dataset.theme as (typeof THEMES)[number],
+  );
   const [message, setMessage] = useState<string | null>(null);
   const [push, setPush] = useState<PushState | null>(null);
   const [pushNote, setPushNote] = useState<string | null>(null);
@@ -139,6 +145,19 @@ export const Settings = ({ drivers }: SettingsProps) => {
   const warning = status && tokenWarning(status);
   return (
     <div className="grid gap-4 md:grid-cols-2">
+      <section className="bg-surface space-y-2 rounded-xl p-4">
+        <h2 className="font-f1 text-lg font-bold">Appearance</h2>
+        <Tabs
+          items={THEMES}
+          value={theme}
+          onChange={(t) => {
+            setTheme(t);
+            localStorage.setItem("theme", t);
+            document.documentElement.dataset.theme = t;
+          }}
+          small
+        />
+      </section>
       <section className="bg-surface space-y-2 rounded-xl p-4">
         <h2 className="font-f1 text-lg font-bold">Spoiler mode</h2>
         <GlassSwitch
@@ -214,7 +233,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
           {denied === 401 && (
             <a
               href={SIGN_IN}
-              className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold"
+              className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white"
             >
               <LogIn aria-hidden="true" className="size-4" />
               Sign in with Google
@@ -262,7 +281,7 @@ export const Settings = ({ drivers }: SettingsProps) => {
               />
               <button
                 disabled={!value}
-                className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold disabled:opacity-40"
+                className="inline-flex items-center gap-1.5 rounded-md bg-red-600 px-4 py-1.5 text-sm font-semibold text-white disabled:opacity-40"
               >
                 <Save aria-hidden="true" className="size-4" />
                 Save

@@ -14,6 +14,7 @@ import {
   type Upcoming,
 } from "../../shared/clinch.ts";
 import { pointsFor } from "../../shared/points.ts";
+import { ink } from "../ink.ts";
 import { Simulator } from "./Simulator.tsx";
 import type { Who } from "./derive.ts";
 
@@ -256,7 +257,7 @@ export const TitleFight = ({ champ, table, events, who }: TitleFightProps) => {
                   <span className="flex items-center gap-2">
                     <span
                       className="h-4 w-1 rounded-sm"
-                      style={{ background: who.get(s.id)?.color }}
+                      style={{ background: ink(who.get(s.id)?.color) }}
                     />
                     {who.get(s.id)?.name ?? s.id}
                   </span>

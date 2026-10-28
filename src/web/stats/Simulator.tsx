@@ -8,6 +8,7 @@ import {
   type Upcoming,
 } from "../../shared/clinch.ts";
 import { Flag } from "../Flag.tsx";
+import { ink } from "../ink.ts";
 import type { Who } from "./derive.ts";
 
 interface SimulatorProps {
@@ -161,7 +162,7 @@ export const Simulator = ({
           >
             <span
               className="h-3 w-1 rounded-sm"
-              style={{ background: who.get(id)?.color }}
+              style={{ background: ink(who.get(id)?.color) }}
             />
             {code(id)} wins all
           </button>
@@ -194,7 +195,7 @@ export const Simulator = ({
               </span>
               <span
                 className="h-4 w-1 rounded-sm"
-                style={{ background: who.get(s.id)?.color }}
+                style={{ background: ink(who.get(s.id)?.color) }}
               />
               <span className="truncate">{who.get(s.id)?.name ?? s.id}</span>
               <span className="ml-auto font-semibold">{s.points}</span>
@@ -216,7 +217,7 @@ export const Simulator = ({
                     <span className="flex items-center justify-center gap-1.5">
                       <span
                         className="h-3 w-1 rounded-sm"
-                        style={{ background: who.get(id)?.color }}
+                        style={{ background: ink(who.get(id)?.color) }}
                       />
                       {code(id)}
                     </span>

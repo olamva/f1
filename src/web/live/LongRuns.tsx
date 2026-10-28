@@ -1,4 +1,5 @@
 import { lapTime } from "../charts/summary.ts";
+import { ink } from "../ink.ts";
 import { Compound } from "../Tyre.tsx";
 import { longRuns } from "./longRuns.ts";
 import { Panel } from "./Panels.tsx";
@@ -46,7 +47,7 @@ export const LongRuns = ({
                 <td className="px-0.5 py-1 sm:px-1">
                   <span
                     className="font-f1 font-bold"
-                    style={{ color: by.get(r.number)?.color }}
+                    style={{ color: ink(by.get(r.number)?.color) }}
                   >
                     {by.get(r.number)?.tla ?? r.number}
                   </span>
