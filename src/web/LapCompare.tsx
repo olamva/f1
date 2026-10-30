@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { lapSeconds, type LapTrace, type Outline } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
 import { LineChart } from "./charts/LineChart.tsx";
@@ -135,21 +135,24 @@ const Pair = ({ outline, pair: [a, other] }: PairProps) => {
   const c = useMemo(() => course(outline), [outline]);
   const traceA = useMemo(() => lapA && trace(c, lapA), [c, lapA]);
   const traceB = useMemo(() => lapB && trace(c, lapB), [c, lapB]);
+  const shown = useRef<React.ReactNode>(null);
+  const error = fetched[0]!.error ?? fetched[1]!.error;
   if (!lapA || !lapB)
-    return (
-      <Loading
-        label="Loading the telemetry…"
-        error={fetched[0]!.error ?? fetched[1]!.error}
-      />
+    return shown.current && !error ? (
+      <div aria-busy="true" className="opacity-50">
+        {shown.current}
+      </div>
+    ) : (
+      <Loading label="Loading the telemetry…" error={error} />
     );
   if (!traceA || !traceB)
-    return (
+    return (shown.current = (
       <p className="text-sm text-zinc-500">
         The telemetry of {(traceA ? b : a).tla} is not complete for this lap.
       </p>
-    );
+    ));
   const gap = lapSeconds(b.time)! - lapSeconds(a.time)!;
-  return (
+  return (shown.current = (
     <div className="@container space-y-3">
       <p className="tabular text-sm text-zinc-300">
         {[a, b].map((d) => (
@@ -192,7 +195,7 @@ const Pair = ({ outline, pair: [a, other] }: PairProps) => {
         </section>
       </div>
     </div>
-  );
+  ));
 };
 
 interface LapCompareProps {
