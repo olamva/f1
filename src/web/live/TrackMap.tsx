@@ -45,7 +45,7 @@ interface TrackMapProps {
   flags: Map<number, string>;
 }
 
-const projector = (outline: Outline) => {
+export const projector = (outline: Outline, tag = TAG) => {
   const a = (outline.rotation * Math.PI) / 180;
   const turn = (x: number, y: number): [number, number] => [
     x * Math.cos(a) - y * Math.sin(a),
@@ -64,9 +64,9 @@ const projector = (outline: Outline) => {
   const offX = (SIZE - (maxX - minX) * scale) / 2;
   const offY = (SIZE - (maxY - minY) * scale) / 2;
   const box = [
-    offX - PAD - TAG,
+    offX - PAD - tag,
     offY - PAD,
-    SIZE - 2 * offX + 2 * PAD + TAG,
+    SIZE - 2 * offX + 2 * PAD + tag,
     SIZE - 2 * offY + 2 * PAD,
   ] as const;
   const project = (x: number, y: number): [number, number] => {

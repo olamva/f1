@@ -6,6 +6,7 @@ import { notify } from "./push.ts";
 import { play, read, type Line } from "./recording.ts";
 import {
   at,
+  carEvents,
   delays,
   expand,
   History,
@@ -63,6 +64,13 @@ export class Feed {
       const fresh = now - stamps.at(-1)!;
       if (fresh < MAX_LAG_MS) this.lag = fresh;
       return positionEvents(now - this.lag, raw);
+    }
+    if (topic === "CarData.z") {
+      const raw = inflate(data as string);
+      const last = Date.parse(
+        (raw as { Entries?: { Utc: string }[] }).Entries?.at(-1)?.Utc ?? "",
+      );
+      return carEvents(now - last < MAX_LAG_MS ? last : now - this.lag, raw);
     }
     return expand({ t: now - this.lag, topic, data });
   }

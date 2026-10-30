@@ -7,13 +7,15 @@ import {
   type Outline,
   type Period,
 } from "../../shared/timing.ts";
+import { fastestLap } from "../compare.ts";
 import { Flag } from "../Flag.tsx";
+import { LapCompare } from "../LapCompare.tsx";
 import { useTokenHidden } from "../tokenHidden.ts";
 import { Championship } from "./Championship.tsx";
 import { cutGaps, knockout } from "./knockout.ts";
 import { LapCharts } from "./LapCharts.tsx";
 import { LongRuns } from "./LongRuns.tsx";
-import { RaceControl, TeamRadio, Weather } from "./Panels.tsx";
+import { Panel, RaceControl, TeamRadio, Weather } from "./Panels.tsx";
 import { prediction, titleOpen } from "./prediction.ts";
 import { StealthInput } from "./StealthInput.tsx";
 import { TimingTower } from "./TimingTower.tsx";
@@ -45,6 +47,7 @@ interface BoardProps {
   speed?: number;
   paused?: boolean;
   utc?: number;
+  traceUrl: (driver: string, lap: number) => string;
   onLap: (lap: number) => void;
 }
 
@@ -97,6 +100,8 @@ const Status = ({
   </div>
 );
 
+const SETTLE_MS = 5_000;
+
 const RACE_LAYOUT = {
   grid: "lg:grid-cols-[auto_minmax(0,1fr)] xl:grid-cols-[auto_repeat(2,minmax(0,1fr))] xl:grid-rows-none",
   tower: "lg:col-span-1",
@@ -119,6 +124,7 @@ export const Board = ({
   speed,
   paused,
   utc = feedUtc(feed),
+  traceUrl,
   onLap,
 }: BoardProps) => {
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -140,6 +146,16 @@ export const Board = ({
   const focus = (
     at < 0 ? rows.slice(0, 5) : rows.slice(Math.max(0, at - 1), at + 2)
   ).map((r) => r.number);
+  const compare = rows.flatMap((r) => {
+    const lap = fastestLap(
+      laps[r.number] ?? [],
+      deletedLaps(state, r.number),
+      feed.t - SETTLE_MS,
+    );
+    return lap && r.bestLap
+      ? [{ ...r, time: lap.time, url: traceUrl(r.number, lap.lap) }]
+      : [];
+  });
   const banner = status && (
     <div
       role="alert"
@@ -231,6 +247,11 @@ export const Board = ({
           race={race}
           periods={periods}
         />
+        {!positionsNote && (
+          <Panel title="Lap compare">
+            <LapCompare outline={outline} drivers={compare} />
+          </Panel>
+        )}
         {race && titleOpen(state, rounds) && (
           <Championship drivers={prediction(state)} />
         )}

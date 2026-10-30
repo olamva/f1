@@ -1,0 +1,14 @@
+{
+  "id": "67ed77ab",
+  "ts": "2026-10-30T17:45:49+00:00",
+  "text": "Main checkout .env.local sets DATA_DIR to a path that does not exist since the repo rename to f1-pitwall, so worktree dev servers load no F1TV token and the archive returns 401",
+  "tags": [
+    "dev",
+    "env"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "cfd803ba",
+  "where": "/Users/olavassbotn/Developer/f1-pitwall/.env.local",
+  "branch": "t3/live-session-comparison"
+}

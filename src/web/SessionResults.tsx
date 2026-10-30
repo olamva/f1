@@ -7,8 +7,10 @@ import type {
   Stints,
 } from "../shared/season.ts";
 import { teamColor } from "../shared/teams.ts";
+import type { FastestLaps } from "../shared/timing.ts";
 import { useJson } from "./api.ts";
 import { FAVOURITE_ROW } from "./favourite.ts";
+import { LapCompare } from "./LapCompare.tsx";
 import { Loading } from "./Loading.tsx";
 import { openDriver } from "./path.ts";
 import { Podium } from "./Podium.tsx";
@@ -27,7 +29,8 @@ export const SESSIONS = [
   "race",
 ] as const;
 export type Kind = (typeof SESSIONS)[number];
-const VIEWS = ["results", "tyres", "positions"] as const;
+const VIEWS = ["results", "tyres", "positions", "compare"] as const;
+type View = (typeof VIEWS)[number];
 
 type Race = RaceArchive["races"][number];
 type Result = Race["results"][number];
@@ -158,59 +161,52 @@ interface RaceBodyProps {
   kind: "race" | "sprint";
   rows: Result[];
   favourite?: string;
+  shown: View;
 }
 
-const RaceBody = ({ year, round, kind, rows, favourite }: RaceBodyProps) => {
-  const [view, setView] = useState<(typeof VIEWS)[number]>("results");
-  const archived = Number(year) >= 2018;
-  const shown = archived ? view : "results";
+const RaceBody = ({
+  year,
+  round,
+  kind,
+  rows,
+  favourite,
+  shown,
+}: RaceBodyProps) => {
   const strategy = useJson<Stints>(
     shown === "tyres" ? `/api/stints/${year}/${round}/${kind}` : null,
   );
   const positions = useJson<LapPositions>(
     shown === "positions" ? `/api/positions/${year}/${round}/${kind}` : null,
   );
-  return (
-    <>
-      {archived && (
-        <div className="mb-4">
-          <Tabs items={VIEWS} value={view} onChange={setView} small />
-        </div>
-      )}
-      {shown === "tyres" ? (
-        strategy.data ? (
-          <Strategy rows={rows} stints={strategy.data} favourite={favourite} />
-        ) : (
-          <Loading
-            label="Loading tyre strategy…"
-            error={
-              strategy.error && "Tyre data is not available for this session."
-            }
-          />
-        )
-      ) : shown === "positions" ? (
-        positions.data ? (
-          <Positions rows={rows} laps={positions.data} favourite={favourite} />
-        ) : (
-          <Loading
-            label="Loading positions…"
-            error={
-              positions.error &&
-              "Position data is not available for this session."
-            }
-          />
-        )
-      ) : (
-        <Classification
-          key={`${round}:${kind}`}
-          rows={rows}
-          favourite={favourite}
-          columns={["Grid", "Status", "Pts"]}
-          cells={raceCells}
-          value={(result) => `${result.points} pts`}
-        />
-      )}
-    </>
+  return shown === "tyres" ? (
+    strategy.data ? (
+      <Strategy rows={rows} stints={strategy.data} favourite={favourite} />
+    ) : (
+      <Loading
+        label="Loading tyre strategy…"
+        error={strategy.error && "Tyre data is not available for this session."}
+      />
+    )
+  ) : shown === "positions" ? (
+    positions.data ? (
+      <Positions rows={rows} laps={positions.data} favourite={favourite} />
+    ) : (
+      <Loading
+        label="Loading positions…"
+        error={
+          positions.error && "Position data is not available for this session."
+        }
+      />
+    )
+  ) : (
+    <Classification
+      key={`${round}:${kind}`}
+      rows={rows}
+      favourite={favourite}
+      columns={["Grid", "Status", "Pts"]}
+      cells={raceCells}
+      value={(result) => `${result.points} pts`}
+    />
   );
 };
 
@@ -333,6 +329,27 @@ const PracticeBody = ({
   );
 };
 
+interface CompareProps {
+  year: string;
+  round: number;
+  kind: Kind;
+}
+
+const Compare = ({ year, round, kind }: CompareProps) => {
+  const laps = useJson<FastestLaps>(`/api/fastest/${year}/${round}/${kind}`);
+  return laps.data ? (
+    <LapCompare
+      outline={laps.data.outline}
+      drivers={laps.data.drivers.map((d) => ({ ...d, time: d.lap.time }))}
+    />
+  ) : (
+    <Loading
+      label="Loading the fastest laps. A race takes a few seconds…"
+      error={laps.error && "Lap telemetry is not available for this session."}
+    />
+  );
+};
+
 interface SessionResultsProps {
   year: string;
   race: Race;
@@ -347,31 +364,51 @@ export const SessionResults = ({
   races,
   kind,
   favourite,
-}: SessionResultsProps) =>
-  kind === "race" || kind === "sprint" ? (
-    <RaceBody
-      year={year}
-      round={race.round}
-      kind={kind}
-      rows={kind === "sprint" ? race.sprint : race.results}
-      favourite={favourite}
-    />
-  ) : kind === "qualifying" || kind === "sprintQualifying" ? (
-    <QualifyingBody
-      key={`${race.round}:${kind}`}
-      year={year}
-      race={race}
-      races={races}
-      kind={kind}
-      favourite={favourite}
-    />
-  ) : (
-    <PracticeBody
-      key={`${race.round}:${kind}`}
-      year={year}
-      race={race}
-      races={races}
-      kind={kind}
-      favourite={favourite}
-    />
+}: SessionResultsProps) => {
+  const [view, setView] = useState<View>("results");
+  const racing = kind === "race" || kind === "sprint";
+  const views =
+    Number(year) >= 2018
+      ? VIEWS.filter((v) => racing || v === "results" || v === "compare")
+      : [];
+  const shown = views.includes(view) ? view : "results";
+  return (
+    <>
+      {views.length > 0 && (
+        <div className="mb-4">
+          <Tabs items={views} value={shown} onChange={setView} small />
+        </div>
+      )}
+      {shown === "compare" ? (
+        <Compare year={year} round={race.round} kind={kind} />
+      ) : racing ? (
+        <RaceBody
+          year={year}
+          round={race.round}
+          kind={kind}
+          rows={kind === "sprint" ? race.sprint : race.results}
+          favourite={favourite}
+          shown={shown}
+        />
+      ) : kind === "qualifying" || kind === "sprintQualifying" ? (
+        <QualifyingBody
+          key={`${race.round}:${kind}`}
+          year={year}
+          race={race}
+          races={races}
+          kind={kind}
+          favourite={favourite}
+        />
+      ) : (
+        <PracticeBody
+          key={`${race.round}:${kind}`}
+          year={year}
+          race={race}
+          races={races}
+          kind={kind}
+          favourite={favourite}
+        />
+      )}
+    </>
   );
+};

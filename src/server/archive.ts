@@ -7,8 +7,14 @@ import type {
   Qualifying,
   Stints,
 } from "../shared/season.ts";
-import type { Outline, SessionRef } from "../shared/timing.ts";
+import {
+  lapSeconds,
+  type FastestLaps,
+  type Outline,
+  type SessionRef,
+} from "../shared/timing.ts";
 import circuits from "./circuits.json" with { type: "json" };
+import { DATA_DIR, readJson, writeJson } from "./data.ts";
 import { get } from "./jolpica.ts";
 import { archive } from "./origin.ts";
 import {
@@ -318,6 +324,80 @@ async function load(path: string): Promise<Replay> {
     checkpoints,
     session,
   };
+}
+
+async function loadFastest(path: string): Promise<FastestLaps> {
+  const info = await json(`${path}SessionInfo.json`);
+  if (info.ArchiveStatus?.Status !== "Complete")
+    throw new Error("Lap telemetry is not available yet");
+  const [list, ...streams] = await Promise.all([
+    json(`${path}DriverList.json`),
+    ...["TimingData", "Position.z", "CarData.z"].map((topic) =>
+      parse(path, topic),
+    ),
+  ]);
+  const session = new Session();
+  for (const e of streams.flat().sort((a, b) => a.t - b.t))
+    for (const x of unpack(e)) session.apply(x);
+  session.traces.flush(Infinity, session.track);
+  const lines = (session.state.TimingData as any)?.Lines ?? {};
+  const drivers = Object.entries(session.traces.laps)
+    .flatMap(([number, laps]) => {
+      const lap = Object.values(laps).findLast(
+        (l) => l.time === lines[number]?.BestLapTime?.Value,
+      );
+      const driver = list[number];
+      return lap && driver
+        ? [
+            {
+              number,
+              tla: driver.Tla,
+              name: driver.FullName,
+              color: `#${driver.TeamColour ?? "888888"}`,
+              lap,
+            },
+          ]
+        : [];
+    })
+    .sort((a, b) => lapSeconds(a.lap.time)! - lapSeconds(b.lap.time)!);
+  if (!drivers.length) throw new Error("Lap telemetry is not available");
+  return { outline: await outlineFor(info, () => session.outline()), drivers };
+}
+
+async function storedFastest(
+  year: number,
+  round: number,
+  kind: keyof typeof SESSIONS,
+): Promise<FastestLaps> {
+  const file = `fastest/v1/${year}/${round}/${kind}.json`;
+  const hit = DATA_DIR && (await readJson(file).catch(() => null));
+  if (hit) return hit;
+  const result = await loadFastest(await sessionPath(year, round, kind));
+  if (DATA_DIR)
+    await writeJson(file, result).catch((e) =>
+      console.error("fastest laps store write:", e),
+    );
+  return result;
+}
+
+const FASTEST_CACHED = 10;
+const fastest = new Map<string, Promise<FastestLaps>>();
+
+export function fastestLaps(
+  year: number,
+  round: number,
+  kind: keyof typeof SESSIONS,
+): Promise<FastestLaps> {
+  const key = `${year}:${round}:${kind}`;
+  const result = fastest.get(key) ?? storedFastest(year, round, kind);
+  fastest.delete(key);
+  fastest.set(key, result);
+  result.catch(() => {
+    if (fastest.get(key) === result) fastest.delete(key);
+  });
+  if (fastest.size > FASTEST_CACHED)
+    fastest.delete(fastest.keys().next().value!);
+  return result;
 }
 
 const CACHED = 2;

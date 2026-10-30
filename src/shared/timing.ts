@@ -24,6 +24,23 @@ export type Telemetry = [
   brake: number,
 ];
 
+export type LapTrace = {
+  lap: number;
+  time: string;
+  car: [t: number, speed: number][];
+  pos: Point[];
+};
+
+export type FastestLap = {
+  number: string;
+  tla: string;
+  name: string;
+  color: string;
+  lap: LapTrace;
+};
+
+export type FastestLaps = { outline: Outline | null; drivers: FastestLap[] };
+
 export type PitLoss = Record<"normal" | "sc" | "vsc", number>;
 
 export type Outline = {
