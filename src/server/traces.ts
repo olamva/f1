@@ -7,6 +7,7 @@ import {
 
 const KEEP_MS = 5 * 60_000;
 const MARGIN_MS = 3_000;
+const LATE_MS = 15_000;
 
 type Pending = {
   number: string;
@@ -28,7 +29,7 @@ export class Traces {
         number,
         lap,
         time,
-        from: end - seconds * 1000 - MARGIN_MS,
+        from: end - seconds * 1000 - LATE_MS,
         to: end + MARGIN_MS,
       });
   }
