@@ -14,7 +14,7 @@ Create a new branch from the current `origin/main` only in a detached checkout.
 Keep edits in the task worktree. Do not change another task's branch or worktree.
 Coordinate changes to shared state with concurrent agents. Worktrees do not isolate this state:
 
-- the main checkout at `~/Developer/f1` and its `.git` directory, including the stash
+- the main checkout at `~/Developer/f1-pitwall` and its `.git` directory, including the stash
 - the dev server ports `8787` and `5173`
 - the Jolpica rate limit, which all local servers share
 - the Azure transcript accounts, and GitHub settings and variables
