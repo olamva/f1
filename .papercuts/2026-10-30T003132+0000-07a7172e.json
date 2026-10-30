@@ -1,0 +1,14 @@
+{
+  "id": "07a7172e",
+  "ts": "2026-10-30T00:31:32+00:00",
+  "text": "zsh treats \"$c:r\" in a git refspec as the :r path modifier and mangles the ref",
+  "tags": [
+    "git",
+    "shell"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "003c0555",
+  "where": "/Users/olavassbotn/.t3/worktrees/f1/t3-1216b014",
+  "branch": "t3/light-tab-refraction"
+}
