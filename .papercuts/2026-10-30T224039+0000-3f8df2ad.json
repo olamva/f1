@@ -1,0 +1,14 @@
+{
+  "id": "3f8df2ad",
+  "ts": "2026-10-30T22:40:39+00:00",
+  "text": "F1 static archive returns 401 without an F1TV token, and local dev has no token, so a live session that just ended cannot be reproduced locally",
+  "tags": [
+    "data",
+    "debugging"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "e7eae4ac",
+  "where": "livetiming.formula1.com/static",
+  "branch": "t3/lap-compare-telemetry"
+}
