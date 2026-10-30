@@ -8,11 +8,13 @@ import {
   type Outline,
   type Period,
   type Point,
+  type Telemetry,
 } from "../shared/timing.ts";
 import { Overtake } from "./overtake.ts";
 import { PitExits } from "./pitExits.ts";
 import type { Message } from "./push.ts";
 import { seconds } from "./season.ts";
+import { Traces } from "./traces.ts";
 
 export type Event = { t: number; topic: string; data: Json };
 export type State = Record<string, Json>;
@@ -84,7 +86,7 @@ type CarSample = {
 
 const CHANNELS = ["2", "3", "4", "5"];
 
-function carEvents(t: number, raw: Json): Event[] {
+export function carEvents(t: number, raw: Json): Event[] {
   const samples = (raw as { Entries?: CarSample[] }).Entries ?? [];
   const last = Date.parse(samples.at(-1)?.Utc ?? "");
   return samples.map((s) => ({
@@ -137,6 +139,7 @@ export class Session {
   laps: Record<string, LapRow[]> = {};
   track: Record<string, number[]> = {};
   periods: Period[] = [];
+  traces = new Traces();
   private lastPosition = -Infinity;
   private outLaps = new Set<string>();
   private overtake = new Overtake();
@@ -165,6 +168,8 @@ export class Session {
       ))
         (this.track[n] ??= []).push(e.t, p[0], p[1]);
     }
+    if (e.topic === "CarData")
+      this.traces.see(e.t, e.data as Record<string, Telemetry>, this.track);
     this.state[e.topic] = merge(this.state[e.topic], e.data);
     if (e.topic === "TimingData") this.trackLaps(e);
     if (e.topic === "TrackStatus") this.trackStatus(e.t);
@@ -199,6 +204,8 @@ export class Session {
       if (delta.LastLapTime?.Value) {
         row.time = delta.LastLapTime.Value;
         row.sectors = sectors(line);
+        if (line.BestLapTime?.Value === row.time)
+          this.traces.best(n, row.lap, row.time, e.t);
       }
     }
   }

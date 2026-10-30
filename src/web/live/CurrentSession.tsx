@@ -271,6 +271,9 @@ const Live = ({ session, positions, token, rounds }: LiveProps) => {
               positionsNote={note}
               paused={pos.pausedAt !== null}
               utc={now - live - behind}
+              traceUrl={(driver, lap) =>
+                `/api/live/trace?driver=${driver}&lap=${lap}`
+              }
               onLap={(n) => seek(lapTime(starts, n))}
             />
           </>
@@ -368,6 +371,9 @@ const Replay = ({ session, rounds, onClose }: ReplayProps) => {
           positionsNote={null}
           speed={play.speed}
           paused={!play.on}
+          traceUrl={(driver, lap) =>
+            `/api/replay/trace?${q}&driver=${driver}&lap=${lap}`
+          }
           onLap={(n) => seek(lapTime(starts, n))}
         />
       )}

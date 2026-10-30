@@ -6,6 +6,7 @@ import type { Delta, Snapshot } from "../shared/timing.ts";
 import { validSettings } from "../shared/settings.ts";
 import { tokenProblem } from "../shared/token.ts";
 import {
+  fastestLaps,
   outlineFor,
   positions,
   practice,
@@ -31,7 +32,7 @@ import * as push from "./push.ts";
 import * as reminders from "./reminders.ts";
 import { season, seasonYear } from "./season.ts";
 import * as settings from "./settings.ts";
-import { expand } from "./timing.ts";
+import { expand, type Session } from "./timing.ts";
 import * as token from "./token.ts";
 
 const DIST = process.env.DIST_DIR ?? "dist";
@@ -61,9 +62,20 @@ const send = (s: SSEStreamingApi, event: string, data: unknown) =>
   s.writeSSE({ event, data: JSON.stringify(data) });
 
 app.get("/api/season", async (c) => c.json(await season()));
-const topics = { pace, stints, qualifying, positions, practice };
+const topics = {
+  pace,
+  stints,
+  qualifying,
+  positions,
+  practice,
+  fastest: fastestLaps,
+};
+const KINDS = {
+  practice: /^fp[123]$/,
+  fastest: /^(fp[123]|sprintQualifying|qualifying|sprint|race)$/,
+};
 app.get(
-  "/api/:topic{pace|stints|qualifying|positions|practice}/:year/:round/:kind",
+  "/api/:topic{(?:pace|stints|qualifying|positions|practice|fastest)}/:year/:round/:kind",
   async (c) => {
     const topic = c.req.param("topic") as keyof typeof topics;
     const year = Number(c.req.param("year"));
@@ -76,7 +88,7 @@ app.get(
       !Number.isInteger(round) ||
       round < 1 ||
       round > 30 ||
-      !(topic === "practice" ? /^fp[123]$/ : /^(race|sprint)$/).test(kind)
+      !(KINDS[topic as keyof typeof KINDS] ?? /^(race|sprint)$/).test(kind)
     )
       return c.notFound();
     return c.json(await topics[topic](year, round, kind as never));
@@ -164,7 +176,18 @@ app.get("/api/live", (c) =>
     info: live.shared.session.state.SessionInfo ?? null,
   }),
 );
+const lapTrace = (c: Context, session: Session) => {
+  const lap =
+    session.traces.laps[c.req.query("driver") ?? ""]?.[
+      Number(c.req.query("lap"))
+    ];
+  return lap
+    ? c.json(lap)
+    : c.json({ error: "No telemetry for this lap." }, 404);
+};
+
 app.get("/api/live/laps", (c) => c.json(feed(c).session.laps));
+app.get("/api/live/trace", (c) => lapTrace(c, feed(c).session));
 app.get("/api/live/periods", (c) => c.json(feed(c).session.periods));
 app.get("/api/live/outline", async (c) => {
   const { session } = feed(c);
@@ -248,6 +271,9 @@ const startOf = (r: Replay): number =>
 
 app.get("/api/replay/laps", async (c) =>
   c.json((await withReplay(c.req.query("path"))).session.laps),
+);
+app.get("/api/replay/trace", async (c) =>
+  lapTrace(c, (await withReplay(c.req.query("path"))).session),
 );
 app.get("/api/replay/periods", async (c) =>
   c.json((await withReplay(c.req.query("path"))).session.periods),

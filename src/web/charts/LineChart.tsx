@@ -28,6 +28,7 @@ interface LineChartProps {
   yDomain?: [number, number];
   height?: number;
   bands?: Band[];
+  endLabels?: boolean;
 }
 
 const W = 800;
@@ -80,6 +81,7 @@ export const LineChart = ({
   yDomain,
   height = 320,
   bands = [],
+  endLabels = true,
 }: LineChartProps) => {
   const [hover, setHover] = useState<{ x: number; low: boolean } | null>(null);
   const all = series.flatMap((s) => s.points);
@@ -221,7 +223,8 @@ export const LineChart = ({
               ) : null;
             }),
           )}
-          {series.length <= 6 &&
+          {endLabels &&
+            series.length <= 6 &&
             series.map((s) => {
               const last = s.points.at(-1);
               return last ? (
