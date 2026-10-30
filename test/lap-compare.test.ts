@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { Session } from "../src/server/timing.ts";
 import type { LapRow, LapTrace, Outline } from "../src/shared/timing.ts";
 import {
   course,
@@ -96,4 +97,39 @@ test("the fastest lap skips deleted laps and laps after the shown time", () => {
   ];
 
   assert.equal(fastestLap(laps, new Set([2]), 350)?.lap, 3);
+});
+
+test("a live lap keeps its telemetry when the lap time arrives late", () => {
+  const session = new Session();
+  for (let t = 0; t <= 130_000; t += 250) {
+    session.apply({
+      t,
+      topic: "Position",
+      data: { "1": spot(FINISH - 0.1 + (t / 1000) * (FAST / LENGTH)) },
+    });
+    session.apply({
+      t,
+      topic: "CarData",
+      data: { "1": [FAST * 3.6, 0, 0, 0] },
+    });
+    if (t === 0 || t === 120_000)
+      session.apply({
+        t,
+        topic: "TimingData",
+        data: {
+          Lines: {
+            "1": t
+              ? {
+                  NumberOfLaps: 2,
+                  LastLapTime: { Value: "1:40.000" },
+                  BestLapTime: { Value: "1:40.000" },
+                }
+              : { NumberOfLaps: 1 },
+          },
+        },
+      });
+  }
+
+  const [lap] = Object.values(session.traces.laps["1"] ?? {});
+  assert.ok(lap && trace(course(outline), lap));
 });
