@@ -43,16 +43,9 @@ interface DominanceProps {
   course: Course;
   deltas: number[];
   pair: [CompareDriver, CompareDriver];
-  dashed: boolean;
 }
 
-const Dominance = ({
-  outline,
-  course,
-  deltas,
-  pair,
-  dashed,
-}: DominanceProps) => {
+const Dominance = ({ outline, course, deltas, pair }: DominanceProps) => {
   const { box, marks, track, sectors } = useMemo(() => {
     const { project, box } = projector(outline, 0);
     const line = (points: [number, number][]) =>
@@ -91,8 +84,7 @@ const Dominance = ({
             stroke={ink(pair[d <= 0 ? 0 : 1].color)}
             strokeWidth={12}
             strokeLinejoin="round"
-            strokeLinecap={d > 0 && dashed ? "butt" : "round"}
-            strokeDasharray={d > 0 && dashed ? "14 10" : undefined}
+            strokeLinecap="round"
           />
         ))}
         <Markers {...marks} />
@@ -108,7 +100,6 @@ const Dominance = ({
                 y2="3"
                 stroke={ink(d.color)}
                 strokeWidth="4"
-                strokeDasharray={i && dashed ? "5 3" : undefined}
               />
             </svg>
             {d.tla} faster in {wins[i]!.length} of {MINI_SECTORS}
@@ -124,7 +115,23 @@ interface PairProps {
   pair: [CompareDriver, CompareDriver];
 }
 
-const Pair = ({ outline, pair: [a, b] }: PairProps) => {
+const TEAMMATE = "#e4e4e7";
+const NEUTRAL_TEAMMATE = "#facc15";
+
+const neutral = (color: string) => {
+  const rgb = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16));
+  return Math.max(...rgb) - Math.min(...rgb) < 32;
+};
+
+const apart = (a: string, b: string) =>
+  a.toLowerCase() !== b.toLowerCase()
+    ? b
+    : neutral(a)
+      ? NEUTRAL_TEAMMATE
+      : TEAMMATE;
+
+const Pair = ({ outline, pair: [a, other] }: PairProps) => {
+  const b = { ...other, color: apart(a.color, other.color) };
   const fetched = [
     useJson<LapTrace>(a.lap ? null : (a.url ?? null)),
     useJson<LapTrace>(b.lap ? null : (b.url ?? null)),
@@ -146,7 +153,6 @@ const Pair = ({ outline, pair: [a, b] }: PairProps) => {
         The telemetry of {(traceA ? b : a).tla} is not complete for this lap.
       </p>
     );
-  const dashed = a.color.toLowerCase() === b.color.toLowerCase();
   const gap = lapSeconds(b.time)! - lapSeconds(a.time)!;
   return (
     <div className="@container space-y-3">
@@ -172,7 +178,6 @@ const Pair = ({ outline, pair: [a, b] }: PairProps) => {
               id: d.number,
               label: d.tla,
               color: d.color,
-              dashed: i === 1 && dashed,
               points: (i ? traceB : traceA).speed.map(
                 (v, k) => [k * STEP, v] as [number, number],
               ),
@@ -188,7 +193,6 @@ const Pair = ({ outline, pair: [a, b] }: PairProps) => {
             course={c}
             deltas={miniSectors(traceA, traceB)}
             pair={[a, b]}
-            dashed={dashed}
           />
         </section>
       </div>
