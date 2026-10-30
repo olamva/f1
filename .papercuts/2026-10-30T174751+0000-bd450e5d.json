@@ -1,0 +1,14 @@
+{
+  "id": "bd450e5d",
+  "ts": "2026-10-30T17:47:51+00:00",
+  "text": "Hono RegExpRouter returns the wrong :topic value when a later segment matches another word of an ungrouped alternation param pattern; wrap it in (?:...)",
+  "tags": [
+    "hono",
+    "routing"
+  ],
+  "who": "agent",
+  "model": "opus-5.5",
+  "session": "cfd803ba",
+  "where": "src/server/main.ts",
+  "branch": "t3/live-session-comparison"
+}
