@@ -3,7 +3,7 @@ Wants=network-online.target
 After=network-online.target
 
 [Container]
-Image=ghcr.io/olamva/f1:latest
+Image=ghcr.io/olamva/f1-pitwall:latest
 AutoUpdate=registry
 Network=host
 Volume=/srv/f1:/srv/f1
