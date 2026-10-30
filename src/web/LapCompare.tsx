@@ -115,20 +115,15 @@ interface PairProps {
   pair: [CompareDriver, CompareDriver];
 }
 
-const TEAMMATE = "#e4e4e7";
-const NEUTRAL_TEAMMATE = "#facc15";
+const WHITE = "#e4e4e7";
+const GREY = "#71717a";
 
-const neutral = (color: string) => {
-  const rgb = [1, 3, 5].map((i) => parseInt(color.slice(i, i + 2), 16));
-  return Math.max(...rgb) - Math.min(...rgb) < 32;
+const apart = (a: string, b: string) => {
+  if (a.toLowerCase() !== b.toLowerCase()) return b;
+  const rgb = [1, 3, 5].map((i) => parseInt(a.slice(i, i + 2), 16));
+  if (Math.max(...rgb) - Math.min(...rgb) >= 32) return WHITE;
+  return `light-dark(#27272a, ${Math.min(...rgb) >= 192 ? GREY : WHITE})`;
 };
-
-const apart = (a: string, b: string) =>
-  a.toLowerCase() !== b.toLowerCase()
-    ? b
-    : neutral(a)
-      ? NEUTRAL_TEAMMATE
-      : TEAMMATE;
 
 const Pair = ({ outline, pair: [a, other] }: PairProps) => {
   const b = { ...other, color: apart(a.color, other.color) };
